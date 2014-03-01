@@ -1,0 +1,154 @@
+mycomments.txt
+Leonardo Banderali
+February 23, 2014
+
+This file contains a discription of my commenting style to help others who read my code understand it better.
+
+
+Intro:
+I created this file to assist people who read my code understand my comments better.  I want my code to be 
+useful to less experienced programmers who might not easily understand what's going on.  Aslo, I know from
+experience that reading other peoples (and sometimes my own) poorly commented code is extremely frustruating.
+So, I learned to comment extensively.  This file will hopefully clarify a few things for those that might be
+confused by my commenting style.  Before moving to the important stuff, I want to note that creating this 
+file has helped me write better comments, as I now have a guide I can constantly reffer to.  Try doing
+something like this yourself and see if it helps you master the greate skill that is commenting code.
+
+
+General:
+I use headers in all my source files to indicate what the file contains, what the code does, and how it relates
+to the other important files in the program.  All declaratioins and definitions have comments that
+indicate the use of the declared/defined object.  Functions have a short description of what they do as well as
+a list of the parameters and what they represent unless the function has zero or one parameter in which case the
+function descriptioin should be enough to infer what the parameter is.  Classes have a description of what they
+do and a short explanation of how they work unless this information is in the header of the file.  The
+description of functions and classes is imediatly underneath the first line of the declaration and/or definition.
+I use "boxes" to hold more complete comments, remarks, and explanations that require multile lines/sentences.
+Single quotation marks ( ' ' ) indicate pieces of the code being commented on.
+
+
+Headers:
+I use following style for all headers
+    
+    Project: project name/title
+    File: file name
+    Author: name of file creator
+    Created: date file was created
+    Last Modified: date file last recieved any modifications
+    Changes: list of changes in last modification
+
+    Description: description of the project and specific file
+
+    Copyright (C) 2014 Leonardo Banderali
+
+    Usage Agreement: conditions of use or license
+    
+    Notes: list of extra notes
+
+
+Functions:
+For functions and class methods, I always put a short description of what the function does emidiatly under
+the function name.  I also put a list of the parameters with a description of what they are used for.
+
+@c++
+I like to put the same comments under the function prototypes and function definitions.
+
+
+Inline comments:
+My inline comments are like the pseudo-code that goes with the actual source code.  I leave spaces between the
+code and the comments so that it looks neater.  I usuarly try my best to make the spaces between the code and 
+the comments match the scope of the code.  However, there are times when a particular line of code is much longer
+than the others in which case is just put the comment right after the line of code ends.  
+
+@c++
+function1(a);           //this does whatever
+pringtf("some text");   //print some stuff
+if( something) {        //if something is true   
+    foo(somethingelse);     //do this
+    bar(1729);              //use this number
+    callToAFunctionWithAReallyReallyLongName(and,with,lots,of,parameters);//and here is the comment
+    return;                 //return for no reason at all
+}
+
+
+Section separators:
+To separate sections of code, I lable the top of each section with ~~~~ and a name that describes
+what the type of code the section has and/or what it does.
+
+ex.
+@c++
+//~function prototypes~~~~~~~~~
+
+@python
+#~variable declarations and initializations~~~~~~~~~~~~
+
+
+The '@' symbol:
+I use @ to indicate lables.  Sometimes, I like to mark specific sections of code with a lable 
+that I can refer to latter on in my comments.  To avoid confusion with actual comments,
+I add an @ to the front of the word or lable.
+
+
+Hash box:
+Hash boxes contain complete description and explenations of what a block of code is doing and how
+it is being done.
+
+@c++ ex.
+/*###################
+## Lines of        ##
+## comments        ##
+###################*/
+
+@python ex.
+#####################
+## Lines of        ##
+## comments        ##
+#####################
+
+
+Dollar box:
+Dollar boxes are used to comment out blocks of code which should not be compiled or executed but that I still want
+to keep.  Also, the box contains a discription of what the block of code does and the reason it is commented out.
+
+@c++
+In c++ source files, the executable code can be uncommented by adding as slash (/) to the top left corner of the box.
+This will not uncomment the text which accompanies the block of code.
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+//$$$ This line is commented out.         $$$
+//$$$                                     $$$
+    cout << "This code is commented out";
+//$$$                                     $$$
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+
+//*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+//$$$ This line is commented out.  Note the  $$$
+//$$$ extra slash in the top right corner.   $$$
+//$$$                                        $$$
+    cout << "This code is not commented out";
+//$$$                                        $$$
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+
+@python
+In python, each line of executable code must be commented out manualy
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#$$$ This line is commented out $$$
+#$$$                            $$$
+#   print("To uncomment this line, remove the #")
+#$$$                            $$$
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+Percent box:
+Boxes which are bounded by percent signs contain notes explaining things that need to be changed or modified.
+I use these often to indicate that I want to apply a new feature or want to make a specific improvement to the code.
+
+@c++
+/*%%%%%%%%%%%%%%%%%%%%%%%%%
+%% I need to clean up my %%
+%% room... I mean code   %%
+%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+
+Notes:
+While my comments are partly intended to help less experienced programers, I assume that they are familiar with
+the language being used and that they have access to the language reference.

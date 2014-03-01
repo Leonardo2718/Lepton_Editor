@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<language name="c" style="default.xml">
+    <keywords type="0">
+    auto break case char const continue default do double else enum extern
+    float for goto if int long register return short signed sizeof static
+    struct switch typeodef union unsigned void volatile while
+    </keywords>
+    <commentstart>/*</commentstart>
+    <commentend>*/</commentend>
+    <linecomment>//</linecomment>
+    <lineexpression id="0"> #include|#define|#undef|#if|#ifdef|#ifndef|#elif|#else|#endif|#error|#line|#pragma </lineexpression>
+</language>

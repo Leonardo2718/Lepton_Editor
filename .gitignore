@@ -1,0 +1,5 @@
+/build-Lepton-Desktop-Debug
+/build-Lepton-Desktop-Release
+
+*.pro.user
+*.pro.user.*
