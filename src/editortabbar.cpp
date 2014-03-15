@@ -58,7 +58,7 @@ EditorTabBar::~EditorTabBar() {
         ## of this type must be destructed first.                                      ##
         ###############################################################################*/
 
-        delete highlighters.at(i);
+        //delete highlighters.at(i);
         delete tabs.at(i);
     }
 }
@@ -73,14 +73,12 @@ int EditorTabBar::addTab(int index) {
     if ( index < 0) {                           //if a new tab is to be appended to the end
         tabs.append( new Editor(this) );            //create the new tab
         int s = tabs.size();                        //get the new number of open tabs
-        highlighters.append( new SyntaxHighlighter( tabs.at(s-1)->document() ) );   //implement syntax highlighting
         QTabWidget::addTab(tabs.at(s-1), tabs.at(s-1)->getInnerFileName() );        //add the new tab
         return s;                                   //return the index of the tab
     }
     else {
         tabs.insert(index, new Editor(this) );
         int s = tabs.size();
-        highlighters.insert(index, new SyntaxHighlighter( tabs.at(s-1)->document() ) );
         QTabWidget::insertTab(index, tabs.at(s-1), tabs.at(s-1)->getInnerFileName() );
         return s;
     }
@@ -145,35 +143,9 @@ void EditorTabBar::close(int index){
 -close tab of index 'index'
 */
     QTabWidget::removeTab(index);
-    delete highlighters.at(index);
     delete tabs.at(index);
-    highlighters.remove(index);
     tabs.remove(index);
     if (tabs.size() < 1) {
         addTab();
     }
-}
-
-void EditorTabBar::languageSelected(QAction* a) {
-/* -changes language to the one selected in the menu */
-    //int tabIndex = currentIndex();      //get the index of the current tab
-    QString langPath = "languages/";    //start the path to the language file
-    if (a->text() == current()->languageSelector->actionList[0]->text() ){  //if the selected option is 'Plain Text'
-        langPath = "";                                                          //set an empty path so that no language file is used
-    }
-    else{                                                                   //otherwise
-        for (int i = 0, l = current()->languageSelector->actionList.length(); i < l; i++){  //for each action in the menu
-            if(a->text() == current()->languageSelector->actionList[i]->text()) {             //if the action text is matched
-                langPath.append( current()->languageSelector->langInfo[i-1].fileName );         //complete the path by adding the file name of the matched language selection action
-                break;
-            }
-        }
-    }
-
-    QObject* parentEditor = a->parent()->parent();
-    int tabIndex = indexOf((QWidget*)parentEditor);           //%%%%There is an error here %%%%%%
-
-    highlighters[tabIndex]->useLanguage( langPath );    //use the selected file
-
-    highlighters.at(tabIndex)->rehighlight();           //rehighlight the document
 }

@@ -39,22 +39,23 @@ Usage Agreement:
 
 //~public method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent), parentTab(parent) {
+Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent){//, parentTab(parent) {
 /*
 -this constructor connects signals to coresponding slots
 */
     numArea = new LineNumberArea(this);
+    highlighter = new SyntaxHighlighter(this->document());
     languageSelector = new LanguageSelectorClass(this);
 
     //connect slots to signals in 'QPlainTextEdit'
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateAreaWidth()));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
-    //connect(this, SIGNAL(textChanged()), this, SLOT(markUnsaved()) );
+    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightEditorLine()));
+    connect(languageSelector->actionGroup, SIGNAL(triggered(QAction*)), this, SLOT(changeLanguage(QAction*)) );
 
-    updateAreaWidth();
-    highlightCurrentLine();
-
+    //setup editing area
+    updateAreaWidth();      //set line number area
+    highlightEditorLine();  //set editor line highlighting
     setLineWrapMode(QPlainTextEdit::NoWrap);    //do not wrap text
     setFont( QFont("Monospace", 9) );           //use an appropriate font
 
@@ -85,8 +86,8 @@ int Editor::areaWidth() {
 
     //count the number of digits
     while (max >= 10) { //until the number is less than '10'
-        max /= 10;          //=>devide the number by '10'
-        digits++ ;          //=>add one to the digit count
+        max /= 10;          //devide the number by '10'
+        digits++ ;          //add one to the digit count
     }
 
     int space = fontMetrics().width(QLatin1Char('9')) * digits; //calculate space needed to print all the digits
@@ -110,8 +111,7 @@ void Editor::lineNumberAreaPaintEvent(QPaintEvent *event) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
-            painter.drawText(0, top, numArea->width(), fontMetrics().height(),
-                             Qt::AlignRight, number);
+            painter.drawText(0, top, numArea->width(), fontMetrics().height(), Qt::AlignCenter, number);
         }
 
         block = block.next();
@@ -232,7 +232,7 @@ void Editor::updateLineNumberArea(const QRect& rect, int dy) {
 }
 
 
-void Editor::highlightCurrentLine() {
+void Editor::highlightEditorLine() {
 /*
 -highlight the line which contains the cursor
 */
@@ -253,10 +253,17 @@ void Editor::highlightCurrentLine() {
     setExtraSelections(extraSelections);
 }
 
+void Editor::changeLanguage(QAction* a) {
+/* -change syntax highlighting language */
+    QString langPath = languageSelector->getLangFileFor(a); //get path to new language file
+    highlighter->useLanguage( langPath );                   //use the new file
+    highlighter->rehighlight();                             //rehighlight the document
+}
+
 void Editor::markUnsaved() {
 /* -adds an asterisk (*) to the start of the file name if inner text is changed and not yet saved */
-    if (innerFileName.at(0) != '*') //if there is no asterisk yet
-        innerFileName.prepend('*');     //add the asterisk
+    if (innerFileName.at(0) != '*')     //if there is no asterisk yet
+        innerFileName.prepend('*');         //add the asterisk
 
     int i = parentTab->indexOf(this);   //retrieve index of the tab coresponding to this object
     parentTab->setTabText(i, innerFileName);
@@ -273,9 +280,9 @@ QVector< LanguageSelectorClass::FileInfoType > LanguageSelectorClass::langInfo;
 LanguageSelectorClass::LanguageSelectorClass(QWidget *_parent) {
 /*
 -Constuctor keeps track of the number of class instances.  If the first
-instance of this class is being instanciated, then this method checks
-all the files in the languages directory and retrieves data for the
-language selector menu.
+ instance of this class is being instanciated, then this method checks
+ all the files in the languages directory and retrieves data for the
+ language selector menu.
 */
     instanceCount++;    //update class instance count
 
@@ -306,10 +313,10 @@ language selector menu.
             if( languageElement.nodeName() != "language" ) continue;            //verify that the root element is correct
 
             //extract info and create menu action
-            QString langName = languageElement.attribute("name");   //extract attribute with the name of the language
-            if( langName.isEmpty() || langName.isNull()) continue;  //verify that the 'Name' attribute exists
-            langInfo[i].fileName = fileList[i];                     //store file name
-            langInfo[i].languageName = langName;                    //store the extracted language name
+            QString langName = languageElement.attribute("name");           //extract attribute with the name of the language
+            if( langName.isEmpty() || langName.isNull()) continue;          //verify that the 'Name' attribute exists
+            langInfo[i].filePath = langDir.absoluteFilePath(fileList[i]);   //store file path name
+            langInfo[i].languageName = langName;                            //store the extracted language name
         }
     }
 
@@ -322,6 +329,7 @@ language selector menu.
     actionGroup->addAction(actionList[0]);
     languageMenu->addAction(actionList[0]);
 
+    //create other actions for each language file
     for (int i = 1, l = langInfo.length(); i <= l; i++) {
         actionList[i] = new QAction(langInfo[i-1].languageName, languageMenu);  //create and add menu action from on extracted info
         actionList[i]->setCheckable( 1 );                       //
@@ -336,4 +344,23 @@ LanguageSelectorClass::~LanguageSelectorClass() {
         delete actionList[i];
     }
     instanceCount--;
+}
+
+QString LanguageSelectorClass::getLangFileFor(QAction* a) {
+/* -get the path to the language file which corresponds to the menu action 'a' */
+    QString path;    //path to file
+    if (a->text() == actionList[0]->text() ){  //if the selected option is 'Plain Text'
+        path = "";                                  //set an empty path so that no language file is used
+    }
+    else{                                       //otherwise
+        int l = actionList.length();
+        for (int i = 0; i < l; i++){                //for each action in the menu
+            if(a->text() == actionList[i]->text()) {    //if the action text is matched
+                path = langInfo[i-1].filePath;          //get the path for the corresponding language file
+                break;
+            }
+        }
+    }
+
+    return path;
 }

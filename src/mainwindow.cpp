@@ -34,7 +34,6 @@ Usage Agreement:
 //include necessary files and libraries
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QDebug>
 
 
 
@@ -50,22 +49,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->projectManager->hide();
     ui->editorTools->hide();
 
+    //instantiate editing area
     editors = new EditorTabBar(this);
     ui->textEditorArea->insertWidget(0, editors);
     editors->addTab();
 
-    //delete ui->menuLanguage;
-    tempLang = NULL;
-    languageSelectorGroup = NULL;
-    setLanguageSelectorMenu();
-    /*ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );
-    languageSelectorGroup = editors->current()->languageSelector->actionGroup;*/
-    //languageSelectorGroup = new QActionGroup(ui->menuLanguage);
-    /*foreach (QAction* a, ui->menuLanguage->actions() ) {
-        languageSelectorGroup->addAction( a );
-    }*/
+    //set language selector menu
+    langSelector = NULL;        //null initial language selector to allow "dereferencing"
+    setLanguageSelectorMenu();  //set language selector from editing tab instance
 
-    connect(languageSelectorGroup, SIGNAL(triggered(QAction*)), editors, SLOT(languageSelected(QAction*)) );
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
 
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -142,16 +134,12 @@ void MainWindow::openFile(QString fileName) {
 void MainWindow::setLanguageSelectorMenu() {
 /* -set the language selector menu from editor object */
     if (editors->count() <= 0) {    //if no editor windows are open
-        tempLang = NULL;                //do not point to any language selectors
+        langSelector = NULL;            //do not point to any language selectors
         return;                         //do nothing else
     }
 
-    if (tempLang != NULL)                   //if a language selector is being pointed to (the language selector from previous tab)
-        ui->menuBar->removeAction(tempLang);    //stop pointing to it
+    if (langSelector != NULL)               //if a language selector is being pointed to (the language selector from previous tab)
+        ui->menuBar->removeAction(langSelector);//stop pointing to it
 
-    tempLang = ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );  //set and point to the new languages selector
-    if (languageSelectorGroup != NULL)
-        disconnect(languageSelectorGroup, 0, 0, 0);
-    languageSelectorGroup = editors->current()->languageSelector->actionGroup;              //point to the new action group to catch its signals
-    connect(languageSelectorGroup, SIGNAL(triggered(QAction*)), editors, SLOT(languageSelected(QAction*)) );
+    langSelector = ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );  //set and point to the new languages selector
 }

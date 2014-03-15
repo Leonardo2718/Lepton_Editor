@@ -40,7 +40,6 @@ Usage Agreement:
 #include <QAction>
 #include <QVector>
 #include "editor.h"
-#include "syntaxhighlighter.h"
 
 class EditorTabBar : public QTabWidget
 {
@@ -85,11 +84,7 @@ class EditorTabBar : public QTabWidget
         void close(int index);
         /* -close tab of index 'index' */
 
-        void languageSelected(QAction* a);
-        /* -changes language to the one selected in the menu */
-
     private:
-        QVector< SyntaxHighlighter* > highlighters;
 
 };
 

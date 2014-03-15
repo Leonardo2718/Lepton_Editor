@@ -80,10 +80,9 @@ class MainWindow : public QMainWindow {
         /* -called when visible tab is changed to update lanugage selector menu */
 
     private:
-        Ui::MainWindow *ui;             //a pointer to the interface used to interact with the main window
+        Ui::MainWindow* ui;     //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;
-        QActionGroup* languageSelectorGroup; //action group to select language from menu
-        QAction* tempLang;              //temporary pointer to language selector menu
+        QAction* langSelector;  //temporary pointer to language selector menu
 
         void openFile(QString fileName);
         /* -open a file in the current tab */

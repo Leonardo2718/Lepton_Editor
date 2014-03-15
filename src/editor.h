@@ -101,14 +101,17 @@ class Editor : public QPlainTextEdit {
         void updateLineNumberArea(const QRect& rect, int dy);
         /* -slot is invoked when the editors viewport has been scrolled */
 
-        void highlightCurrentLine();
+        void highlightEditorLine();
         /* -highlight the line which contains the cursor */
 
-    private:
-        QTabWidget* parentTab;//constant pointer to the parrent widget
+        void changeLanguage(QAction* a);
+        /* -change syntax highlighting language */
 
-        LineNumberArea *numArea;    //pointer to the area which will be painted with the line numbers
-        //friend class LineNumberArea;
+    private:
+        QTabWidget* parentTab;  //constant pointer to the parrent widget
+        SyntaxHighlighter* highlighter; //highlighter for current document
+
+        LineNumberArea *numArea;//pointer to the area which will be painted with the line numbers
 
         QString innerFileName;  //holds the name of the file opened in the editor instance ("Untitled" if no file is opened)
         QString innerFilePath;  //holds the path to the file opened (null if no file is opened)
@@ -155,6 +158,7 @@ files.
         struct FileInfoType {
         /* -struct to hold information extracted from a language file*/
             QString fileName;
+            QString filePath;
             QString languageName;
         };
 
@@ -163,6 +167,9 @@ files.
         QMenu* languageMenu;                        //menu object to implement language selector
         QVector< QAction* > actionList;             //list of pointers to language actions
         QActionGroup* actionGroup;                  //object to store the group of actions and implement the language selector
+
+        QString getLangFileFor(QAction* a);
+        /* -get the path to the language file which corresponds to the menu action 'a' */
 
         int getInstanceCount(){
             return instanceCount;
