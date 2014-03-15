@@ -76,13 +76,20 @@ class MainWindow : public QMainWindow {
         void on_actionEditor_Tools_toggled(bool visible);
         /* -show/hide the editor tools */
 
+        void editTabChanged();
+        /* -called when visible tab is changed to update lanugage selector menu */
+
     private:
         Ui::MainWindow *ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;
-        QActionGroup* languageSelector; //action group to select language from menu
+        QActionGroup* languageSelectorGroup; //action group to select language from menu
+        QAction* tempLang;              //temporary pointer to language selector menu
 
         void openFile(QString fileName);
         /* -open a file in the current tab */
+
+        void setLanguageSelectorMenu();
+        /* -set the language selector menu from editor object */
 };
 
 #endif // MAINWINDOW_H

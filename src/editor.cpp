@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editor.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 1, 2014
+Last Modified: March 9, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,6 +44,7 @@ Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent), p
 -this constructor connects signals to coresponding slots
 */
     numArea = new LineNumberArea(this);
+    languageSelector = new LanguageSelectorClass(this);
 
     //connect slots to signals in 'QPlainTextEdit'
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateAreaWidth()));
@@ -68,6 +69,7 @@ Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent), p
 Editor::~Editor() {
 /* -deletes allocated memory */
     delete numArea;
+    delete languageSelector;
 }
 
 int Editor::areaWidth() {
@@ -258,4 +260,80 @@ void Editor::markUnsaved() {
 
     int i = parentTab->indexOf(this);   //retrieve index of the tab coresponding to this object
     parentTab->setTabText(i, innerFileName);
+}
+
+
+
+//~'LanguageSelectorClass' class implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//declare static members
+int LanguageSelectorClass::instanceCount = 0;
+QVector< LanguageSelectorClass::FileInfoType > LanguageSelectorClass::langInfo;
+
+LanguageSelectorClass::LanguageSelectorClass(QWidget *_parent) {
+/*
+-Constuctor keeps track of the number of class instances.  If the first
+instance of this class is being instanciated, then this method checks
+all the files in the languages directory and retrieves data for the
+language selector menu.
+*/
+    instanceCount++;    //update class instance count
+
+    languageMenu = new QMenu("Languages",_parent);
+    actionGroup = new QActionGroup(languageMenu);
+
+    if(instanceCount == 1) {            //if this is the first class instance
+        QDir langDir("languages/");         //access the languages director to scan the files
+        QStringList nameFilterList;         //create filter to only scan xml files
+        nameFilterList << "*.xml";          //
+        QStringList fileList = langDir.entryList(nameFilterList);//get a list of all the file names which match the filter in order to scan them
+        int fileListLength = fileList.length();
+
+        langInfo.clear();                       //clear the current list
+        langInfo.resize(fileListLength);        //resize the info list to fit all the data read from files
+
+        for (int i = 0; i < fileListLength; i++){   //for each file in the 'languages' directory
+            //open the file
+            QFile langFile( langDir.filePath(fileList[i]) );
+            if ( !langFile.open(QIODevice::ReadOnly | QIODevice::Text) ) continue;
+
+            //create a DOM object for the file
+            QDomDocument languageDocument("lang_file");         //create a DOM object from the data file
+            bool check = languageDocument.setContent(&langFile);//set content of the DOM object from the language data file
+            langFile.close();                                   //close the file
+            if (!check) continue;                               //if the file could not be parsed, return
+            QDomElement languageElement = languageDocument.documentElement();   //extract root element
+            if( languageElement.nodeName() != "language" ) continue;            //verify that the root element is correct
+
+            //extract info and create menu action
+            QString langName = languageElement.attribute("name");   //extract attribute with the name of the language
+            if( langName.isEmpty() || langName.isNull()) continue;  //verify that the 'Name' attribute exists
+            langInfo[i].fileName = fileList[i];                     //store file name
+            langInfo[i].languageName = langName;                    //store the extracted language name
+        }
+    }
+
+    actionList.resize(langInfo.length() + 1);  //resize with an additional element for 'Plain Text' selection
+
+    //add first action for 'Plain Text' selection
+    actionList[0] = new QAction("Plain Text", languageMenu);
+    actionList[0]->setCheckable( 1 );
+    actionList[0]->setChecked( 1 );
+    actionGroup->addAction(actionList[0]);
+    languageMenu->addAction(actionList[0]);
+
+    for (int i = 1, l = langInfo.length(); i <= l; i++) {
+        actionList[i] = new QAction(langInfo[i-1].languageName, languageMenu);  //create and add menu action from on extracted info
+        actionList[i]->setCheckable( 1 );                       //
+        actionGroup->addAction(actionList[i]);                  //
+        languageMenu->addAction(actionList[i]);                 //
+    }
+}
+
+LanguageSelectorClass::~LanguageSelectorClass() {
+/* -free allocated memory */
+    for (int i = 0, l = actionList.length(); i < l; i++){
+        delete actionList[i];
+    }
+    instanceCount--;
 }

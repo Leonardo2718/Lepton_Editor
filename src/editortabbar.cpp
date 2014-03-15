@@ -156,11 +156,24 @@ void EditorTabBar::close(int index){
 
 void EditorTabBar::languageSelected(QAction* a) {
 /* -changes language to the one selected in the menu */
-    int tabIndex = currentIndex();
-    if (a->text() == "Plain Text") highlighters.at(tabIndex)->useLanguage();
-    else if (a->text() == "C") highlighters.at(tabIndex)->useLanguage("languages/c.xml");
-    else if (a->text() == "C++") highlighters.at(tabIndex)->useLanguage("languages/cplusplus.xml");
-    else highlighters.at(tabIndex)->useLanguage();
+    //int tabIndex = currentIndex();      //get the index of the current tab
+    QString langPath = "languages/";    //start the path to the language file
+    if (a->text() == current()->languageSelector->actionList[0]->text() ){  //if the selected option is 'Plain Text'
+        langPath = "";                                                          //set an empty path so that no language file is used
+    }
+    else{                                                                   //otherwise
+        for (int i = 0, l = current()->languageSelector->actionList.length(); i < l; i++){  //for each action in the menu
+            if(a->text() == current()->languageSelector->actionList[i]->text()) {             //if the action text is matched
+                langPath.append( current()->languageSelector->langInfo[i-1].fileName );         //complete the path by adding the file name of the matched language selection action
+                break;
+            }
+        }
+    }
 
-    highlighters.at(tabIndex)->rehighlight();
+    QObject* parentEditor = a->parent()->parent();
+    int tabIndex = indexOf((QWidget*)parentEditor);           //%%%%There is an error here %%%%%%
+
+    highlighters[tabIndex]->useLanguage( langPath );    //use the selected file
+
+    highlighters.at(tabIndex)->rehighlight();           //rehighlight the document
 }

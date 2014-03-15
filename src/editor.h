@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editor.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 1, 2014
+Last Modified: March 9, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,8 +39,14 @@ Usage Agreement:
 #include <QPlainTextEdit>
 #include <QTabWidget>
 #include <QtWidgets>
+#include <QActionGroup>
+#include <QMenu>
+#include <QDir>
+#include <QFile>
+#include <syntaxhighlighter.h>
 
-class LineNumberArea;   //allow CEditor to know about 'LineNumberArea'
+class LineNumberArea;   //allow Editor to know about 'LineNumberArea'
+class LanguageSelectorClass;
 
 class Editor : public QPlainTextEdit {
     Q_OBJECT    //implement QObject
@@ -48,6 +54,8 @@ class Editor : public QPlainTextEdit {
     public:
         explicit Editor(QTabWidget* parent, QString filePath = 0);
         /* -constructor connects signals to coresponding slots and opens a file (if specified) */
+
+        LanguageSelectorClass* languageSelector;
 
         ~Editor();
         /* -deletes allocated memory */
@@ -104,8 +112,6 @@ class Editor : public QPlainTextEdit {
 
         QString innerFileName;  //holds the name of the file opened in the editor instance ("Untitled" if no file is opened)
         QString innerFilePath;  //holds the path to the file opened (null if no file is opened)
-
-
 };
 
 
@@ -129,6 +135,41 @@ class LineNumberArea : public QWidget {
 
     private:
         Editor *codeEditor;
+};
+
+
+
+//~'LanguageSelectorClass' class definition~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class LanguageSelectorClass {
+/*
+This class is responsible for helding all the data related to language files
+and language selections.  Some of the data includes a list of all the language
+files.
+*/
+    public:
+        explicit LanguageSelectorClass(QWidget *_parent);
+
+        ~LanguageSelectorClass();
+
+        struct FileInfoType {
+        /* -struct to hold information extracted from a language file*/
+            QString fileName;
+            QString languageName;
+        };
+
+        static QVector< FileInfoType > langInfo;    //static list of all the language file names and language names
+                                                    //  can be accessed by all instances of this class
+        QMenu* languageMenu;                        //menu object to implement language selector
+        QVector< QAction* > actionList;             //list of pointers to language actions
+        QActionGroup* actionGroup;                  //object to store the group of actions and implement the language selector
+
+        int getInstanceCount(){
+            return instanceCount;
+        }
+
+    private:
+        static int instanceCount;
 };
 
 #endif // EDITOR_H
