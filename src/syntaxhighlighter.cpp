@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlighter.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 1, 2014
+Last Modified: March 15, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -64,13 +64,13 @@ void SyntaxHighlighter::useLanguage(QString languageFile) {
     //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 
     if (languageFile == 0) {
-        language.clear();                   //lear the current data
+        language.clear();                   //clear the current data
         language.append( LanguageBlock() ); //
         return;
     }
 
     QFile file(languageFile);                       //open the language data file
-    if ( !file.open(QIODevice::ReadOnly) ) return;  //return if file was not opened properly
+    if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) ) return;//return if file was not opened properly
     QDomDocument languageDocument("lang_file");     //create a DOM object from the data file
     bool check = languageDocument.setContent(&file);//set content of the DOM object from the language data file
     file.close();                                   //close the file
@@ -236,20 +236,21 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
     QDomNodeList keywordsList = root.elementsByTagName("keywords");  //get a list of all the keyword nodes
     for (int i = 0, len = keywordsList.length(); i < len; i++) {    //for every list of keywords
-        int keywordType = keywordsList.at(i).attributes().namedItem("type").toText().data().toInt();//retrieve the type of keyword held by the element
-        QString keywords = keywordsList.at(i).firstChild().toText().data();             //get the list of keywords
+        int keywordType = keywordsList.at(i).attributes().namedItem("type").namedItem("#text").toText().data().toInt();//retrieve the type of keyword held by the element
+        QString keywords = keywordsList.at(i).namedItem("#text").toText().data();       //get the list of keywords
         keywords = keywords.simplified();                                               //remove unnecessary white spaces
         keywords = keywords.replace( QRegularExpression("\\s"), "|");                   //replace all spaces with pipes (used for regexp)
-        keywords = keywords.prepend("\\b(");                                             //add components of regexp
-        keywords = keywords.append(")\\b");                                              //
+        keywords = keywords.prepend("\\b(");                                            //add components of regexp
+        keywords = keywords.append(")\\b");                                             //
         if (keywordType >= lang.keywords.length()) lang.keywords.resize(keywordType+1); //if there is no keywords list to which to assign the new list, resive the list so there is
         lang.keywords[keywordType].pattern.setPattern(keywords);                        //set the regexp in the list of keywords
     }
 
     QDomNodeList lineC = root.elementsByTagName("linecomment");         //retrieve nodes with line comment expressions
-    if (lineC.length() != 0) {                                          //if a node is found
+    if ( !lineC.isEmpty() ) {                                           //if a node is found
         QString expression = lineC.at(0).firstChild().toText().data();      //get the expression
         expression = expression.simplified();                               //remove unnecessary white spaces
+        expression = lang.lineComment.pattern.escape(expression);           //escape characters so that the expression can be identified
         expression.append("[^\\n]*");                                       //add needed components to complete the expression
         lang.lineComment.pattern.setPattern(expression);                    //set the expression
     }
@@ -296,8 +297,8 @@ void SyntaxHighlighter::getFormat(QDomElement& root, LanguageBlock& lang) {
     QDomNodeList keywords = root.elementsByTagName("keywords"); //get keyword type data
     for (int i = 0, len = keywords.length(); i < len; i++) {    //for every type of keyword
         QDomNode color = keywords.at(i).namedItem("color");     //extract color data
-        int type = keywords.at(i).attributes().namedItem("type").toText().data().toInt();   //get the type of keyword to which to apply the format
-        if (type >= lang.keywords.length()) return;             //if the type is not defined (index out of bounds) return
+        int type = keywords.at(i).attributes().namedItem("type").namedItem("#text").toText().data().toInt();   //get the type of keyword to which to apply the format
+        if (type >= lang.keywords.length()) continue;           //if the type is not defined (index out of bounds) do not implement highlighting rules
         setColor(color, lang.keywords[type].format);            //set the color
     }
 
@@ -305,7 +306,7 @@ void SyntaxHighlighter::getFormat(QDomElement& root, LanguageBlock& lang) {
     for (int i = 0, len = exp.length(); i < len; i++) {
         QDomNode color = exp.at(i).namedItem("color");
         int id = exp.at(i).attributes().namedItem("id").toText().data().toInt();
-        if (id >= lang.regexps.length()) return;
+        if (id >= lang.regexps.length()) continue;
         setColor(color, lang.regexps[id].format);
     }
 
@@ -313,7 +314,7 @@ void SyntaxHighlighter::getFormat(QDomElement& root, LanguageBlock& lang) {
     for (int i = 0, len = linexp.length(); i < len; i++) {
         QDomNode color = linexp.at(i).namedItem("color");
         int id = linexp.at(i).attributes().namedItem("id").toText().data().toInt();
-        if (id >= lang.lineExps.length()) return;
+        if (id >= lang.lineExps.length()) continue;
         setColor(color, lang.lineExps[id].format);
     }
 
