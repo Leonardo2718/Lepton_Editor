@@ -7,9 +7,10 @@
         <color> 170 0 0 </color>
     </keywords>
     <numbers> <color> orange </color> </numbers>
-    <linecomment> <color> darkGreen </color> </linecomment>
-    <blockcomment> <color> darkGreen </color> </blockcomment>
+    <linecomment> <color> 0 130 20 </color> </linecomment>
+    <blockcomment> <color> 0 130 20 </color> </blockcomment>
     <quotations> <color> darkMagenta </color> </quotations>
     <escapedchar> <color> magenta </color> </escapedchar>
-    <lineexpression id="0"> <color> 210 100 0 </color> </lineexpression>
+    <lineexpression type="0"> <color> 210 100 0 </color> </lineexpression>
+    <blockexpression type="0"> <color> orange </color> </blockexpression>
 </format>

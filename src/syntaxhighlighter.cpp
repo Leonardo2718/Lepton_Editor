@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlighter.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 15, 2014
+Last Modified: March 16, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -33,13 +33,13 @@ Usage Agreement:
 */
 
 #include "syntaxhighlighter.h"
+#include <QDebug>
 
 
 
 //~public method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* _editorDocument) : QSyntaxHighlighter(_editorDocument) {
-    //useLanguage("cplusplus.xml");
     useLanguage();
 }
 
@@ -133,8 +133,24 @@ void SyntaxHighlighter::highlightBlock(const QString& docLine){
         }
     }
     else {
-        setCurrentBlockState(DEFAULT_STATE);
+        for (int i = 0, l = lang.blockExps.length(); i < l; i++) {          //for each user defined block expression
+            if (previousBlockState() == i+2) {                                  //check if the current line is part of the expression
+                QRegularExpressionMatch expEnd = lang.blockExps.at(i).end.match(docLine);  //match a closing expressions
+                if (expEnd.hasMatch()) {                                                   //if a closing expression is found
+                    setCurrentBlockState(DEFAULT_STATE);                                        //set the current block state to default
+                    setFormat(0, expEnd.capturedEnd(0), lang.blockExps.at(i).format);           //highlight everything up to the end of the closing expression using the block comment format
+                    stdOffset = expEnd.capturedEnd(0) + 1;                                      //set the standard index offset so only the text aget the closing will be highlighted
+                }
+                else {
+                    setCurrentBlockState(i+2);                         //set the current block state to insde a block comment
+                    setFormat(0, docLine.length(), lang.blockExps.at(i).format);    //highlight the whole line using using the comment format
+                    return;                                                         //return since nothing else needs to be done
+                }
+            }
+        }
     }
+
+    setCurrentBlockState(DEFAULT_STATE);    //set current block state to default to prevent highlighting due to block expressions
 
     if ( docLine.isEmpty() ) return;    //do not apply highlighting if line is empty
 
@@ -160,6 +176,26 @@ void SyntaxHighlighter::highlightBlock(const QString& docLine){
     ######################################################################################*/
 
     for (int i = stdOffset, strLen = docLine.length(); i < strLen; i++) {               //for every character/index in the string
+
+        //match user defined expressions
+        for (int j = 0, l = lang.blockExps.length(); j < l; j++) {      //for every expression
+            const QRegularExpressionMatch expStart = lang.blockExps.at(j).start.match(docLine, i);  //look for the start expression
+            if ( !expStart.hasMatch() ) continue;                                                   //if no match is found, don't bother checking other conditions
+            const QRegularExpressionMatch expEnd = lang.blockExps.at(j).end.match(docLine, i + expStart.capturedLength() ); //look for the end expression
+            if (expStart.capturedStart(0) == i && !(lang.blockExps.at(j).start.pattern().isEmpty()) && !(lang.blockExps.at(j).end.pattern().isEmpty()) ) {
+            //if the start expression is at the current index and the start and end expresssions are not empty
+                if (expEnd.hasMatch()) {                                                //if the end expression is matched
+                    setFormat(i, expEnd.capturedEnd(0) - i, lang.blockExps.at(j).format);   //highlight to the end of the expression
+                    i = expEnd.capturedEnd(0) + 1;                                          //update the line position index
+                }
+                else {                                                                  //otherwise
+                    setCurrentBlockState(j+2);                                              //change the block state
+                    setFormat(i, strLen - i, lang.blockExps.at(j).format);                  //highlight to the end of the line
+                    return;                                                                 //no other expressions need to be checked so return
+                }
+            }
+        }
+
         const QRegularExpressionMatch quote = lang.quotations.pattern.match(docLine, i);    //match a quotation starting at the character
         const QRegularExpressionMatch lineCom = lang.lineComment.pattern.match(docLine, i);
         const QRegularExpressionMatch comStart = lang.blockComment.start.match(docLine, i);
@@ -185,6 +221,7 @@ void SyntaxHighlighter::highlightBlock(const QString& docLine){
             else {                                                              //otherwise
                 setCurrentBlockState(IN_BLOCK_COMMENT);                             //set the block state to be inside a block comment
                 setFormat(i, strLen - i, lang.blockComment.format);                 //highlight the rest of the line using the comment format
+                return;
             }
         }
         else {                                                                  //if none of the above was matched
@@ -248,7 +285,7 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
     QDomNodeList lineC = root.elementsByTagName("linecomment");         //retrieve nodes with line comment expressions
     if ( !lineC.isEmpty() ) {                                           //if a node is found
-        QString expression = lineC.at(0).firstChild().toText().data();      //get the expression
+        QString expression = lineC.at(0).namedItem("#text").toText().data();//get the expression
         expression = expression.simplified();                               //remove unnecessary white spaces
         expression = lang.lineComment.pattern.escape(expression);           //escape characters so that the expression can be identified
         expression.append("[^\\n]*");                                       //add needed components to complete the expression
@@ -257,7 +294,7 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
     QDomNodeList commentStart = root.elementsByTagName("commentstart");
     if (commentStart.length() != 0) {
-        QString expression = commentStart.at(0).firstChild().toText().data();
+        QString expression = commentStart.at(0).namedItem("#text").toText().data();
         expression = expression.simplified();
         expression = lang.blockComment.start.escape(expression);
         lang.blockComment.start.setPattern(expression);
@@ -265,7 +302,7 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
     QDomNodeList commentEnd = root.elementsByTagName("commentend");
     if (commentEnd.length() != 0) {
-        QString expression = commentEnd.at(0).firstChild().toText().data();
+        QString expression = commentEnd.at(0).namedItem("#text").toText().data();
         expression = expression.simplified();
         expression = lang.blockComment.end.escape(expression);
         lang.blockComment.end.setPattern(expression);
@@ -273,22 +310,51 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
     QDomNodeList regexps = root.elementsByTagName("expression");                //get a list of the user defined regular expressions
     for (int i = 0, len = regexps.length(); i < len; i++) {                     //for every expression
-        int id = regexps.at(i).attributes().namedItem("id").toText().data().toInt();  //get the expression id
+        int type = regexps.at(i).attributes().namedItem("type").toText().data().toInt();  //get the expression type
         QString exp = regexps.at(i).firstChild().toText().data();                   //get the expression itself
         exp = exp.simplified();
-        if (id >= lang.regexps.length()) lang.regexps.resize(id+1);                 //if the space to store the expression does not exist, resize the list to create space
-        lang.regexps[id].pattern.setPattern(exp);                                //set the pattern
-        if ( !(lang.regexps.at(id).pattern.isValid()) ) lang.regexps.remove(id);    //if the pattern is not valid, delete it
+        if (type >= lang.regexps.length()) lang.regexps.resize(type+1);                 //if the space to store the expression does not exist, resize the list to create space
+        lang.regexps[type].pattern.setPattern(exp);                                //set the pattern
+        if ( !(lang.regexps.at(type).pattern.isValid()) ) lang.regexps.remove(type);    //if the pattern is not valid, delete it
     }
 
     QDomNodeList lineexps = root.elementsByTagName("lineexpression");
     for (int i = 0, len = lineexps.length(); i < len; i++) {
-        int id = lineexps.at(i).attributes().namedItem("id").toText().data().toInt();
+        int type = lineexps.at(i).attributes().namedItem("type").toText().data().toInt();
         QString exp = lineexps.at(i).firstChild().toText().data();
         exp = exp.simplified();
-        if (id >= lang.lineExps.length()) lang.lineExps.resize(id+1);
-        lang.lineExps[id].pattern.setPattern(exp);
-        if ( !(lang.lineExps.at(id).pattern.isValid()) ) lang.lineExps.remove(id);
+        if (type >= lang.lineExps.length()) lang.lineExps.resize(type+1);
+        lang.lineExps[type].pattern.setPattern(exp);
+        if ( !(lang.lineExps.at(type).pattern.isValid()) ) lang.lineExps.remove(type);
+    }
+
+    //highlight user defined block expressions
+    QDomNodeList blockExps = root.elementsByTagName("blockexpression");
+    for (int i = 0, len = blockExps.length(); i < len; i++) {   //for every expression defined
+        int type = blockExps.at(i).attributes().namedItem("type").toText().data().toInt();//get the type of the expressions
+
+        if (type >= lang.blockExps.length()) lang.blockExps.resize(type+1); //resize the vector of expressions if needed
+
+        //get the start expression
+        QDomNode start = blockExps.at(i).namedItem("start");
+        //qDebug() << start.firstChild().toText().data();
+        if (commentStart.length() != 0) {
+            QString expression = start.namedItem("#text").toText().data();
+            expression = expression.simplified();
+            lang.blockExps[type].start.setPattern(expression);
+        }
+
+        //get the end expression
+        QDomNode end = blockExps.at(i).namedItem("end");
+        if (commentEnd.length() != 0) {
+            QString expression = end.namedItem("#text").toText().data();
+            expression = expression.simplified();
+            lang.blockExps[type].end.setPattern(expression);
+        }
+
+        //if either the start or end expression is invalid, remove the whole block expression
+        if ( !(lang.blockExps.at(type).start.isValid()) || !(lang.blockExps.at(type).start.isValid()) )
+            lang.blockExps.remove(type);
     }
 }
 
@@ -305,17 +371,25 @@ void SyntaxHighlighter::getFormat(QDomElement& root, LanguageBlock& lang) {
     QDomNodeList exp = root.elementsByTagName("expression");
     for (int i = 0, len = exp.length(); i < len; i++) {
         QDomNode color = exp.at(i).namedItem("color");
-        int id = exp.at(i).attributes().namedItem("id").toText().data().toInt();
-        if (id >= lang.regexps.length()) continue;
-        setColor(color, lang.regexps[id].format);
+        int type = exp.at(i).attributes().namedItem("type").toText().data().toInt();
+        if (type >= lang.regexps.length()) continue;
+        setColor(color, lang.regexps[type].format);
     }
 
     QDomNodeList linexp = root.elementsByTagName("lineexpression");
     for (int i = 0, len = linexp.length(); i < len; i++) {
         QDomNode color = linexp.at(i).namedItem("color");
-        int id = linexp.at(i).attributes().namedItem("id").toText().data().toInt();
-        if (id >= lang.lineExps.length()) continue;
-        setColor(color, lang.lineExps[id].format);
+        int type = linexp.at(i).attributes().namedItem("type").toText().data().toInt();
+        if (type >= lang.lineExps.length()) continue;
+        setColor(color, lang.lineExps[type].format);
+    }
+
+    QDomNodeList blockexp = root.elementsByTagName("blockexpression");
+    for (int i = 0, len = blockexp.length(); i < len; i++) {
+        QDomNode color = blockexp.at(i).namedItem("color");
+        int type = blockexp.at(i).attributes().namedItem("type").toText().data().toInt();
+        if (type >= lang.blockExps.length()) continue;
+        setColor(color, lang.blockExps[type].format);
     }
 
     QDomNode color = root.namedItem("numbers").namedItem("color");
@@ -340,8 +414,8 @@ void SyntaxHighlighter::setColor(const QDomNode& colorNode, QTextCharFormat& for
 */
     if (colorNode.isNull()) return;     //return if the no node was passed
 
-    QString colorString = colorNode.firstChild().toText().data();   //retrieve string from the colorNode
-    colorString = colorString.trimmed();                            //remove spaces at the start and end of the string
+    QString colorString = colorNode.namedItem("#text").toText().data(); //retrieve string from the colorNode
+    colorString = colorString.trimmed();                                //remove spaces at the start and end of the string
 
     //match RGB value
     QStringList colorRGB = colorString.split( QRegExp("\\s") );     //split the string

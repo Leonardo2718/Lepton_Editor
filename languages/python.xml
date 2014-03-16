@@ -39,4 +39,8 @@
     <commentstart>""</commentstart>
     <commentend>"""</commentend>
     <linecomment>#</linecomment>
+    <blockexpression type="0">
+        <start>"""</start>
+        <end>"""</end>
+    </blockexpression>
 </language>

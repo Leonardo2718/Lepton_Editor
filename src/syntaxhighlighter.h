@@ -49,13 +49,13 @@ struct Rule {
     QRegularExpression pattern; //expression to be matched
     QTextCharFormat format;     //format to apply to the expression
 };
-struct BlockHighlight {
+struct BlockRule {
 /* A struct to hold comment block data */
     QRegularExpression start;
     QRegularExpression end;
     QTextCharFormat format;
 };
-struct BlockRule {
+struct  BlockHighlight  {
 /* A struct to hold comment block data */
     QRegularExpression start;
     QRegularExpression end;
@@ -115,13 +115,13 @@ class SyntaxHighlighter : public QSyntaxHighlighter {
 
                 //single rules
                 Rule lineComment;               //@major
-                BlockHighlight blockComment;    //@major
+                BlockRule blockComment;         //@major
 
                 //rule lists
                 QVector< Rule > keywords;
                 QVector< Rule > regexps;
                 QVector< Rule > lineExps;       //@major
-                //QVector< BlockRule > blockExps; //@major
+                QVector< BlockRule > blockExps; //@major
 
                 LanguageBlock() {}
 
