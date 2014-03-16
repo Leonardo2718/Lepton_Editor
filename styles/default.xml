@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <format>
     <keywords type="0" >
-        <color> 0 0 180 </color>
-        <!--<color> #0000FF </color>-->
-        <!--<color> darkBlue </color>-->
+        <color> 0 0 200 </color>
+    </keywords>
+    <keywords type="1" >
+        <color> 170 0 0 </color>
     </keywords>
     <numbers> <color> orange </color> </numbers>
     <linecomment> <color> darkGreen </color> </linecomment>
     <blockcomment> <color> darkGreen </color> </blockcomment>
     <quotations> <color> darkMagenta </color> </quotations>
     <escapedchar> <color> magenta </color> </escapedchar>
-    <lineexpression id="0"> <color> brown </color> </lineexpression>
+    <lineexpression id="0"> <color> 210 100 0 </color> </lineexpression>
 </format>

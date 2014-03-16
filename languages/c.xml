@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="c" style="default.xml">
+<language name="C" style="default.xml">
     <keywords type="0">
-    auto break case char const continue default do double else enum extern
-    float for goto if int long register return short signed sizeof static
-    struct switch typeodef union unsigned void volatile while
+    if else switch case default break goto return for while do continue typedef sizeof NULL
+    </keywords>
+    <keywords type="1">
+    void struct union enum char short int long double float signed unsigned const static extern auto register volatile
     </keywords>
     <commentstart>/*</commentstart>
     <commentend>*/</commentend>
