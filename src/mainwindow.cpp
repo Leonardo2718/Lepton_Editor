@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 15, 2014
+Last Modified: March 16, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
+    connect(editors, SIGNAL(tabCloseRequested(int)), this, SLOT(editTabChanged()) );
 
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$$$ This file is only being used for testing purposes. $$$
