@@ -9,5 +9,5 @@
     <commentstart>/*</commentstart>
     <commentend>*/</commentend>
     <linecomment>//</linecomment>
-    <lineexpression type="0"> #include|#define|#undef|#if|#ifdef|#ifndef|#elif|#else|#endif|#error|#line|#pragma </lineexpression>
+    <lineexpression type="1"> #include|#define|#undef|#if|#ifdef|#ifndef|#elif|#else|#endif|#error|#line|#pragma </lineexpression>
 </language>

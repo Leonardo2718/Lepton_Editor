@@ -7,9 +7,9 @@
         try typedef typeid using while xor xor_eq NULLq
     </keywords>
     <keywords type="1">
-    alignas asm auto bool char char16_t char32_t class const constexpr decltype double enum
-    explicit export extern final float friend inline int long mutable noexcept override private
-    protected public register short signed static struct template thread_local typename union
-    unsigned virtual void volatile wchar_t
+        alignas asm auto bool char char16_t char32_t class const constexpr decltype double enum
+        explicit export extern final float friend inline int long mutable noexcept override private
+        protected public register short signed static struct template thread_local typename union
+        unsigned virtual void volatile wchar_t
     </keywords>
 </language>

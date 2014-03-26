@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <language name="Python" style="default.xml">
     <keywords type="0">
-    <!--and       del       from      not       while
-    as        elif      global    or        with
-    assert    else      if        pass      yield
-    break     except    import    print
-    class     exec      in        raise
-    continue  finally   is        return 
-    def       for       lambda    try
-    </keywords>-->
     and as assert break class continue def del elif
     else except exec finally for from global if import
     in is lambda not or pass print raise return try
@@ -36,10 +28,8 @@
     set setattr slice sorted staticmethod str sum super tuple type unichr
     unicode vars xrange zip
     </keywords>
-    <commentstart>""</commentstart>
-    <commentend>"""</commentend>
     <linecomment>#</linecomment>
-    <blockexpression type="0">
+    <blockexpression type="1">
         <start>"""</start>
         <end>"""</end>
     </blockexpression>
