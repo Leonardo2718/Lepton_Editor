@@ -292,7 +292,16 @@ LanguageSelectorClass::LanguageSelectorClass(QWidget *_parent) {
     if(instanceCount == 1) {            //if this is the first class instance
         QDir langDir("languages/");         //access the languages director to scan the files
         QStringList nameFilterList;         //create filter to only scan xml files
-        nameFilterList << "*.xml";          //
+        nameFilterList.append("*.xml");     //
+
+        /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+        //$ For whatever reason, this line of code causes a 'malloc(): memory corruption (fast)' $$$
+        //$ error so the above line was used instead.                                            $$$
+        //$                                                                                      $$$
+            nameFilterList << "*.xml";
+        //$                                                                                      $$$
+        //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+
         QStringList fileList = langDir.entryList(nameFilterList);//get a list of all the file names which match the filter in order to scan them
         int fileListLength = fileList.length();
 

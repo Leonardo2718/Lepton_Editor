@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlighter.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 1, 2014
+Last Modified: March 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,6 +39,7 @@ Usage Agreement:
 #include <QSyntaxHighlighter>
 #include <QDomDocument>
 #include <QFile>
+#include <QDir>
 #include <QVector>
 #include <QRegularExpression>
 #include <QString>
@@ -67,6 +68,8 @@ class SyntaxHighlighter : public QSyntaxHighlighter {
 
     public:
         explicit SyntaxHighlighter(QTextDocument* _editorDocument);
+        /* -allocate memory and initialize new object */
+
         ~SyntaxHighlighter();
 
         void useLanguage(QString languageFile = 0);
@@ -87,9 +90,6 @@ class SyntaxHighlighter : public QSyntaxHighlighter {
 
     private:
         enum blockState{ DEFAULT_STATE, IN_BLOCK_COMMENT };  //enumerated type to specify the state of a QTextBlock
-
-        //LanguageBlock language;             //main language data
-        //QVector< LanguageBlock > subBlock;  //sub language data
 
         class LanguageBlock {
         /*
@@ -134,6 +134,8 @@ class SyntaxHighlighter : public QSyntaxHighlighter {
         };
 
         QVector< LanguageBlock > language;  //list of all languages and sub-languages
+        QDir* pathToLanguageFiles;          //%%%% may need to use static member instead (save some memory space)
+        QDir* pathToStyleFiles;             //                                                                   %%%
 
         void highlightExp(const Rule& r, const QString docLine, unsigned int offset);
         /* -highlights all the occurrences of the expression 'r' in docLine */

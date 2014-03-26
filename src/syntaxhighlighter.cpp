@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlighter.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 16, 2014
+Last Modified: March 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -33,43 +33,34 @@ Usage Agreement:
 */
 
 #include "syntaxhighlighter.h"
-#include <QDebug>
 
 
 
 //~public method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* _editorDocument) : QSyntaxHighlighter(_editorDocument) {
-    useLanguage();
+/*
+-allocate memory and initialize new object
+*/
+    pathToLanguageFiles = new QDir("languages/");   //set path to directory which contains all the language files
+    pathToStyleFiles = new QDir("styles");          //set path to directory which contains all the styling files
+    useLanguage();                                  //do not use any syntax highlighting initially
 }
 
 SyntaxHighlighter::~SyntaxHighlighter(){
-    //delete language;
 }
 
 void SyntaxHighlighter::useLanguage(QString languageFile) {
-/* -loads syntax highlilghting language data from file */
-    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-    //$$$ The code following this block may cause a bug in the futur so here is $$$
-    //$$$ the code that shouldn't cause the bug in case something happens.      $$$
-    //$$$                                                                       $$$
-          language.clear();                   //lear the current data
-          language.append( LanguageBlock() ); //
-
-          if (languageFile == 0) return;      //if no file was specified return
-    //$$$                                                                       $$$
-    //$$$ I do not use this code because, at the momment, one of the features   $$$
-    //$$$ (using parent languages) cannot work with this code.  Hopfully I will $$$
-    //$$$ be able to clean this up in the future so no bug will occure.         $$$
-    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-
-    if (languageFile == 0) {
+/*
+-loads syntax highlilghting language data from file
+*/
+    if (languageFile == 0) {            //if no file name is specified
         language.clear();                   //clear the current data
         language.append( LanguageBlock() ); //
         return;
     }
 
-    QFile file(languageFile);                       //open the language data file
+    QFile file( pathToLanguageFiles->filePath(languageFile) );       //open the language data file
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) ) return;//return if file was not opened properly
     QDomDocument languageDocument("lang_file");     //create a DOM object from the data file
     bool check = languageDocument.setContent(&file);//set content of the DOM object from the language data file
@@ -79,19 +70,18 @@ void SyntaxHighlighter::useLanguage(QString languageFile) {
     QDomElement languageElement = languageDocument.documentElement();       //extract root element
     if( languageElement.nodeName() != "language" ) return;                  //verify that the root element is correct
     QString formatFile =  languageElement.attribute("style", "default.xml");//extract the name of the file which contains highlighting info
-    formatFile.prepend("styles/");                                          //add path to file name
     QString parentLanguage = languageElement.attribute("use");              //extract the file name for the parent language
-    parentLanguage.prepend("languages/");                                   //add path to file name
     useLanguage(parentLanguage);                                            //apply the parrent language
     getLanguageData(languageElement, language[0]);                          //extract and apply language data
     useStyle(formatFile);
 }
 
 void SyntaxHighlighter::useStyle(QString formatFile) {
-/* -parses the file with formating data */
-
+/*
+-parses the file with formating data
+*/
     //create DOM object
-    QFile file(formatFile);                                             //open the format data file
+    QFile file( pathToStyleFiles->filePath(formatFile) );                //open the format data file
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text ) ) return;   //return if file was not opened properly
     QDomDocument formatDoc("format_file");                              //create a DOM object from the data file
     bool check = formatDoc.setContent(&file);                           //set content of the DOM object from the language data file
@@ -310,7 +300,7 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
     QDomNodeList regexps = root.elementsByTagName("expression");                //get a list of the user defined regular expressions
     for (int i = 0, len = regexps.length(); i < len; i++) {                     //for every expression
-        int type = regexps.at(i).attributes().namedItem("type").toText().data().toInt();  //get the expression type
+        int type = regexps.at(i).attributes().namedItem("type").firstChild().toText().data().toInt();  //get the expression type
         QString exp = regexps.at(i).firstChild().toText().data();                   //get the expression itself
         exp = exp.simplified();
         if (type >= lang.regexps.length()) lang.regexps.resize(type+1);                 //if the space to store the expression does not exist, resize the list to create space
@@ -320,7 +310,7 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
     QDomNodeList lineexps = root.elementsByTagName("lineexpression");
     for (int i = 0, len = lineexps.length(); i < len; i++) {
-        int type = lineexps.at(i).attributes().namedItem("type").toText().data().toInt();
+        int type = lineexps.at(i).attributes().namedItem("type").firstChild().toText().data().toInt();
         QString exp = lineexps.at(i).firstChild().toText().data();
         exp = exp.simplified();
         if (type >= lang.lineExps.length()) lang.lineExps.resize(type+1);
@@ -331,14 +321,12 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
     //highlight user defined block expressions
     QDomNodeList blockExps = root.elementsByTagName("blockexpression");
     for (int i = 0, len = blockExps.length(); i < len; i++) {   //for every expression defined
-        int type = blockExps.at(i).attributes().namedItem("type").toText().data().toInt();//get the type of the expressions
-
+        int type = blockExps.at(i).attributes().namedItem("type").firstChild().toText().data().toInt();//get the type of the expressions
         if (type >= lang.blockExps.length()) lang.blockExps.resize(type+1); //resize the vector of expressions if needed
 
         //get the start expression
         QDomNode start = blockExps.at(i).namedItem("start");
-        //qDebug() << start.firstChild().toText().data();
-        if (commentStart.length() != 0) {
+        if ( !start.isNull() ) {
             QString expression = start.namedItem("#text").toText().data();
             expression = expression.simplified();
             lang.blockExps[type].start.setPattern(expression);
@@ -346,7 +334,7 @@ void SyntaxHighlighter::getLanguageData(QDomElement& root, LanguageBlock& lang) 
 
         //get the end expression
         QDomNode end = blockExps.at(i).namedItem("end");
-        if (commentEnd.length() != 0) {
+        if ( !end.isNull() ) {
             QString expression = end.namedItem("#text").toText().data();
             expression = expression.simplified();
             lang.blockExps[type].end.setPattern(expression);
@@ -371,7 +359,7 @@ void SyntaxHighlighter::getFormat(QDomElement& root, LanguageBlock& lang) {
     QDomNodeList exp = root.elementsByTagName("expression");
     for (int i = 0, len = exp.length(); i < len; i++) {
         QDomNode color = exp.at(i).namedItem("color");
-        int type = exp.at(i).attributes().namedItem("type").toText().data().toInt();
+        int type = exp.at(i).attributes().namedItem("type").firstChild().toText().data().toInt();
         if (type >= lang.regexps.length()) continue;
         setColor(color, lang.regexps[type].format);
     }
@@ -379,7 +367,7 @@ void SyntaxHighlighter::getFormat(QDomElement& root, LanguageBlock& lang) {
     QDomNodeList linexp = root.elementsByTagName("lineexpression");
     for (int i = 0, len = linexp.length(); i < len; i++) {
         QDomNode color = linexp.at(i).namedItem("color");
-        int type = linexp.at(i).attributes().namedItem("type").toText().data().toInt();
+        int type = linexp.at(i).attributes().namedItem("type").firstChild().toText().data().toInt();
         if (type >= lang.lineExps.length()) continue;
         setColor(color, lang.lineExps[type].format);
     }
@@ -387,7 +375,7 @@ void SyntaxHighlighter::getFormat(QDomElement& root, LanguageBlock& lang) {
     QDomNodeList blockexp = root.elementsByTagName("blockexpression");
     for (int i = 0, len = blockexp.length(); i < len; i++) {
         QDomNode color = blockexp.at(i).namedItem("color");
-        int type = blockexp.at(i).attributes().namedItem("type").toText().data().toInt();
+        int type = blockexp.at(i).attributes().namedItem("type").firstChild().toText().data().toInt();
         if (type >= lang.blockExps.length()) continue;
         setColor(color, lang.blockExps[type].format);
     }
