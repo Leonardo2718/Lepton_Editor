@@ -12,15 +12,14 @@ stable enough so its at least usable.
 
 ### Current Features
 - syntax highlighting for : 
-  - C
-  - C++
+  - C/C++
+  - Python
+  - Octave/Matlab
 
 See the other README files to add new languages and highlighting styles.
 
 ### Features to Be:
 - syntax highlighting for more languages:
-  - Python
-  - Octave/Matlab
   - Lua
   - Perl
   - Others (_See languages/README.md for documentation on how to create language files_)
@@ -33,15 +32,21 @@ See the other README files to add new languages and highlighting styles.
 - saving sessions
 - basic project manager
 
-Building
+Building and Running
 --------
 
 After having cloned the repository, you can build Lepton Editor by either opening the project
-(.pro file) in Qt Creator 3.0.1 and build it from there or you can manually build the .pro
-file using qmake 5.2.1 .
+(.pro file) in Qt Creator (version 3.0.1 or later) and build it from there or you can manually
+build the .pro file using qmake 5.2.1 or later.
+
+If the build was successful, you should be able to just run the executable.  Make sure that the
+'styles' and 'languages' directories are in the same path as the executable.  If they are not,
+Lepton should run fine but you will not have any syntax highlighting options.  I recommend
+creating a link to the two directors in the path of the executable.  This way, you can conserve
+the directory tree and not have to worry about file duplicates.
 
 Contributing
 ------------
 
-If you would like Lepton Editor to support a particular language, please consider creating and
-contributing the language file yourself.
+If you create new language/styling files, I would appreciate it if you would share those files.
+Send me a pull request so I can add them to the other files.
