@@ -62,13 +62,13 @@ class EditorTabBar : public QTabWidget
             index: the index at which to place the new tab (-1 if at the end)
         */
 
-        int save();
+        //int save();
         /* -save/write the contents of an editor tab to the corresponding inner file */
 
-        int saveAs();
+        //int saveAs();
         /* -save/write the contents of an editor tab to a new file */
 
-        int saveCopyAs();
+        //int saveCopyAs();
         /* -save/write a copy of the contents of an editor tab to a new file */
 
         Editor* current();

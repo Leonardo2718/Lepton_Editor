@@ -47,12 +47,14 @@ Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent){//
     highlighter = new SyntaxHighlighter(this->document());
     languageSelector = new LanguageSelectorClass(this);
     contentFile = new QFile(filePath);
+    saveStatus = false; //when an instance of the editor is created, no file should have been saved
 
     //connect slots to signals in 'QPlainTextEdit'
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateAreaWidth()));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightEditorLine()));
     connect(languageSelector->actionGroup, SIGNAL(triggered(QAction*)), this, SLOT(changeLanguage(QAction*)) );
+    connect(this, SIGNAL(textChanged()), this, SLOT(markNotSaved()) );
 
     //setup editing area
     updateAreaWidth();      //set line number area
@@ -127,19 +129,6 @@ void Editor::lineNumberAreaPaintEvent(QPaintEvent *event) {
     }
 }
 
-
-/*const QString& Editor::getInnerFileName() const {
-/* -return the name of the inner text file *
-    return innerFileName;
-}
-
-
-const QString& Editor::getInnerFilePath() const {
-/* -return the path to the inner text file *
-    return innerFilePath;
-}*/
-
-
 int Editor::loadFile(QString filePath) {
 /*
 -open a file and set the contents of the file as the inner text
@@ -149,25 +138,6 @@ int Editor::loadFile(QString filePath) {
     - '-1' if the file could not be opened for an unknown reason
     - '0' if the file was successfully loaded
 */
-    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-    //$ This is the old form of the code                                                                   $$
-    //$                                                                                                    $$
-        QFile file(filePath);
-        if ( !file.open(QIODevice::ReadWrite|QIODevice::ReadOnly)) {    //if the file could not be opened
-            innerFilePath.clear();                                          //set the path to blank
-            innerFileName = "Untitled";                                     //set the file name to default
-            return 1;                                                       //return with an error
-        }
-
-        innerFilePath = filePath;                                   //store the path to the file
-        innerFileName = filePath.split( QRegExp("/|\\\\") ).last(); //retrieve and store the file name
-
-        QTextStream in(&file);          //create a text stream to read the file as a string
-        setPlainText( in.readAll() );   //read the file
-        file.close();                   //close the file
-    //$                                                                                                    $$
-    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-
     if ( filePath.isEmpty() ) return -3;    //if no file is specified, return an error
 
     contentFile->setFileName(filePath);     //select the file
@@ -177,6 +147,7 @@ int Editor::loadFile(QString filePath) {
         QTextStream text(contentFile);                                          //create a text stream to read the file as a string
         setPlainText( text.readAll() );                                         //read the file
         contentFile->close();                                                   //close the file
+        markSaved();                                                            //since the files was just opened there is no need to save anything
         return 0;                                                               //return with no error
     }
 
@@ -191,24 +162,6 @@ int Editor::writeToFile(QFile* file) {
     - '-1' if a writing error occured
     -the number of bytes writen if the write was successful
 */
-    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-    //$ This is the old version of the code                                                   $$
-        if ( innerFileName.at(0) == '*' )   //if the first character is an asterisk
-            innerFileName.remove(0, 1);         //remove it
-
-        if ( filePath.isEmpty() )           //if no file is specified, use internal file name
-            filePath = innerFilePath;
-
-        QFile file(filePath) ;                  //open the file
-        if ( !file.open(QIODevice::ReadWrite|QIODevice::WriteOnly) ) return 1;     //if the file could not be opened, return an error
-
-        file.resize( toPlainText().size() );    //resize the file to the size of the new data
-        file.write( toPlainText().toUtf8() );   //write inner text to the file
-        file.close();
-
-        return file.WriteError;                 //return any errors
-    //$                                                                                       $$
-    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
     if ( !file->exists() ) return -2;                                   //if the file does not exist, return an error
     if ( file->open(QIODevice::ReadWrite | QIODevice::WriteOnly) ) {    //if the file can be successfully opened
         file->resize( toPlainText().size() );                               //resize the file to the size of the new data
@@ -216,11 +169,13 @@ int Editor::writeToFile(QFile* file) {
         file->close();
         return err;                                                         //return error status
     }
+    return -1;
 }
 
 int Editor::saveChanges() {
 /* -save changes made to the file */
     int err = writeToFile(contentFile); //write changes
+    if (err >= 0) markSaved();                          //if the save was successful, mark the changes as saved
     return err;                         //return error status
 }
 
@@ -230,26 +185,29 @@ int Editor::saveChangesTo(QFile* file) {
     if ( contentFile->isOpen() ) contentFile->close();  //make sure that the previous file is closed
     contentFile = file;                                 //select the new file
     int err = writeToFile(contentFile);                 //write to the file
+    if (err >= 0) markSaved();                          //if the save was successful, mark the changes as saved
     return err;                                         //return error status
 }
 
 int Editor::saveCopyOfChanges(QFile* file) {
-/* -save a copy of the changes to a different file (Save Copy As) */
-    if ( !file->exists() ) return -2;    //check if the specified file exists
+/*
+-save a copy of the changes to a different file (Save Copy As)
+-Note that changes are not marked as saved because only a copy of the file with the changes was saved
+ but not the file itself
+*/
+    if ( !file->exists() ) return -2;   //check if the specified file exists
     int err = writeToFile(file);        //write to the file
     return err;                         //return error status
 }
 
-/*int Editor::writeToNewFile(QString filePath) {
-/* -save editor text to a new file *
-    innerFilePath = filePath;
-    innerFileName = filePath.split( QRegExp("/|\\\\") ).last();
-    return 0;//writeToFile();
-}*/
-
 QString Editor::getFileName() {
 /* -returns the name and path to the file being edited */
     return contentFile->fileName();
+}
+
+bool Editor::wasFileSaved() {
+/* -returns whether the changes have been saved */
+    return saveStatus;
 }
 
 
@@ -330,15 +288,19 @@ void Editor::changeLanguage(QAction* a) {
     highlighter->rehighlight();                             //rehighlight the document
 }
 
-void Editor::markUnsaved() {
-/* -adds an asterisk (*) to the start of the file name if inner text is changed and not yet saved */
-    /*if (innerFileName.at(0) != '*')     //if there is no asterisk yet
-        innerFileName.prepend('*');         //add the asterisk
-
-    int i = parentTab->indexOf(this);   //retrieve index of the tab coresponding to this object
-    parentTab->setTabText(i, innerFileName);*/
+void Editor::markSaved() {
+/* -sets variable 'saveStatus' to true and emits signal of the change */
+    if (saveStatus == true) return;     //no need to do anything if the save status has not changed
+    saveStatus = true;                  //change state
+    emit saveStatusChanged(saveStatus); //emit signal to notify other objects of the chage
 }
 
+void Editor::markNotSaved() {
+/* -sets variable 'saveStatus' to false and emits signal of the change */
+    if (saveStatus == false) return;    //no need to do anything if the save status has not changed
+    saveStatus = false;                 //change state
+    emit saveStatusChanged(saveStatus); //emit signal to notify other objects of the chage
+}
 
 
 //~'LanguageSelectorClass' class implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

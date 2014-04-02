@@ -108,9 +108,16 @@ class Editor : public QPlainTextEdit {
         QString getFileName();
         /* -returns the name and path to the file being edited */
 
+        bool wasFileSaved();
+        /* -returns whether the changes have been saved */
+
     public slots:
-        void markUnsaved();
+        //void markUnsaved();
         /* -adds an asterisk (*) to the start of the file name if inner text is changed and not yet saved */
+
+    signals:
+        void saveStatusChanged(bool saveStatus);
+        /*  -emited when the file is changed and when changes are saved */
 
     protected:
         void resizeEvent(QResizeEvent *event);
@@ -129,6 +136,12 @@ class Editor : public QPlainTextEdit {
         void changeLanguage(QAction* a);
         /* -change syntax highlighting language */
 
+        void markSaved();
+        /* -sets variable 'saveStatus' to true and emits signal of the change */
+
+        void markNotSaved();
+        /* -sets variable 'saveStatus' to false and emits signal of the change */
+
     private:
         QTabWidget* parentTab;  //constant pointer to the parrent widget
         SyntaxHighlighter* highlighter; //highlighter for current document
@@ -139,6 +152,8 @@ class Editor : public QPlainTextEdit {
         //QString innerFilePath;  //holds the path to the file opened (null if no file is opened)
 
         QFile* contentFile;     //holds the file which is being edited
+
+        bool saveStatus;    //if false then changes have not been saved, true otherwise
 };
 
 

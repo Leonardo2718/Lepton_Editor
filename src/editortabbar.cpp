@@ -87,27 +87,27 @@ int EditorTabBar::addTab(int index) {
     return i;                   //return the index of the tab
 }
 
-int EditorTabBar::save() {
-/* -save/write the contents of an editor tab to a file */
-    /*if ( current()->getInnerFilePath().isEmpty() )
+/*int EditorTabBar::save() {
+/* -save/write the contents of an editor tab to a file *
+    if ( current()->getInnerFilePath().isEmpty() )
         saveAs();
-    return current()->writeToFile();*/
-}
+    return current()->writeToFile();
+}*/
 
-int EditorTabBar::saveAs() {
-/* -save/write the contents of an editor tab to a new file */
-    /*QString filePath = QFileDialog::getSaveFileName(this, tr("Save As") );
+/*int EditorTabBar::saveAs() {
+/* -save/write the contents of an editor tab to a new file
+   *QString filePath = QFileDialog::getSaveFileName(this, tr("Save As") );
     if(filePath.isEmpty()) return 0;
     int err = current()->writeToNewFile(filePath);
     setTabText( currentIndex(), current()->getInnerFileName() );
-    return err;*/
-}
+    return err;
+}*/
 
-int EditorTabBar::saveCopyAs() {
-/* -save/write a copy of the contents of an editor tab to a new file */
-    /*QString fileName = QFileDialog::getSaveFileName(this, tr("Save As") );
-    return current()->writeToFile(fileName);*/
-}
+/*int EditorTabBar::saveCopyAs() {
+/* -save/write a copy of the contents of an editor tab to a new file *
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As") );
+    return current()->writeToFile(fileName);
+}*/
 
 Editor* EditorTabBar::current(){
 /* -access current tab object */
