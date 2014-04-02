@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.h
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: March 16, 2014
+Last Modified: April 2, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -62,15 +62,6 @@ class EditorTabBar : public QTabWidget
             index: the index at which to place the new tab (-1 if at the end)
         */
 
-        //int save();
-        /* -save/write the contents of an editor tab to the corresponding inner file */
-
-        //int saveAs();
-        /* -save/write the contents of an editor tab to a new file */
-
-        //int saveCopyAs();
-        /* -save/write a copy of the contents of an editor tab to a new file */
-
         Editor* current();
         /* -access current tab object */
 
@@ -80,9 +71,6 @@ class EditorTabBar : public QTabWidget
     private slots:
         void close(int index);
         /* -close tab of index 'index' */
-
-    private:
-
 };
 
 #endif // EDITORTABBAR_H

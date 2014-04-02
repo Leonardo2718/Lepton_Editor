@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.cpp
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: March 16, 2014
+Last Modified: April 2, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -86,28 +86,6 @@ int EditorTabBar::addTab(int index) {
     this->setCurrentIndex(i);
     return i;                   //return the index of the tab
 }
-
-/*int EditorTabBar::save() {
-/* -save/write the contents of an editor tab to a file *
-    if ( current()->getInnerFilePath().isEmpty() )
-        saveAs();
-    return current()->writeToFile();
-}*/
-
-/*int EditorTabBar::saveAs() {
-/* -save/write the contents of an editor tab to a new file
-   *QString filePath = QFileDialog::getSaveFileName(this, tr("Save As") );
-    if(filePath.isEmpty()) return 0;
-    int err = current()->writeToNewFile(filePath);
-    setTabText( currentIndex(), current()->getInnerFileName() );
-    return err;
-}*/
-
-/*int EditorTabBar::saveCopyAs() {
-/* -save/write a copy of the contents of an editor tab to a new file *
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As") );
-    return current()->writeToFile(fileName);
-}*/
 
 Editor* EditorTabBar::current(){
 /* -access current tab object */

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 16, 2014
+Last Modified: April 2, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -34,7 +34,6 @@ Usage Agreement:
 //include necessary files and libraries
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QDebug>
 
 
 
@@ -61,12 +60,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(tabCloseRequested(int)), this, SLOT(editTabChanged()) );
-
-    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-    //$$$ This file is only being used for testing purposes. $$$
-          openFile("mainwindow.cpp");
-    //$$$                                                    $$$
-    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 }
 
 MainWindow::~MainWindow() {
@@ -99,7 +92,6 @@ void MainWindow::on_actionNew_triggered() {
 
 void MainWindow::on_actionSave_triggered(){
 /* -save content of tab to corresponding file */
-    //editors->save();
     if ( editors->current()->getFileName().isEmpty() ) {    //if no file is being edited
         on_actionSave_As_triggered();                           //perform a 'save as' instead of a 'save'
         return;                                                 //
@@ -120,7 +112,6 @@ void MainWindow::on_actionSave_As_triggered() {
 
 void MainWindow::on_actionSave_Copy_As_triggered(){
 /* -save a copy of the content in the tab to a new file */
-    //editors->saveCopyAs();
     QString filePath = QFileDialog::getSaveFileName(this, tr("Save Copy As") ); //get a new file name
     if ( filePath.isEmpty() ) return;                                           //check if file name was specified
     QFile* file = new QFile(filePath);                                          //open the new file

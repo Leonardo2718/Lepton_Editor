@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editor.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 15, 2014
+Last Modified: April 2, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -62,14 +62,6 @@ Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent){//
     setLineWrapMode(QPlainTextEdit::NoWrap);    //do not wrap text
     setFont( QFont("Monospace", 9) );           //use an appropriate font
     setTabStopWidth( fontMetrics().width(QLatin1Char(' '))*4);  //set tab width to 4 spaces
-
-    /*if (filePath == 0) {        //if no file is specified
-        innerFileName = "Untitled"; //use the defualt name
-        innerFilePath.clear();      //clears the file path
-    }
-    else
-        loadFile(filePath);
-    */
     if ( !filePath.isEmpty() ) loadFile(filePath);  //if a file path is specified, open the file
 }
 
@@ -326,14 +318,6 @@ LanguageSelectorClass::LanguageSelectorClass(QWidget *_parent) {
         QStringList nameFilterList;         //create filter to only scan xml files
         nameFilterList.append("*.xml");     //
 
-        /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-        //$ For whatever reason, this line of code causes a 'malloc(): memory corruption (fast)' $$$
-        //$ error so the above line was used instead.                                            $$$
-        //$                                                                                      $$$
-            nameFilterList << "*.xml";
-        //$                                                                                      $$$
-        //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
-
         QStringList fileList = langDir.entryList(nameFilterList);//get a list of all the file names which match the filter in order to scan them
         int fileListLength = fileList.length();
 
@@ -373,9 +357,9 @@ LanguageSelectorClass::LanguageSelectorClass(QWidget *_parent) {
     //create other actions for each language file
     for (int i = 1, l = langInfo.length(); i <= l; i++) {
         actionList[i] = new QAction(langInfo[i-1].languageName, languageMenu);  //create and add menu action from on extracted info
-        actionList[i]->setCheckable( 1 );                       //
-        actionGroup->addAction(actionList[i]);                  //
-        languageMenu->addAction(actionList[i]);                 //
+        actionList[i]->setCheckable( 1 );                                       //
+        actionGroup->addAction(actionList[i]);                                  //
+        languageMenu->addAction(actionList[i]);                                 //
     }
 }
 

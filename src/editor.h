@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editor.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 15, 2014
+Last Modified: April 2, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -68,12 +68,6 @@ class Editor : public QPlainTextEdit {
 
         void lineNumberAreaPaintEvent(QPaintEvent *event);
 
-        //const QString& getInnerFileName() const;
-        /* -return the name of the inner text file */
-
-        //const QString& getInnerFilePath() const;
-        /* -return the path to the inner text file */
-
         int loadFile(QString filePath);
         /*
         -open a file and set the contents of the file as the inner text
@@ -111,10 +105,6 @@ class Editor : public QPlainTextEdit {
         bool wasFileSaved();
         /* -returns whether the changes have been saved */
 
-    public slots:
-        //void markUnsaved();
-        /* -adds an asterisk (*) to the start of the file name if inner text is changed and not yet saved */
-
     signals:
         void saveStatusChanged(bool saveStatus);
         /*  -emited when the file is changed and when changes are saved */
@@ -147,9 +137,6 @@ class Editor : public QPlainTextEdit {
         SyntaxHighlighter* highlighter; //highlighter for current document
 
         LineNumberArea* numArea;//pointer to the area which will be painted with the line numbers
-
-        //QString innerFileName;  //holds the name of the file opened in the editor instance ("Untitled" if no file is opened)
-        //QString innerFilePath;  //holds the path to the file opened (null if no file is opened)
 
         QFile* contentFile;     //holds the file which is being edited
 

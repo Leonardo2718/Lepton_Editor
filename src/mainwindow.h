@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 16, 2014
+Last Modified: April 2, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -52,7 +52,6 @@ class MainWindow : public QMainWindow {
         /* -class constructor builds the main window */
 
         ~MainWindow();
-    //SyntaxHighlighter highlighter;
 
     private slots:
         void on_actionOpen_triggered();
