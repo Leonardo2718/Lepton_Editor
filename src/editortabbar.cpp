@@ -70,58 +70,43 @@ int EditorTabBar::addTab(int index) {
 -parameters:
     index: the index at which to place the new tab (-1 if at the end)
 */
+    int i = 0;                                  //store the index of the new tab
+    int n = tabs.size() + 1;                    //get the new number tabs created
     if ( index < 0) {                           //if a new tab is to be appended to the end
         tabs.append( new Editor(this) );            //create the new tab
-        int s = tabs.size();                        //get the new number of open tabs
-        QTabWidget::addTab(tabs.at(s-1), tabs.at(s-1)->getInnerFileName() );        //add the new tab
-        return s;                                   //return the index of the tab
+        //i = QTabWidget::addTab(tabs.at(n-1), tabs.at(n-1)->getInnerFileName() );        //add the new tab
+        i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );        //add the new tab
     }
     else {
         tabs.insert(index, new Editor(this) );
-        int s = tabs.size();
-        QTabWidget::insertTab(index, tabs.at(s-1), tabs.at(s-1)->getInnerFileName() );
-        return s;
-    }
-}
-
-int EditorTabBar::openFile(QString filePath) {
-/* -open a file in an editor tab */
-    int err = 0;
-
-    if ( tabs.size() == 1 && current()->toPlainText() == "" ) { //if there is only one tab and it does not contain anything
-        int i = currentIndex();                                     //get the index of the current tab
-        err =  current()->loadFile( filePath );                     //load the file into the editor
-        setTabText(i, current()->getInnerFileName() );              //set the lable of the tab
-    }
-    else {                                                      //otherwise
-        addTab();                                                   //create a new tab/editor
-        err =  tabs.last()->loadFile(filePath);                     //load the file into the editor
-        setTabText(tabs.size()-1, tabs.last()->getInnerFileName() );//set the lable of the tab
+        //i = QTabWidget::insertTab(index, tabs.at(n-1), tabs.at(n-1)->getInnerFileName() );
+        i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );
     }
 
-    return err;
+    this->setCurrentIndex(i);
+    return i;                   //return the index of the tab
 }
 
 int EditorTabBar::save() {
 /* -save/write the contents of an editor tab to a file */
-    if ( current()->getInnerFilePath().isEmpty() )
+    /*if ( current()->getInnerFilePath().isEmpty() )
         saveAs();
-    return current()->writeToFile();
+    return current()->writeToFile();*/
 }
 
 int EditorTabBar::saveAs() {
 /* -save/write the contents of an editor tab to a new file */
-    QString filePath = QFileDialog::getSaveFileName(this, tr("Save As") );
+    /*QString filePath = QFileDialog::getSaveFileName(this, tr("Save As") );
     if(filePath.isEmpty()) return 0;
     int err = current()->writeToNewFile(filePath);
     setTabText( currentIndex(), current()->getInnerFileName() );
-    return err;
+    return err;*/
 }
 
 int EditorTabBar::saveCopyAs() {
 /* -save/write a copy of the contents of an editor tab to a new file */
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As") );
-    return current()->writeToFile(fileName);
+    /*QString fileName = QFileDialog::getSaveFileName(this, tr("Save As") );
+    return current()->writeToFile(fileName);*/
 }
 
 Editor* EditorTabBar::current(){

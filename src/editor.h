@@ -68,23 +68,45 @@ class Editor : public QPlainTextEdit {
 
         void lineNumberAreaPaintEvent(QPaintEvent *event);
 
-        const QString& getInnerFileName() const;
+        //const QString& getInnerFileName() const;
         /* -return the name of the inner text file */
 
-        const QString& getInnerFilePath() const;
+        //const QString& getInnerFilePath() const;
         /* -return the path to the inner text file */
 
         int loadFile(QString filePath);
         /*
-        -open a file and set the contents of the file as the inner tex
-        -returns 0 if file was opened successfully or 1 if the file could not be opened
+        -open a file and set the contents of the file as the inner text
+        -returns:
+            - '-3' if no file was specified
+            - '-2' if the file specified does not exist
+            - '-1' if the file could not be opened for an unknown reason
+            - '0' if the file was successfully loaded
         */
 
-        int writeToFile(QString filePath = 0);
-        /* -save editor text to a file */
+        int writeToFile(QFile* file);
+        /*
+        -write edited text to a file
+        -returns:
+            - '-2' if the specified file does not exist
+            - '-1' if a writing error occured
+            -the number of bytes writen if the write was successful
+        */
 
-        int writeToNewFile(QString filePath = 0);
+        int saveChanges();
+        /* -save changes done to the file */
+
+        int saveChangesTo(QFile* file);
+        /* -save changes to a different file and load the file (Save As) */
+
+        int saveCopyOfChanges(QFile* file);
+        /* -save a copy of the changes to a different file (Save Copy As) */
+
+        //int writeToNewFile(QString filePath = 0);
         /* -save editor text to a new file */
+
+        QString getFileName();
+        /* -returns the name and path to the file being edited */
 
     public slots:
         void markUnsaved();
@@ -111,10 +133,12 @@ class Editor : public QPlainTextEdit {
         QTabWidget* parentTab;  //constant pointer to the parrent widget
         SyntaxHighlighter* highlighter; //highlighter for current document
 
-        LineNumberArea *numArea;//pointer to the area which will be painted with the line numbers
+        LineNumberArea* numArea;//pointer to the area which will be painted with the line numbers
 
-        QString innerFileName;  //holds the name of the file opened in the editor instance ("Untitled" if no file is opened)
-        QString innerFilePath;  //holds the path to the file opened (null if no file is opened)
+        //QString innerFileName;  //holds the name of the file opened in the editor instance ("Untitled" if no file is opened)
+        //QString innerFilePath;  //holds the path to the file opened (null if no file is opened)
+
+        QFile* contentFile;     //holds the file which is being edited
 };
 
 

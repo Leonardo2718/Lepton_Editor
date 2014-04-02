@@ -62,9 +62,6 @@ class EditorTabBar : public QTabWidget
             index: the index at which to place the new tab (-1 if at the end)
         */
 
-        int openFile(QString filePath);
-        /* -open a file in an editor tab */
-
         int save();
         /* -save/write the contents of an editor tab to the corresponding inner file */
 

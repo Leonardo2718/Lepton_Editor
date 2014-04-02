@@ -46,6 +46,7 @@ Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent){//
     numArea = new LineNumberArea(this);
     highlighter = new SyntaxHighlighter(this->document());
     languageSelector = new LanguageSelectorClass(this);
+    contentFile = new QFile(filePath);
 
     //connect slots to signals in 'QPlainTextEdit'
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateAreaWidth()));
@@ -58,18 +59,23 @@ Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent){//
     highlightEditorLine();  //set editor line highlighting
     setLineWrapMode(QPlainTextEdit::NoWrap);    //do not wrap text
     setFont( QFont("Monospace", 9) );           //use an appropriate font
+    setTabStopWidth( fontMetrics().width(QLatin1Char(' '))*4);  //set tab width to 4 spaces
 
-    if (filePath == 0) {        //if no file is specified
+    /*if (filePath == 0) {        //if no file is specified
         innerFileName = "Untitled"; //use the defualt name
         innerFilePath.clear();      //clears the file path
     }
     else
         loadFile(filePath);
+    */
+    if ( !filePath.isEmpty() ) loadFile(filePath);  //if a file path is specified, open the file
 }
 
 Editor::~Editor() {
 /* -deletes allocated memory */
     delete numArea;
+    delete highlighter;
+    delete contentFile;
     delete languageSelector;
 }
 
@@ -122,64 +128,128 @@ void Editor::lineNumberAreaPaintEvent(QPaintEvent *event) {
 }
 
 
-const QString& Editor::getInnerFileName() const {
-/* -return the name of the inner text file */
+/*const QString& Editor::getInnerFileName() const {
+/* -return the name of the inner text file *
     return innerFileName;
 }
 
 
 const QString& Editor::getInnerFilePath() const {
-/* -return the path to the inner text file */
+/* -return the path to the inner text file *
     return innerFilePath;
-}
+}*/
 
 
 int Editor::loadFile(QString filePath) {
 /*
--open a file and set the contents of the file as the inner tex
--returns 0 if file was opened successfully or 1 if the file could not be opened
+-open a file and set the contents of the file as the inner text
+-returns:
+    - '-3' if no file was specified
+    - '-2' if the file specified does not exist
+    - '-1' if the file could not be opened for an unknown reason
+    - '0' if the file was successfully loaded
 */
-    QFile file(filePath);
-    if ( !file.open(QIODevice::ReadWrite|QIODevice::ReadOnly)) {    //if the file could not be opened
-        innerFilePath.clear();                                          //set the path to blank
-        innerFileName = "Untitled";                                     //set the file name to default
-        return 1;                                                       //return with an error
+    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //$ This is the old form of the code                                                                   $$
+    //$                                                                                                    $$
+        QFile file(filePath);
+        if ( !file.open(QIODevice::ReadWrite|QIODevice::ReadOnly)) {    //if the file could not be opened
+            innerFilePath.clear();                                          //set the path to blank
+            innerFileName = "Untitled";                                     //set the file name to default
+            return 1;                                                       //return with an error
+        }
+
+        innerFilePath = filePath;                                   //store the path to the file
+        innerFileName = filePath.split( QRegExp("/|\\\\") ).last(); //retrieve and store the file name
+
+        QTextStream in(&file);          //create a text stream to read the file as a string
+        setPlainText( in.readAll() );   //read the file
+        file.close();                   //close the file
+    //$                                                                                                    $$
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+
+    if ( filePath.isEmpty() ) return -3;    //if no file is specified, return an error
+
+    contentFile->setFileName(filePath);     //select the file
+    if ( !contentFile->exists() ) return -2;//if the file does not exist, return an error
+
+    if ( contentFile->open(QIODevice::ReadWrite | QIODevice::ReadOnly) ) {  //if the file can be successfully opened
+        QTextStream text(contentFile);                                          //create a text stream to read the file as a string
+        setPlainText( text.readAll() );                                         //read the file
+        contentFile->close();                                                   //close the file
+        return 0;                                                               //return with no error
     }
 
-    innerFilePath = filePath;                                   //store the path to the file
-    innerFileName = filePath.split( QRegExp("/|\\\\") ).last(); //retrieve and store the file name
-
-    QTextStream in(&file);          //create a text stream to read the file as a string
-    setPlainText( in.readAll() );   //read the file
-    file.close();                   //close the file
-
-    return 0;                       //return with no error
+    return -1;   //return unknown error if nothing could be done with the file
 }
 
-int Editor::writeToFile(QString filePath) {
-/* -save editor text to a file */
-    if ( innerFileName.at(0) == '*' )   //if the first character is an asterisk
-        innerFileName.remove(0, 1);         //remove it
+int Editor::writeToFile(QFile* file) {
+/*
+-write edited text to a file
+-returns:
+    - '-2' if the specified file does not exist
+    - '-1' if a writing error occured
+    -the number of bytes writen if the write was successful
+*/
+    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //$ This is the old version of the code                                                   $$
+        if ( innerFileName.at(0) == '*' )   //if the first character is an asterisk
+            innerFileName.remove(0, 1);         //remove it
 
-    if ( filePath.isEmpty() ) {     //if no file name is specified, use internal file name
-        filePath = innerFilePath;
+        if ( filePath.isEmpty() )           //if no file is specified, use internal file name
+            filePath = innerFilePath;
+
+        QFile file(filePath) ;                  //open the file
+        if ( !file.open(QIODevice::ReadWrite|QIODevice::WriteOnly) ) return 1;     //if the file could not be opened, return an error
+
+        file.resize( toPlainText().size() );    //resize the file to the size of the new data
+        file.write( toPlainText().toUtf8() );   //write inner text to the file
+        file.close();
+
+        return file.WriteError;                 //return any errors
+    //$                                                                                       $$
+    //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+    if ( !file->exists() ) return -2;                                   //if the file does not exist, return an error
+    if ( file->open(QIODevice::ReadWrite | QIODevice::WriteOnly) ) {    //if the file can be successfully opened
+        file->resize( toPlainText().size() );                               //resize the file to the size of the new data
+        int err = file->write( toPlainText().toUtf8() );                    //write inner text to the file
+        file->close();
+        return err;                                                         //return error status
     }
-
-    QFile file(filePath) ;                  //open the file
-    if ( !file.open(QIODevice::ReadWrite|QIODevice::WriteOnly) ) return 1;     //if the file could not be opened, return an error
-
-    file.resize( toPlainText().size() );    //resize the file to the size of the new data
-    file.write( toPlainText().toUtf8() );   //write inner text to the file
-    file.close();
-
-    return file.WriteError;                 //return any errors
 }
 
-int Editor::writeToNewFile(QString filePath) {
-/* -save editor text to a new file */
+int Editor::saveChanges() {
+/* -save changes made to the file */
+    int err = writeToFile(contentFile); //write changes
+    return err;                         //return error status
+}
+
+int Editor::saveChangesTo(QFile* file) {
+/* -save changes to a different file and load the file (Save As) */
+    if ( !file->exists() ) return -2;                    //check if the specified file exists
+    if ( contentFile->isOpen() ) contentFile->close();  //make sure that the previous file is closed
+    contentFile = file;                                 //select the new file
+    int err = writeToFile(contentFile);                 //write to the file
+    return err;                                         //return error status
+}
+
+int Editor::saveCopyOfChanges(QFile* file) {
+/* -save a copy of the changes to a different file (Save Copy As) */
+    if ( !file->exists() ) return -2;    //check if the specified file exists
+    int err = writeToFile(file);        //write to the file
+    return err;                         //return error status
+}
+
+/*int Editor::writeToNewFile(QString filePath) {
+/* -save editor text to a new file *
     innerFilePath = filePath;
     innerFileName = filePath.split( QRegExp("/|\\\\") ).last();
-    return writeToFile();
+    return 0;//writeToFile();
+}*/
+
+QString Editor::getFileName() {
+/* -returns the name and path to the file being edited */
+    return contentFile->fileName();
 }
 
 
@@ -262,11 +332,11 @@ void Editor::changeLanguage(QAction* a) {
 
 void Editor::markUnsaved() {
 /* -adds an asterisk (*) to the start of the file name if inner text is changed and not yet saved */
-    if (innerFileName.at(0) != '*')     //if there is no asterisk yet
+    /*if (innerFileName.at(0) != '*')     //if there is no asterisk yet
         innerFileName.prepend('*');         //add the asterisk
 
     int i = parentTab->indexOf(this);   //retrieve index of the tab coresponding to this object
-    parentTab->setTabText(i, innerFileName);
+    parentTab->setTabText(i, innerFileName);*/
 }
 
 

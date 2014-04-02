@@ -84,9 +84,6 @@ class MainWindow : public QMainWindow {
         EditorTabBar* editors;
         QAction* langSelector;  //temporary pointer to language selector menu
 
-        void openFile(QString fileName);
-        /* -open a file in the current tab */
-
         void setLanguageSelectorMenu();
         /* -set the language selector menu from editor object */
 };
