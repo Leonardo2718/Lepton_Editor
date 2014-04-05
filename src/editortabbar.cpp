@@ -84,6 +84,7 @@ int EditorTabBar::addTab(int index) {
     }
 
     this->setCurrentIndex(i);
+    connect(current(), SIGNAL(updateLabel(QString)), this, SLOT(setLabel(QString)) );
     return i;                   //return the index of the tab
 }
 
@@ -101,11 +102,17 @@ Editor* EditorTabBar::operator[](const int index) {
 
 //~piravte slot implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+void EditorTabBar::setLabel(const QString& label) {
+/* sets current tab label */
+    setTabText( currentIndex(), label);
+}
+
 void EditorTabBar::close(int index){
 /*
 -close tab of index 'index'
 */
     QTabWidget::removeTab(index);
+    disconnect(tabs.at(index), SIGNAL(updateLabel(QString)), this, SLOT(setLabel(QString)) );
     delete tabs.at(index);
     tabs.remove(index);
     if (tabs.size() < 1) {

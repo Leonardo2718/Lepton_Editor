@@ -284,14 +284,16 @@ void Editor::markSaved() {
 /* -sets variable 'saveStatus' to true and emits signal of the change */
     if (saveStatus == true) return;     //no need to do anything if the save status has not changed
     saveStatus = true;                  //change state
-    emit saveStatusChanged(saveStatus); //emit signal to notify other objects of the chage
+    //emit saveStatusChanged(saveStatus); //emit signal to notify other objects of the chage
+    emit updateLabel( contentFile->fileName().split("/").last() );
 }
 
 void Editor::markNotSaved() {
 /* -sets variable 'saveStatus' to false and emits signal of the change */
     if (saveStatus == false) return;    //no need to do anything if the save status has not changed
     saveStatus = false;                 //change state
-    emit saveStatusChanged(saveStatus); //emit signal to notify other objects of the chage
+    //emit saveStatusChanged(saveStatus); //emit signal to notify other objects of the chage
+    emit updateLabel( contentFile->fileName().split("/").last().prepend('*') );
 }
 
 

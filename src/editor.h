@@ -106,8 +106,8 @@ class Editor : public QPlainTextEdit {
         /* -returns whether the changes have been saved */
 
     signals:
-        void saveStatusChanged(bool saveStatus);
-        /*  -emited when the file is changed and when changes are saved */
+        void updateLabel(const QString& label);
+        /*  -emited when the file is changed and the tab label must be updated */
 
     protected:
         void resizeEvent(QResizeEvent *event);

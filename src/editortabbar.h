@@ -69,6 +69,9 @@ class EditorTabBar : public QTabWidget
         /* -directly access instances (tabs) of editor */
 
     private slots:
+        void setLabel(const QString& label);
+        /* sets current tab label */
+
         void close(int index);
         /* -close tab of index 'index' */
 };
