@@ -33,6 +33,7 @@ Usage Agreement:
 
 //include necessary files and libraries
 #include "editortabbar.h"
+#include <QDebug>
 
 
 
@@ -42,7 +43,7 @@ EditorTabBar::EditorTabBar(QWidget *parent) : QTabWidget(parent) {
 /*
 -configure the widget and connect signals to slots
 */
-    connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(close(int)) );
+    connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeEditor(int)) );
 
     setTabsClosable(true);
     setMovable(true);
@@ -52,13 +53,7 @@ EditorTabBar::EditorTabBar(QWidget *parent) : QTabWidget(parent) {
 EditorTabBar::~EditorTabBar() {
 /* -dealocates (deletes) all the editor tabs stored in 'tabs' */
     for (int i = 0, s = tabs.size(); i < s; i++) {
-
-        /*###############################################################################
-        ## Since 'SyntaxHighlighter' is instantiated using an 'Editor' object, objects ##
-        ## of this type must be destructed first.                                      ##
-        ###############################################################################*/
-
-        //delete highlighters.at(i);
+        //closeEditor(i);    //close tab before deleting the object, %% this may be removed once I find a way to save sessions %%
         delete tabs.at(i);
     }
 }
@@ -93,24 +88,66 @@ Editor* EditorTabBar::current(){
     return tabs[currentIndex()];
 }
 
-Editor* EditorTabBar::operator[](const int index) {
-/* -directly access instances (tabs) of editor */
-    return tabs[index];
+Editor* EditorTabBar::getEditor(int i) {
+/* -access tab object using its index */
+    return tabs[i];
+}
+
+int EditorTabBar::closeAll() {
+/* -closes all open tabs/documents */
+    int err = 0;
+    for (int i = tabs.length() - 1; i >= 0; i--) {  //close all open tabs starting with the last
+        err = closeEditor(i);
+        if (err != 0) return err;
+    }
+    return 0;
 }
 
 
 
-//~piravte slot implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~pirvate slot implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void EditorTabBar::setLabel(const QString& label) {
 /* sets current tab label */
     setTabText( currentIndex(), label);
 }
 
-void EditorTabBar::close(int index){
+int EditorTabBar::closeEditor(int index){
 /*
 -close tab of index 'index'
+-returns:
+    - '-2' if the close decision was canceled
+    - '-1' if an unknown error has occured and the tab could not be closed
+    - '0' if window was closed succesfully
 */
+    if( ! tabs.at(index)->wasFileSaved() ) {
+    /* -if the file being closed was not saved, create a message box to ask the user what to do */
+
+        //get the file name of the document being closed
+        QString msg = "The file \"\" was not saved.  What would you like to do?";
+        QString fileName = tabs.at(index)->getFileName();
+        if ( fileName.isEmpty() ) fileName = "Untitled";
+        msg.insert(10, fileName);
+
+        //create the message box
+        int result = QMessageBox::warning(this, tr("Unsaved document!"), msg, QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+        //act according the action selected by the user
+        switch (result) {
+            case QMessageBox::Save:     //'Save' was clicked
+                emit saveSignal(index);     //emit signal to try saving the document
+                break;
+            case QMessageBox::Discard:  //'Don't Save' was clicked
+                break;                      //do not try saving
+            case QMessageBox::Cancel:   //'Cancel' was clicked
+                return -2;                  //do not do anything
+                break;
+            default:                    //should never be reached
+                return -1;                  //do not do anything to avoid loss of data
+                break;
+        }
+    }
+
     QTabWidget::removeTab(index);
     disconnect(tabs.at(index), SIGNAL(updateLabel(QString)), this, SLOT(setLabel(QString)) );
     delete tabs.at(index);
@@ -118,4 +155,5 @@ void EditorTabBar::close(int index){
     if (tabs.size() < 1) {
         addTab();
     }
+    return 0;
 }

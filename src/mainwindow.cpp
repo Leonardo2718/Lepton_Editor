@@ -60,11 +60,23 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(tabCloseRequested(int)), this, SLOT(editTabChanged()) );
+    connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
+    //connect(this, SIGNAL())
 }
 
 MainWindow::~MainWindow() {
-    //delete editors;   //%% this causes a segmentation fault so I omited it temporarly %%
     delete ui;
+}
+
+
+
+//~protected member implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+/* -called whenever a close window is requested */
+    int err = editors->closeAll();
+    if (err != 0) event->ignore();
+    else event->accept();
 }
 
 
@@ -90,13 +102,22 @@ void MainWindow::on_actionNew_triggered() {
     editors->addTab();
 }
 
-void MainWindow::on_actionSave_triggered(){
+void MainWindow::on_actionSave_triggered() {
 /* -save content of tab to corresponding file */
     if ( editors->current()->getFileName().isEmpty() ) {    //if no file is being edited
         on_actionSave_As_triggered();                           //perform a 'save as' instead of a 'save'
         return;                                                 //
     }
     editors->current()->saveChanges();  //save changes of current editor
+}
+
+void MainWindow::save_signal_received(int index) {
+/* -save contents of tab with specified index */
+    if ( editors->getEditor(index)->getFileName().isEmpty() ) {    //if no file is being edited
+        on_actionSave_As_triggered();                           //perform a 'save as' instead of a 'save'
+        return;                                                 //
+    }
+    editors->getEditor(index)->saveChanges();  //save changes of current editor
 }
 
 void MainWindow::on_actionSave_As_triggered() {
@@ -151,3 +172,11 @@ void MainWindow::setLanguageSelectorMenu() {
 
     langSelector = ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );  //set and point to the new languages selector
 }
+
+/*bool MainWindow::close() {
+/* -called on close event *
+    int err = editors->closeAll();
+    if (err != 0) return false;
+    bool c = QMainWindow::close();
+    return c;
+}*/

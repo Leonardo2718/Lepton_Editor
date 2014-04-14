@@ -284,26 +284,6 @@
     <string>Editor Tools</string>
    </property>
   </action>
-  <action name="actionC">
-   <property name="text">
-    <string>C++</string>
-   </property>
-  </action>
-  <action name="actionCPP">
-   <property name="text">
-    <string>C++</string>
-   </property>
-  </action>
-  <action name="actionPlain_Text">
-   <property name="text">
-    <string>Plain Text</string>
-   </property>
-  </action>
-  <action name="actionC_1">
-   <property name="text">
-    <string>C</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -53,6 +53,10 @@ class MainWindow : public QMainWindow {
 
         ~MainWindow();
 
+    protected:
+        void closeEvent(QCloseEvent *event);
+        /* -called whenever a close window is requested */
+
     private slots:
         void on_actionOpen_triggered();
         /* -open a file in an editor tab */
@@ -62,6 +66,9 @@ class MainWindow : public QMainWindow {
 
         void on_actionSave_triggered();
         /* -save content of tab to corresponding file */
+
+        void save_signal_received(int index);
+        /* -save contents of tab with specified index */
 
         void on_actionSave_As_triggered();
         /* -save content of tab to a new file */
@@ -85,6 +92,9 @@ class MainWindow : public QMainWindow {
 
         void setLanguageSelectorMenu();
         /* -set the language selector menu from editor object */
+
+       // bool close();
+        /* -called on close event */
 };
 
 #endif // MAINWINDOW_H

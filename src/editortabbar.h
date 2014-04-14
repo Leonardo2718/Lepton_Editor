@@ -39,6 +39,7 @@ Usage Agreement:
 #include <QTabWidget>
 #include <QAction>
 #include <QVector>
+#include <QMessageBox>
 #include "editor.h"
 
 class EditorTabBar : public QTabWidget
@@ -65,14 +66,21 @@ class EditorTabBar : public QTabWidget
         Editor* current();
         /* -access current tab object */
 
-        Editor* operator[](const int index);
-        /* -directly access instances (tabs) of editor */
+        Editor* getEditor(int i);
+        /* -access tab object using its index */
+
+        int closeAll();
+        /* -closes all open tabs/documents */
+
+    signals:
+        void saveSignal(int i);
+        /* -emited when a file save is requested for document with index 'i' */
 
     private slots:
         void setLabel(const QString& label);
-        /* sets current tab label */
+        /* -sets current tab label */
 
-        void close(int index);
+        int closeEditor(int index);
         /* -close tab of index 'index' */
 };
 
