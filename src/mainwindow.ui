@@ -209,6 +209,7 @@
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="actionSave_All"/>
     <addaction name="actionSave_As"/>
     <addaction name="actionSave_Copy_As"/>
    </widget>
@@ -262,6 +263,9 @@
    <property name="text">
     <string>Save As...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
   </action>
   <action name="actionSave_Copy_As">
    <property name="text">
@@ -282,6 +286,14 @@
    </property>
    <property name="text">
     <string>Editor Tools</string>
+   </property>
+  </action>
+  <action name="actionSave_All">
+   <property name="text">
+    <string>Save All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+S</string>
    </property>
   </action>
  </widget>

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: April 2, 2014
+Last Modified: April 15, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -74,9 +74,9 @@ MainWindow::~MainWindow() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
 /* -called whenever a close window is requested */
-    int err = editors->closeAll();
-    if (err != 0) event->ignore();
-    else event->accept();
+    int err = editors->closeAll();  //request to close all open tabs
+    if (err != 0) event->ignore();  //if a tab was not closed, do not close the window
+    else event->accept();           //if all tabs where closed, close the main window
 }
 
 
@@ -151,6 +151,24 @@ void MainWindow::on_actionEditor_Tools_toggled(bool visible) {
     ui->editorTools->setVisible(visible);
 }
 
+void MainWindow::on_actionSave_All_triggered() {
+/* -save changes to all documents */
+    for (int i = 0, l = editors->count(); i < l; i++) {
+        if ( editors->getEditor(i)->getFileName().isEmpty() ) {
+        //if no file is being edited
+            //perform a 'save as' instead of a 'save'
+            QString filePath = QFileDialog::getSaveFileName(this, tr("Save Copy As") ); //get a new file name
+            if ( filePath.isEmpty() ) return;                                           //check if file name was specified
+            QFile* file = new QFile(filePath);                                          //open the new file
+            file->open(QIODevice::WriteOnly | QIODevice::ReadWrite);                    //open the new file in order to create it (in case it does not already exist)
+            file->close();                                                              //
+            editors->getEditor(i)->saveCopyOfChanges(file);                             //save changes to the new file
+            return;                                                                     //
+        }
+        editors->getEditor(i)->saveChanges();   //save changes of current editor
+    }
+}
+
 void MainWindow::editTabChanged() {
 /* -called when visible tab is changed to update lanugage selector menu */
     setLanguageSelectorMenu();
@@ -172,11 +190,3 @@ void MainWindow::setLanguageSelectorMenu() {
 
     langSelector = ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );  //set and point to the new languages selector
 }
-
-/*bool MainWindow::close() {
-/* -called on close event *
-    int err = editors->closeAll();
-    if (err != 0) return false;
-    bool c = QMainWindow::close();
-    return c;
-}*/

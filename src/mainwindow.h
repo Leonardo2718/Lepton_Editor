@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: April 2, 2014
+Last Modified: April 15, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -82,6 +82,9 @@ class MainWindow : public QMainWindow {
         void on_actionEditor_Tools_toggled(bool visible);
         /* -show/hide the editor tools */
 
+        void on_actionSave_All_triggered();
+        /* -save changes to all documents */
+
         void editTabChanged();
         /* -called when visible tab is changed to update lanugage selector menu */
 
@@ -92,9 +95,6 @@ class MainWindow : public QMainWindow {
 
         void setLanguageSelectorMenu();
         /* -set the language selector menu from editor object */
-
-       // bool close();
-        /* -called on close event */
 };
 
 #endif // MAINWINDOW_H

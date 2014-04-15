@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.cpp
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: April 2, 2014
+Last Modified: April 15, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -52,10 +52,10 @@ EditorTabBar::EditorTabBar(QWidget *parent) : QTabWidget(parent) {
 
 EditorTabBar::~EditorTabBar() {
 /* -dealocates (deletes) all the editor tabs stored in 'tabs' */
-    for (int i = 0, s = tabs.size(); i < s; i++) {
+    /*for (int i = 0, s = tabs.size(); i < s; i++) {
         //closeEditor(i);    //close tab before deleting the object, %% this may be removed once I find a way to save sessions %%
         delete tabs.at(i);
-    }
+    }*/
 }
 
 int EditorTabBar::addTab(int index) {
@@ -66,16 +66,19 @@ int EditorTabBar::addTab(int index) {
     index: the index at which to place the new tab (-1 if at the end)
 */
     int i = 0;                                  //store the index of the new tab
-    int n = tabs.size() + 1;                    //get the new number tabs created
+    //int n = tabs.size() + 1;                    //get the new number tabs created
+    //int n = this->count() + 1;
     if ( index < 0) {                           //if a new tab is to be appended to the end
-        tabs.append( new Editor(this) );            //create the new tab
+        //tabs.append( new Editor(this) );            //create the new tab
         //i = QTabWidget::addTab(tabs.at(n-1), tabs.at(n-1)->getInnerFileName() );        //add the new tab
-        i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );        //add the new tab
+        //i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );        //add the new tab
+        i = QTabWidget::addTab( new Editor(this) , "Untitled" );
     }
     else {
-        tabs.insert(index, new Editor(this) );
+        //tabs.insert(index, new Editor(this) );
         //i = QTabWidget::insertTab(index, tabs.at(n-1), tabs.at(n-1)->getInnerFileName() );
-        i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );
+        //i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );
+        i = QTabWidget::insertTab(index, new Editor(this) , "Untitled" );
     }
 
     this->setCurrentIndex(i);
@@ -85,18 +88,25 @@ int EditorTabBar::addTab(int index) {
 
 Editor* EditorTabBar::current(){
 /* -access current tab object */
-    return tabs[currentIndex()];
+    //return tabs[currentIndex()];
+    return (Editor*)(currentWidget());
 }
 
 Editor* EditorTabBar::getEditor(int i) {
 /* -access tab object using its index */
-    return tabs[i];
+    //return tabs[i];
+    return (Editor*)(widget(i));
 }
+
+/*int EditorTabBar::count() {
+/* -returns the number of open editor tabs *
+    return tabs.length();
+}*/
 
 int EditorTabBar::closeAll() {
 /* -closes all open tabs/documents */
     int err = 0;
-    for (int i = tabs.length() - 1; i >= 0; i--) {  //close all open tabs starting with the last
+    for (int i = count() - 1; i >= 0; i--) {  //close all open tabs starting with the last
         err = closeEditor(i);
         if (err != 0) return err;
     }
@@ -112,7 +122,7 @@ void EditorTabBar::setLabel(const QString& label) {
     setTabText( currentIndex(), label);
 }
 
-int EditorTabBar::closeEditor(int index){
+int EditorTabBar::closeEditor(const int& index){
 /*
 -close tab of index 'index'
 -returns:
@@ -120,12 +130,12 @@ int EditorTabBar::closeEditor(int index){
     - '-1' if an unknown error has occured and the tab could not be closed
     - '0' if window was closed succesfully
 */
-    if( ! tabs.at(index)->wasFileSaved() ) {
+    if( ! getEditor(index)->wasFileSaved() ) {
     /* -if the file being closed was not saved, create a message box to ask the user what to do */
 
         //get the file name of the document being closed
         QString msg = "The file \"\" was not saved.  What would you like to do?";
-        QString fileName = tabs.at(index)->getFileName();
+        QString fileName = getEditor(index)->getFileName();
         if ( fileName.isEmpty() ) fileName = "Untitled";
         msg.insert(10, fileName);
 
@@ -148,12 +158,14 @@ int EditorTabBar::closeEditor(int index){
         }
     }
 
-    QTabWidget::removeTab(index);
-    disconnect(tabs.at(index), SIGNAL(updateLabel(QString)), this, SLOT(setLabel(QString)) );
-    delete tabs.at(index);
-    tabs.remove(index);
-    if (tabs.size() < 1) {
+    Editor* tmp = getEditor(index);  //a new pointer is created because the allocated memory must be deleted last
+    disconnect(tmp, SIGNAL(updateLabel(QString)), this, SLOT(setLabel(QString)) );
+    this->removeTab(index);   //I don't know why but for some reason, '1' is subtracted from the tab index when this method is called so a '1' needs to be added in order to prevent an out of range error
+    //Editor* tmp = tabs[index];  //a new pointer is created because the allocated memory must be deleted last
+    //tabs.remove(index);
+    delete tmp;
+    /*if (tabs.size() < 1) {
         addTab();
-    }
+    }*/
     return 0;
 }
