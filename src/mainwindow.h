@@ -93,6 +93,16 @@ class MainWindow : public QMainWindow {
         EditorTabBar* editors;
         QAction* langSelector;  //temporary pointer to language selector menu
 
+
+        void saveFile(int index);
+        /* -save content to open file */
+
+        void saveFileAs(int index);
+        /* -save content to a new file and load it */
+
+        void saveFileCopyAs(int index);
+        /* -save a copy of content to a new file (new file not loaded) */
+
         void setLanguageSelectorMenu();
         /* -set the language selector menu from editor object */
 };

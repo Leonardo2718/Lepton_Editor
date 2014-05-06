@@ -1,6 +1,6 @@
 mycomments.txt
 Leonardo Banderali
-February 23, 2014
+May 5, 2014
 
 This file contains a discription of my commenting style to help others who read my code understand it better.
 
@@ -51,7 +51,24 @@ For functions and class methods, I always put a short description of what the fu
 the function name.  I also put a list of the parameters with a description of what they are used for.
 
 @c++
-I like to put the same comments under the function prototypes and function definitions.
+I always put the same comments under the function prototypes and function definitions.
+
+void myFunction( int x);
+/*
+-this function does something
+-parameters:
+	x: a parameter
+-returnes: nothing
+*/
+
+void myFunction( int x) {
+/*
+-this function does something
+-parameters:
+	x: a parameter
+-returnes: nothing
+*/
+}
 
 
 Inline comments:
@@ -84,9 +101,9 @@ ex.
 
 
 The '@' symbol:
-I use @ to indicate lables.  Sometimes, I like to mark specific sections of code with a lable 
-that I can refer to latter on in my comments.  To avoid confusion with actual comments,
-I add an @ to the front of the word or lable.
+I use @ to indicate lables.  I use these to mark specific sections of code with a lable 
+that I can refer to latter on in my comments.  I use the '@' to avoid confusion with
+comment content.
 
 
 Hash box:
@@ -145,7 +162,7 @@ I use these often to indicate that I want to apply a new feature or want to make
 @c++
 /*%%%%%%%%%%%%%%%%%%%%%%%%%
 %% I need to clean up my %%
-%% room... I mean code   %%
+%% code                  %%
 %%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 

@@ -67,10 +67,10 @@ Editor::Editor(QTabWidget *parent, QString filePath) : QPlainTextEdit(parent){//
 
 Editor::~Editor() {
 /* -deletes allocated memory */
-    delete numArea;
-    delete highlighter;
-    delete contentFile;
-    delete languageSelector;
+    //delete numArea;
+    //delete highlighter;
+    //delete contentFile;
+    //delete languageSelector;
 }
 
 int Editor::areaWidth() {

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.cpp
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: April 15, 2014
+Last Modified: May 5, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -68,40 +68,27 @@ int EditorTabBar::addTab(int index) {
     int i = 0;                                  //store the index of the new tab
     //int n = tabs.size() + 1;                    //get the new number tabs created
     //int n = this->count() + 1;
-    if ( index < 0) {                           //if a new tab is to be appended to the end
-        //tabs.append( new Editor(this) );            //create the new tab
-        //i = QTabWidget::addTab(tabs.at(n-1), tabs.at(n-1)->getInnerFileName() );        //add the new tab
-        //i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );        //add the new tab
-        i = QTabWidget::addTab( new Editor(this) , "Untitled" );
+    if ( index < 0) {
+        i = QTabWidget::addTab( new ScintillaEditor() , "Untitled" );
     }
     else {
-        //tabs.insert(index, new Editor(this) );
-        //i = QTabWidget::insertTab(index, tabs.at(n-1), tabs.at(n-1)->getInnerFileName() );
-        //i = QTabWidget::addTab(tabs.at(n-1), "Untitled" );
-        i = QTabWidget::insertTab(index, new Editor(this) , "Untitled" );
+        i = QTabWidget::insertTab(index, new ScintillaEditor() , "Untitled" );
     }
 
     this->setCurrentIndex(i);
-    connect(current(), SIGNAL(updateLabel(QString)), this, SLOT(setLabel(QString)) );
+    connect(current(), SIGNAL(modificationChanged(bool)), this, SLOT(setLabel(bool)) );
     return i;                   //return the index of the tab
 }
 
-Editor* EditorTabBar::current(){
+ScintillaEditor* EditorTabBar::current(){
 /* -access current tab object */
-    //return tabs[currentIndex()];
-    return (Editor*)(currentWidget());
+    return (ScintillaEditor*)(currentWidget());
 }
 
-Editor* EditorTabBar::getEditor(int i) {
+ScintillaEditor* EditorTabBar::getEditor(int i) {
 /* -access tab object using its index */
-    //return tabs[i];
-    return (Editor*)(widget(i));
+    return (ScintillaEditor*)(widget(i));
 }
-
-/*int EditorTabBar::count() {
-/* -returns the number of open editor tabs *
-    return tabs.length();
-}*/
 
 int EditorTabBar::closeAll() {
 /* -closes all open tabs/documents */
@@ -117,9 +104,14 @@ int EditorTabBar::closeAll() {
 
 //~pirvate slot implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void EditorTabBar::setLabel(const QString& label) {
+void EditorTabBar::setLabel(bool modifiedStatus) {
 /* sets current tab label */
-    setTabText( currentIndex(), label);
+    //QString label = current()->getOpenFileName();
+    ScintillaEditor* e = (ScintillaEditor*)(sender());
+    QString label = e->getOpenFileName();
+    if ( label.isEmpty() ) label = "Untitled";
+    if ( modifiedStatus == true ) label = label.prepend('*');   //prepend '*' to show that file has not been saved
+    setTabText( indexOf(e), label);
 }
 
 int EditorTabBar::closeEditor(const int& index){
@@ -128,19 +120,20 @@ int EditorTabBar::closeEditor(const int& index){
 -returns:
     - '-2' if the close decision was canceled
     - '-1' if an unknown error has occured and the tab could not be closed
-    - '0' if window was closed succesfully
+    - '0' if tab was closed succesfully
 */
+    //if the file being closed was not saved, create a message box to ask the user what to do
     if( ! getEditor(index)->wasFileSaved() ) {
-    /* -if the file being closed was not saved, create a message box to ask the user what to do */
 
         //get the file name of the document being closed
-        QString msg = "The file \"\" was not saved.  What would you like to do?";
+        /*QString msg = "The file \"\" was not saved.  What would you like to do?";
         QString fileName = getEditor(index)->getFileName();
         if ( fileName.isEmpty() ) fileName = "Untitled";
-        msg.insert(10, fileName);
+        msg.insert(10, fileName);*/
+        QString msg = tr("The following file was not saved: %1\nWhat would you like to do?").arg( tabText(index) );
 
         //create the message box
-        int result = QMessageBox::warning(this, tr("Unsaved document!"), msg, QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        int result = QMessageBox::warning(this, tr("Unsaved document!"), msg, QMessageBox::Save|QMessageBox::Discard|QMessageBox::Cancel);
 
         //act according the action selected by the user
         switch (result) {
@@ -158,11 +151,10 @@ int EditorTabBar::closeEditor(const int& index){
         }
     }
 
-    Editor* tmp = getEditor(index);  //a new pointer is created because the allocated memory must be deleted last
-    disconnect(tmp, SIGNAL(updateLabel(QString)), this, SLOT(setLabel(QString)) );
-    this->removeTab(index);   //I don't know why but for some reason, '1' is subtracted from the tab index when this method is called so a '1' needs to be added in order to prevent an out of range error
-    //Editor* tmp = tabs[index];  //a new pointer is created because the allocated memory must be deleted last
-    //tabs.remove(index);
+    //Editor* tmp = getEditor(index);  //a new pointer is created because the allocated memory must be deleted last
+    ScintillaEditor* tmp = getEditor(index);//a new pointer is created because the allocated memory must be deleted last
+    disconnect(tmp, SIGNAL(modificationChanged(bool)), this, SLOT(setLabel(bool)) );
+    this->removeTab(index);   //I don't know why but for some reason, '1' is subtracted from the tab index when this method is
     delete tmp;
     /*if (tabs.size() < 1) {
         addTab();

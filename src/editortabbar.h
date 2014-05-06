@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.h
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: April 15, 2014
+Last Modified: May 5, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,7 +40,8 @@ Usage Agreement:
 #include <QAction>
 #include <QVector>
 #include <QMessageBox>
-#include "editor.h"
+//#include "editor.h"
+#include "scintillaeditor.h"
 
 class EditorTabBar : public QTabWidget
 {
@@ -53,8 +54,6 @@ class EditorTabBar : public QTabWidget
         ~EditorTabBar();
         /* -dealocates (deletes) all the editor tabs stored in 'tabs' */
 
-        //QVector< Editor* > tabs;    //vector to store pointers to all the editor tabs
-
         int addTab(int index = -1);
         /*
         -instantiate a new instance of the 'Editor' class, add it to 'tabs', and create
@@ -63,14 +62,11 @@ class EditorTabBar : public QTabWidget
             index: the index at which to place the new tab (-1 if at the end)
         */
 
-        Editor* current();
+        ScintillaEditor *current();
         /* -access current tab object */
 
-        Editor* getEditor(int i);
+        ScintillaEditor *getEditor(int i);
         /* -access tab object using its index */
-
-        //int count();
-        /* -returns the number of open editor tabs */
 
         int closeAll();
         /* -closes all open tabs/documents */
@@ -80,7 +76,7 @@ class EditorTabBar : public QTabWidget
         /* -emited when a file save is requested for document with index 'i' */
 
     private slots:
-        void setLabel(const QString& label);
+        void setLabel(bool modifiedStatus);
         /* -sets current tab label */
 
         int closeEditor(const int& index);
