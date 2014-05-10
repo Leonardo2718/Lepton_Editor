@@ -1,9 +1,9 @@
 /*
 Project: Lepton Editor
-File: mainwindow.h
+File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 5, 2014
+Last Modified: May 8, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -50,14 +50,22 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //$ Stub code used to test Scintilla features                          $$
     //$                                                                    $$
         setFolding(BoxedTreeFoldStyle);     //display line folding margins
-        QsciLexerCPP* cpp = new QsciLexerCPP();
-        setLexer(cpp);
+        //QsciLexerCPP* cpp = new QsciLexerCPP();
+        //setLexer(cpp);
+        //QSettings s("Lepton", "Lepton");
+        //char* c = new char('/Scintilla');
+        //char* c = new char(' ');
+        //cpp->writeSettings(s, c);
+        //qDebug() << s.;
+        lexer = new LeptonLexer(this);
+        setLexer(lexer);
     //$                                                                    $$
     //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 }
 
 ScintillaEditor::~ScintillaEditor() {
-
+    setLexer(); //clear lexer use before deleting instance
+    delete lexer;
 }
 
 void ScintillaEditor::writeToFile(const QString& filePath, bool changeModify) {

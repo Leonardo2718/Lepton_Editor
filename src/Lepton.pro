@@ -47,13 +47,15 @@ SOURCES += main.cpp\
 #    editor.cpp \
     editortabbar.cpp \
 #    syntaxhighlighter.cpp \
-    scintillaeditor.cpp
+    scintillaeditor.cpp \
+    leptonlexer.cpp
 
 HEADERS  += mainwindow.h \
 #    editor.h \
     editortabbar.h \
 #    syntaxhighlighter.h \
-    scintillaeditor.h
+    scintillaeditor.h \
+    leptonlexer.h
 
 FORMS    += mainwindow.ui
 

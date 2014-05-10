@@ -1,9 +1,9 @@
 /*
 Project: Lepton Editor
-File: mainwindow.h
+File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 5, 2014
+Last Modified: May 8, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -38,7 +38,10 @@ Usage Agreement:
 #include <QWidget>
 #include <QString>
 #include <QFileInfo>
+#include <QSettings>
 #include <Qsci/qsciscintilla.h>
+#include <Qsci/qscilexercustom.h>
+#include "leptonlexer.h"
 
 class ScintillaEditor : public QsciScintilla
 {
@@ -70,9 +73,11 @@ class ScintillaEditor : public QsciScintilla
         /* returns wheater changes to the open file have been saved/writen */
 
     private:
-        QFileInfo openFile; //store path to file currently being edited
+        QFileInfo openFile; //path to file currently being edited
 
         void setModified(bool m) { QsciScintilla::setModified(m); }    //make method private
+
+        LeptonLexer* lexer; //lexer to be used for highlighting
 
 };
 
