@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.h
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: May 9, 2014
+Last Modified: May 12, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,25 +36,39 @@ Usage Agreement:
 #ifndef LEPTONLEXER_H
 #define LEPTONLEXER_H
 
+//define number of types
+#define NUMBER_TYPES 1
+#define QUOTE_TYPES 1
+#define KEYWORD_TYPES 10
+#define EXPRESSION_TYPES 7
+#define LINECOMMENT_TYPES 1
+#define LINEEXPRESSION_TYPES 5
+#define BLOCKCOMMENT_TYPES 1
+#define BLOCKEXPRESSION_TYPES 6
+
+//define indicies to locate token types in rule arrays
+#define NUMBER_INDEX 0
+#define QUOTE_INDEX 0
+#define KEYWORD_TYPE_INDEX 1
+#define EXPRESSION_TYPE_INDEX 11
+#define LINECOMMENT_INDEX 0
+#define LINEEXPRESSION_TYPE_INDEX 1
+#define BLOCKCOMMENT_INDEX 1
+#define BLOCKEXPRESSION_TYPE_INDEX 2
+
+//define other useful information
+#define NO_ESCAPES false
+#define ESCAPES true
+
 #include <QString>
 #include <QDomDocument>
 #include <QColor>
+#include <QRegularExpression>
+#include <QVector>
 #include <Qsci/qscilexercustom.h>
 #include <Qsci/qscistyle.h>
 
-/*class StyleNumberType {
-    const qint8 number;
-    const qint8 lineComment;
-    const qint8 blockCommnet;
-    const qint8 quote;
-    const qint8 escapeChar;
-    const qint8 keywords[10];
-    const quint8 experssion[7];
-    const quint8 lineExp[5];
-    const quint8 blockExp[5];
 
-    //StyleNumberType(): number(0), lineComment(1), blockComment(2), quote(3){}
-};*/
 
 class LeptonLexer : public QsciLexerCustom
 {
@@ -62,18 +76,37 @@ class LeptonLexer : public QsciLexerCustom
 
     public:
         //minimum range for styles
-        enum StyleTypeValue { NUMBER_STYLE = 0, LINECOMMENT_STYLE = 1, BLOCKCOMMENT_STYLE = 2, QUOTE_STYLE = 3, ESCAPECHAR_STYLE = 4,
-                              KEYWORD_STYLE_MIN = 5, KEYWORD_STYLE_MAX = 14,
-                              EXPRESSION_STYLE_MIN = 15, EXPRESSION_STYLE_MAX = 21,
-                              LINEEXP_STYLE_MIN = 22, LINEEXP_STYLE_MAX = 26,
-                              BLOCKEXP_STYLE_MIN = 27, BLOCKEXP_STYLE_MAX = 31 };
+        enum StyleTypeValue { NUMBER_STYLE = 0, QUOTE_STYLE = 1, LINECOMMENT_STYLE = 2, BLOCKCOMMENT_STYLE = 3,
+                              KEYWORD_STYLE_MIN = 4, KEYWORD_STYLE_MAX = 13,
+                              EXPRESSION_STYLE_MIN = 14, EXPRESSION_STYLE_MAX = 20,
+                              LINEEXP_STYLE_MIN = 21, LINEEXP_STYLE_MAX = 25,
+                              BLOCKEXP_STYLE_MIN = 26, BLOCKEXP_STYLE_MAX = 31 };
+
+        //basic rules to match a token
+        struct ExpressionRuleType {             //for numbers, keywords, and user defined expressions
+            QRegularExpression exp;
+            quint8 type;
+        };
+
+        struct LineRuleType {                   //for single line comments and user defined line expressions
+            QRegularExpression exp;
+            QVector< QRegularExpression > escapes;
+            quint8 type;
+        };
+
+        struct BlockRuleType {                  //for quotes, block comments, and user defined block expressions
+            QRegularExpression start;               //expression to denote start of block
+            QRegularExpression end;                 //expression to denote end of block
+            QVector< QRegularExpression > escapes;  //anything that match these expressions, inside the block, will be highlighted differently (eg. escape sequences)
+            quint8 type;                            //actual type numbe as specified in language definition
+        };
 
         explicit LeptonLexer(QObject *parent = 0);
 
         const char* language() const;
         /*
         -returnes language name
-        -a 'NULL' returned means that no language is set
+        -returns 'NULL' if no language is set
         */
 
         QString description(int style) const;
@@ -82,14 +115,52 @@ class LeptonLexer : public QsciLexerCustom
         void styleText(int start, int end);
         /* -called whenever text must be (re-) highilighted */
 
-        void aplyStyleTo(int start, int end, int style);
+        void applyStyleTo(int start, int end, int style);
         /* -applies 'style' between positions 'start' and 'end' inclusively */
+
+        bool getLanguageData(const QString& languageFilePath);
+        /*
+        -gets language rules from file
+        -returns true if the data was successfully extracted, false otherwise
+        */
 
         bool getStyleFormat(const QString& styleFilePath);
         /*
-        -gets style info from file
-        -returns 'true' if the style information was successfully extracted, false otherwise
+        -gets styling data from file
+        -returns true if data was successfully extracted, false otherwise
         */
+
+    private:
+        char* languageName;   //name of language used for syntax highlighting
+
+        //rules to match tokens and expressions
+        QVector< ExpressionRuleType* > expressionRules;
+        QVector< LineRuleType* > lineRules;
+        QVector< BlockRuleType* > blockRules;
+
+        void resetRules();
+        /* -resets all rules */
+
+        bool getExpressionRule(const QDomNode& node, quint8 numberOfTypes, quint8 typeIndex);
+        /*
+        -extracts a expression rule from 'node'
+        -returns true if the data was successfully extracted, false otherwise
+        */
+
+        bool getLineRule(const QDomNode& node, quint8 numberOfTypes, quint8 typeIndex);
+        /*
+        -extracts a line expression rule from 'node'
+        -returns true if the data was successfully extracted, false otherwise
+        */
+
+        bool getBlockRule(const QDomNode& node, quint8 numberOfTypes, quint8 typeIndex);
+        /*
+        -extracts a block expression rule from 'node'
+        -returns true if the data was successfully extracted, false otherwise
+        */
+
+        bool getEscapeFromTo(QDomElement& element, QVector< QRegularExpression >& escapes);
+        /* -gets escape expressions from 'element' and stores them in 'escapes' */
 
         bool getTypedStyleElementData(const QDomNodeList& styleNodeList, StyleTypeValue min, StyleTypeValue max);
         /*
@@ -108,10 +179,7 @@ class LeptonLexer : public QsciLexerCustom
         */
 
         QColor getColor(QString colorString);
-        /* -converts color defined in a string to a 'QColor' object and returnes it */
-
-    private:
-        char* languageName;   //name of language used for syntax highlighting
+        /* -converts a color defined in a string to a 'QColor' object, using regexp validation, and returnes it */
 };
 
 #endif // LEPTONLEXER_H

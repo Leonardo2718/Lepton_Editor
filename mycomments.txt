@@ -1,6 +1,6 @@
 mycomments.txt
 Leonardo Banderali
-May 5, 2014
+May 11, 2014
 
 This file contains a discription of my commenting style to help others who read my code understand it better.
 
@@ -57,7 +57,7 @@ void myFunction( int x);
 /*
 -this function does something
 -parameters:
-	x: a parameter
+    x: a parameter
 -returnes: nothing
 */
 
@@ -65,7 +65,7 @@ void myFunction( int x) {
 /*
 -this function does something
 -parameters:
-	x: a parameter
+    x: a parameter
 -returnes: nothing
 */
 }
@@ -111,16 +111,16 @@ Hash boxes contain complete description and explenations of what a block of code
 it is being done.
 
 @c++ ex.
-/*###################
-## Lines of        ##
-## comments        ##
-###################*/
+/*####################
+### Lines of        ##
+### comments        ##
+####################*/
 
 @python ex.
-#####################
-## Lines of        ##
-## comments        ##
-#####################
+######################
+### Lines of        ##
+### comments        ##
+######################
 
 
 Dollar box:
@@ -131,41 +131,41 @@ to keep.  Also, the box contains a discription of what the block of code does an
 In c++ source files, the executable code can be uncommented by adding as slash (/) to the top left corner of the box.
 This will not uncomment the text which accompanies the block of code.
 /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//$$$ This line is commented out.         $$$
-//$$$                                     $$$
+//$ This line is commented out.           $$$
+//$                                       $$$
     cout << "This code is commented out";
-//$$$                                     $$$
+//$                                       $$$
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 
 //*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//$$$ This line is commented out.  Note the  $$$
-//$$$ extra slash in the top right corner.   $$$
-//$$$                                        $$$
+//$ This line is commented out.  Note the    $$$
+//$ extra slash in the top right corner.     $$$
+//$                                          $$$
     cout << "This code is not commented out";
-//$$$                                        $$$
+//$                                          $$$
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 
 @python
 In python, each line of executable code must be commented out manualy
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#$$$ This line is commented out $$$
-#$$$                            $$$
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#$ This line is commented out                     $$$
+#$                                                $$$
 #   print("To uncomment this line, remove the #")
-#$$$                            $$$
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#$                                                $$$
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 Percent box:
 Boxes which are bounded by percent signs contain notes explaining things that need to be changed or modified.
-I use these often to indicate that I want to apply a new feature or want to make a specific improvement to the code.
+I use these often to indicate that I want to implement a new feature or want to make a specific improvement to the code.
 
 @c++
-/*%%%%%%%%%%%%%%%%%%%%%%%%%
-%% I need to clean up my %%
-%% code                  %%
-%%%%%%%%%%%%%%%%%%%%%%%%%*/
+/*%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% I need to clean up my %%
+%%% code                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 
 Notes:
 While my comments are partly intended to help less experienced programers, I assume that they are familiar with
-the language being used and that they have access to the language reference.
+the language being used and that they have access to a language reference.
