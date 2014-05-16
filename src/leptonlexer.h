@@ -37,28 +37,50 @@ Usage Agreement:
 #define LEPTONLEXER_H
 
 //define number of types
+/*#define DEFAULT_TYPES 1
 #define NUMBER_TYPES 1
-#define QUOTE_TYPES 1
 #define KEYWORD_TYPES 10
 #define EXPRESSION_TYPES 7
 #define LINECOMMENT_TYPES 1
 #define LINEEXPRESSION_TYPES 5
+#define QUOTE_TYPES 1
 #define BLOCKCOMMENT_TYPES 1
 #define BLOCKEXPRESSION_TYPES 6
+#define TOTAL_TYPES 32*/
+
+#define DEFAULT_TYPES 1
+#define NUMBER_TYPES 1
+#define KEYWORD_TYPES 8
+#define EXPRESSION_TYPES 7
+#define LINECOMMENT_TYPES 1
+#define LINEEXPRESSION_TYPES 6
+#define QUOTE_TYPES 1
+#define BLOCKCOMMENT_TYPES 1
+#define BLOCKEXPRESSION_TYPES 6
+#define TOTAL_TYPES 32
 
 //define indicies to locate token types in rule arrays
-#define NUMBER_INDEX 0
-#define QUOTE_INDEX 0
+/*#define NUMBER_INDEX 0
 #define KEYWORD_TYPE_INDEX 1
 #define EXPRESSION_TYPE_INDEX 11
 #define LINECOMMENT_INDEX 0
 #define LINEEXPRESSION_TYPE_INDEX 1
+#define QUOTE_INDEX 0
+#define BLOCKCOMMENT_INDEX 1
+#define BLOCKEXPRESSION_TYPE_INDEX 2*/
+
+#define NUMBER_INDEX 0
+#define KEYWORD_TYPE_INDEX 1
+#define EXPRESSION_TYPE_INDEX 9
+#define LINECOMMENT_INDEX 0
+#define LINEEXPRESSION_TYPE_INDEX 1
+#define QUOTE_INDEX 0
 #define BLOCKCOMMENT_INDEX 1
 #define BLOCKEXPRESSION_TYPE_INDEX 2
 
 //define other useful information
-#define NO_ESCAPES false
-#define ESCAPES true
+//#define NO_TYPE false
+//#define HAS_TYPE true
 
 #include <QString>
 #include <QDomDocument>
@@ -76,11 +98,23 @@ class LeptonLexer : public QsciLexerCustom
 
     public:
         //minimum range for styles
-        enum StyleTypeValue { NUMBER_STYLE = 0, QUOTE_STYLE = 1, LINECOMMENT_STYLE = 2, BLOCKCOMMENT_STYLE = 3,
+        /*enum StyleTypeValue { NUMBER_STYLE = 0, QUOTE_STYLE = 1, LINECOMMENT_STYLE = 2, BLOCKCOMMENT_STYLE = 3,
                               KEYWORD_STYLE_MIN = 4, KEYWORD_STYLE_MAX = 13,
                               EXPRESSION_STYLE_MIN = 14, EXPRESSION_STYLE_MAX = 20,
                               LINEEXP_STYLE_MIN = 21, LINEEXP_STYLE_MAX = 25,
-                              BLOCKEXP_STYLE_MIN = 26, BLOCKEXP_STYLE_MAX = 31 };
+                              BLOCKEXP_STYLE_MIN = 26, BLOCKEXP_STYLE_MAX = 31 };*/
+        enum StyleTypeValue { DEFAULT_STYLE = 0,
+                              NUMBER_STYLE = 1,
+                              KEYWORD_STYLE_MIN = 2, KEYWORD_STYLE_MAX = 9,
+                              EXPRESSION_STYLE_MIN = 10, EXPRESSION_STYLE_MAX = 16,
+                              LINECOMMENT_STYLE = 17,
+                              LINEEXP_STYLE_MIN = 18, LINEEXP_STYLE_MAX = 23,
+                              QUOTE_STYLE = 24,
+                              BLOCKCOMMENT_STYLE = 25,
+                              BLOCKEXP_STYLE_MIN = 26, BLOCKEXP_STYLE_MAX = 31
+                            };
+
+        enum RuleType { EXPRESSION_RULE, LINE_RULE, BLOCK_RULE, UNDEF_RULE };
 
         //basic rules to match a token
         struct ExpressionRuleType {             //for numbers, keywords, and user defined expressions
@@ -90,14 +124,14 @@ class LeptonLexer : public QsciLexerCustom
 
         struct LineRuleType {                   //for single line comments and user defined line expressions
             QRegularExpression exp;
-            QVector< QRegularExpression > escapes;
+            QRegularExpression escapes;
             quint8 type;
         };
 
         struct BlockRuleType {                  //for quotes, block comments, and user defined block expressions
             QRegularExpression start;               //expression to denote start of block
             QRegularExpression end;                 //expression to denote end of block
-            QVector< QRegularExpression > escapes;  //anything that match these expressions, inside the block, will be highlighted differently (eg. escape sequences)
+            QRegularExpression escapes;             //anything that match this expression, inside the block, will be highlighted differently (eg. escape sequences)
             quint8 type;                            //actual type numbe as specified in language definition
         };
 
@@ -115,7 +149,7 @@ class LeptonLexer : public QsciLexerCustom
         void styleText(int start, int end);
         /* -called whenever text must be (re-) highilighted */
 
-        void applyStyleTo(int start, int end, int style);
+        void applyStyleTo(int start, int length, int style);
         /* -applies 'style' between positions 'start' and 'end' inclusively */
 
         bool getLanguageData(const QString& languageFilePath);
@@ -159,8 +193,8 @@ class LeptonLexer : public QsciLexerCustom
         -returns true if the data was successfully extracted, false otherwise
         */
 
-        bool getEscapeFromTo(QDomElement& element, QVector< QRegularExpression >& escapes);
-        /* -gets escape expressions from 'element' and stores them in 'escapes' */
+        bool getEscapeFromTo(QDomElement& element, QRegularExpression& escapes);
+        /* -gets escape expression from 'element' and stores them in 'escapes' */
 
         bool getTypedStyleElementData(const QDomNodeList& styleNodeList, StyleTypeValue min, StyleTypeValue max);
         /*
@@ -180,6 +214,12 @@ class LeptonLexer : public QsciLexerCustom
 
         QColor getColor(QString colorString);
         /* -converts a color defined in a string to a 'QColor' object, using regexp validation, and returnes it */
+
+        int convertRuleIndexToStyle(RuleType rType, int index);
+        /*
+        -returns the style corresponding to the givin rule type and index
+        -returns '-1' if no correspondence was found
+        */
 };
 
 #endif // LEPTONLEXER_H

@@ -6,8 +6,12 @@
     <keywords type="1">
     void struct union enum char short int long double float signed unsigned const static extern auto register volatile
     </keywords>
-    <commentstart>/*</commentstart>
-    <commentend>*/</commentend>
+    <!--<commentstart>/\*</commentstart>
+    <commentend>\*/</commentend>-->
+    <blockcomment>
+        <start>/\*</start>
+        <end>\*/</end>
+    </blockcomment>
     <linecomment>//</linecomment>
-    <lineexpression type="1"> #include|#define|#undef|#if|#ifdef|#ifndef|#elif|#else|#endif|#error|#line|#pragma </lineexpression>
+    <lineexpression type="1">#include|#define|#undef|#if|#ifdef|#ifndef|#elif|#else|#endif|#error|#line|#pragma</lineexpression>
 </language>
