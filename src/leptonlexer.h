@@ -152,7 +152,7 @@ class LeptonLexer : public QsciLexerCustom
         void applyStyleTo(int start, int length, int style);
         /* -applies 'style' between positions 'start' and 'end' inclusively */
 
-        bool getLanguageData(const QString& languageFilePath);
+        bool getLanguageData(const QString& languageFilePath = 0);
         /*
         -gets language rules from file
         -returns true if the data was successfully extracted, false otherwise
@@ -211,6 +211,9 @@ class LeptonLexer : public QsciLexerCustom
         -extracts style info from 'styleElement'
         -if more than one styling item is defined (eg. multiple 'color' tags used), the last item wins
         */
+
+        bool getDefaultStyle();
+        /* -gets the default style values */
 
         QColor getColor(QString colorString);
         /* -converts a color defined in a string to a 'QColor' object, using regexp validation, and returnes it */

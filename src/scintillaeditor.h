@@ -37,6 +37,9 @@ Usage Agreement:
 
 #include <QWidget>
 #include <QString>
+#include <QHash>
+#include <QMenu>
+#include <QActionGroup>
 #include <QFileInfo>
 #include <QSettings>
 #include <Qsci/qsciscintilla.h>
@@ -46,6 +49,7 @@ Usage Agreement:
 class ScintillaEditor : public QsciScintilla
 {
     Q_OBJECT
+    //Q_PROPERTY(QString _fileName READ fileName WRITE setFileName)
 
     public:
         explicit ScintillaEditor(QWidget* parent = 0);
@@ -72,6 +76,13 @@ class ScintillaEditor : public QsciScintilla
         bool wasFileSaved();
         /* returns wheater changes to the open file have been saved/writen */
 
+        QMenu* getLanguageMenu();
+        /* -returns the language selection menu */
+
+    public slots:
+        void setLanguage(QAction* langAction);
+        /* -sets highlighting language based on 'langAction' */
+
     private:
         QFileInfo openFile; //path to file currently being edited
 
@@ -79,6 +90,11 @@ class ScintillaEditor : public QsciScintilla
 
         LeptonLexer* lexer; //lexer to be used for highlighting
 
+        QMenu* languageMenu;    //menu to select the language for highlighting
+
+        QActionGroup* languageGroup;    //list of all lenguages actions in the language menu
+
+        QHash<QAction*, QString>* langFileFromAction;   //lookup table to index language file paths from language actions
 };
 
 #endif // SCINTILLAEDITOR_H

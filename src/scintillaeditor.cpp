@@ -32,11 +32,18 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <QApplication>
 #include <QFile>
+#include <QFont>
+#include <QDir>
+#include <QList>
+#include <QDomDocument>
 #include <QMessageBox>
 #include <Qsci/qscilexercpp.h>
 
 #include "scintillaeditor.h"
+
+#include <QDebug>
 
 
 
@@ -46,10 +53,50 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //set and display line numbers; margin '1' is the default line number maring
     setMarginWidth(1, "00000");
     setMarginLineNumbers(1, true);
+
+    //apply lexer
+    lexer = new LeptonLexer(this);
+    setLexer(lexer);
+
+    //language menu to select the language for syntax highlighting
+    languageMenu = new QMenu("Language", this);
+    languageGroup = new QActionGroup(languageMenu);
+    langFileFromAction = new QHash<QAction*, QString>;
+
+    //add action to select 'plain text' mode
+    QAction* lang = new QAction("Plain Text", languageMenu);
+    lang->setCheckable(true);
+    languageGroup->addAction(lang);
+    langFileFromAction->insert(lang, "" );
+
+    //add an action for each language file
+    QDir langsDir("languages");
+    langsDir.setNameFilters( QStringList("*.xml") );
+    QStringList langsFileList = langsDir.entryList();   //get list of file paths
+
+    //for each file in the path list, parse the file to get the language name and create an action for the language
+    foreach (const QString& langFileName, langsFileList) {
+        QFile langFile( langsDir.absoluteFilePath(langFileName) );
+        QDomDocument langDef("language_def");
+        if ( ! langDef.setContent(&langFile) ) continue;
+        QString langName = langDef.documentElement().attribute("name"); //get the language name
+        if ( langName.isEmpty() ) continue;
+        lang = new QAction(langName, languageMenu); //create language action
+        lang->setCheckable(true);
+        languageGroup->addAction(lang);
+        langFileFromAction->insert(lang, langsDir.absoluteFilePath(langFileName) );
+    }
+    languageMenu->addActions( languageGroup->actions() );
+
+    connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
+
     //*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
     //$                                                                    $$
         setFolding(BoxedTreeFoldStyle);     //display line folding margins
+        QFont editorFont = QFont("Liberation Mono", 10);
+        editorFont.setStyleHint(QFont::Monospace);
+        setFont( QFont("Liberation Mono", 10) );
         //QsciLexerCPP* cpp = new QsciLexerCPP();
         //setLexer(cpp);
         //QSettings s("Lepton", "Lepton");
@@ -57,14 +104,30 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
         //char* c = new char(' ');
         //cpp->writeSettings(s, c);
         //qDebug() << s.;
-        lexer = new LeptonLexer(this);
-        setLexer(lexer);
     //$                                                                    $$
     //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 }
 
 ScintillaEditor::~ScintillaEditor() {
     setLexer(); //clear lexer use before deleting instance
+
+    //get all lagnuage actions
+    QList< QAction* > actionList = langFileFromAction->keys();
+
+    //remove each action from 'languageGroup' and delete the action
+    for ( int i = 0, len = actionList.length(); i < len; i++ ) {
+        languageGroup->removeAction( actionList[i] );
+        delete actionList[i];
+    }
+
+    //clear the action lists
+    langFileFromAction->clear();
+    languageMenu->clear();
+
+    //delete allocated memory
+    delete langFileFromAction;
+    delete languageGroup;
+    delete languageMenu;
     delete lexer;
 }
 
@@ -125,4 +188,18 @@ QString ScintillaEditor::getOpenFileName() {
 bool ScintillaEditor::wasFileSaved() {
 /* returns wheater changes to the open file have been saved/writen */
     return !( isModified() );
+}
+
+QMenu* ScintillaEditor::getLanguageMenu() {
+/* -returns the language selection menu */
+    return languageMenu;
+}
+
+
+
+//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void ScintillaEditor::setLanguage(QAction* langAction) {
+/* -sets highlighting language based on 'langAction' */
+    lexer->getLanguageData( langFileFromAction->value(langAction) );
+    this->recolor();
 }

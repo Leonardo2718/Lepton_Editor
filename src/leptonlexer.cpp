@@ -42,8 +42,6 @@ Usage Agreement:
 
 #include "leptonlexer.h"
 
-#include <QDebug>
-
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,8 +50,8 @@ LeptonLexer::LeptonLexer(QObject *parent) : QsciLexerCustom(parent) {
     languageName = NULL;
 
     resetRules();
-
-    getLanguageData("languages/cplusplus.xml");
+    getLanguageData();
+    //getLanguageData("languages/cplusplus.xml");
     //getLanguageData("languages/python.xml");
     //connect(this->editor(), SIGNAL(textChanged()), this, SLOT(styleText(0, editor()->text().length())) );
     //getStyleFormat("styles/default.xml");
@@ -300,7 +298,14 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
 -gets language rules from file
 -returns true if the data was successfully extracted, false otherwise
 */
-    resetRules();   //reset everything before changing things
+    //reset everything before changing things
+    resetRules();
+
+    //if no language file is specified, assume no syntax highlighting
+    if ( languageFilePath.isEmpty() ) {
+        getDefaultStyle();
+        return true;
+    }
 
     //get the xml file
     QFile xmlFile(languageFilePath);
@@ -434,6 +439,8 @@ bool LeptonLexer::getStyleFormat(const QString& styleFilePath) {
 -gets styling data from file
 -returns true if data was successfully extracted, false otherwise
 */
+    getDefaultStyle();
+
     //get the xml file
     QFile xmlFile(styleFilePath);
     QDomDocument styleDoc("style_doc");
@@ -442,9 +449,6 @@ bool LeptonLexer::getStyleFormat(const QString& styleFilePath) {
     //get the document element
     QDomElement styleElement = styleDoc.documentElement();
     if ( styleElement.nodeName() != "format") return false;
-
-    setDefaultPaper( QColor(200, 200, 200) );
-    setDefaultColor( QColor(0, 0, 0) );
 
     //get data from the different elements with no 'type' attribute
     getStyleData( styleElement.lastChildElement("numbers"), NUMBER_STYLE);
@@ -675,6 +679,13 @@ void LeptonLexer::getStyleData(QDomElement styleElement, quint8 style) {
         QColor color = getColor(colorString);
         setColor(color, style);
     }
+}
+
+bool LeptonLexer::getDefaultStyle() {
+/* -gets the default style values */
+    setDefaultPaper( QColor(200, 200, 200) );
+    setDefaultColor( QColor(0, 0, 0) );
+    setDefaultFont( QFont("Monospace", 10) );
 }
 
 QColor LeptonLexer::getColor(QString colorString) {

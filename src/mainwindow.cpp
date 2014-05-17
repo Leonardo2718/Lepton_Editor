@@ -52,11 +52,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //instantiate editing area
     editors = new EditorTabBar(this);
     ui->textEditorArea->insertWidget(0, editors);
-    editors->addTab();
+
+    //create a new editor
+    int tabIndex = editors->addTab();
+    //ui->menuBar->insertMenu( ui->menuCustomize->menuAction(), editors->getEditor(tabIndex)->getLanguageMenu() );
 
     //set language selector menu
-    langSelector = NULL;        //null initial language selector to allow "dereferencing"
-    //setLanguageSelectorMenu();  //set language selector from editing tab instance
+    //langSelector = NULL;        //null initial language selector to allow "dereferencing"
+    setLanguageSelectorMenu();  //set language selector from editing tab instance
 
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(tabCloseRequested(int)), this, SLOT(editTabChanged()) );
@@ -64,6 +67,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 }
 
 MainWindow::~MainWindow() {
+    /*for ( int i = 0, c = editors->count(); i < c; i++) {
+        ui->menuBar->removeAction( editors->getEditor(i)->getLanguageMenu()->menuAction() );
+    }*/
     delete ui;
 }
 
@@ -73,6 +79,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
 /* -called whenever a close window is requested */
+    disconnect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     int err = editors->closeAll();  //request to close all open tabs
     if (err != 0) event->ignore();  //if a tab was not closed, do not close the window
     else event->accept();           //if all tabs where closed, close the main window
@@ -95,7 +102,7 @@ void MainWindow::on_actionOpen_triggered() {
         editors->current()->loadFile(filePath);                 //load the file contents into the editor
     }*/
     if ( filePath.isEmpty() ) return;
-    if ( ! editors->current()->text().isEmpty() ) { //if text is already presend in the current editor, create a new tab
+    if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
         qint8 i = editors->addTab();
         editors->setCurrentIndex(i);
     }
@@ -104,7 +111,9 @@ void MainWindow::on_actionOpen_triggered() {
 
 void MainWindow::on_actionNew_triggered() {
 /* -open a new tab */
-    editors->addTab();
+    int tabIndex = editors->addTab();
+    ui->menuBar->insertMenu( ui->menuCustomize->menuAction(), editors->getEditor(tabIndex)->getLanguageMenu() );
+    setLanguageSelectorMenu();
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -233,4 +242,5 @@ void MainWindow::setLanguageSelectorMenu() {
         ui->menuBar->removeAction(langSelector);*/ //stop pointing to it
 
     //langSelector = ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );  //set and point to the new languages selector
+    ui->menuLanguage->menuAction()->setMenu( editors->current()->getLanguageMenu() );
 }

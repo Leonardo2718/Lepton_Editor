@@ -91,7 +91,7 @@ class MainWindow : public QMainWindow {
     private:
         Ui::MainWindow* ui;     //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;
-        QAction* langSelector;  //temporary pointer to language selector menu
+        //QAction* langSelector;  //temporary pointer to language selector menu
 
 
         void saveFile(int index);

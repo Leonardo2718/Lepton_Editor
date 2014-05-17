@@ -209,9 +209,9 @@
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
-    <addaction name="actionSave_All"/>
     <addaction name="actionSave_As"/>
     <addaction name="actionSave_Copy_As"/>
+    <addaction name="actionSave_All"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -220,8 +220,40 @@
     <addaction name="actionProject_Manager"/>
     <addaction name="actionEditor_Tools"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout_Lepton_Editor"/>
+    <addaction name="actionGitHub_Page"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuDocument">
+    <property name="title">
+     <string>Document</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuCustomize">
+    <property name="title">
+     <string>Customize</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuLanguage">
+    <property name="title">
+     <string>Language</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuDocument"/>
+   <addaction name="menuLanguage"/>
+   <addaction name="menuCustomize"/>
    <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="movable">
@@ -294,6 +326,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+S</string>
+   </property>
+  </action>
+  <action name="actionAbout_Lepton_Editor">
+   <property name="text">
+    <string>About Lepton Editor</string>
+   </property>
+  </action>
+  <action name="actionGitHub_Page">
+   <property name="text">
+    <string>GitHub Page</string>
    </property>
   </action>
  </widget>
