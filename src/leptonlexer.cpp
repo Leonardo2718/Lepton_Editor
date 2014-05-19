@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: May 13, 2014
+Last Modified: May 18, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,6 +41,9 @@ Usage Agreement:
 #include <Qsci/qsciscintilla.h>
 
 #include "leptonlexer.h"
+#include "generalconfig.h"
+
+#include <QDebug>
 
 
 
@@ -51,6 +54,7 @@ LeptonLexer::LeptonLexer(QObject *parent) : QsciLexerCustom(parent) {
 
     resetRules();
     getLanguageData();
+    setAutoIndentStyle(QsciScintilla::AiMaintain);
     //getLanguageData("languages/cplusplus.xml");
     //getLanguageData("languages/python.xml");
     //connect(this->editor(), SIGNAL(textChanged()), this, SLOT(styleText(0, editor()->text().length())) );
@@ -318,9 +322,10 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
 
     //if the current language uses some of the rules of another language, load the other language first
     if ( langElement.hasAttribute("use") ) {
-        QString path = QFileInfo(xmlFile).absolutePath().append("/");
+        //QString path = QFileInfo(xmlFile).absolutePath().append("/");
         QString file = langElement.attribute("use");
-        getLanguageData( path.append(file) );
+        //getLanguageData( path.append(file) );
+        getLanguageData( GeneralConfig::getLangFilePath(file) );
     }
 
     //get the language name
@@ -330,10 +335,11 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
     //get the styling file
     if ( ! langElement.hasAttribute("style") ) return false;
     QString styleFile = langElement.attribute("style");
-    QDir pathDir(languageFilePath);
-    pathDir.cd("../../styles");
-    QString styleFilePath = pathDir.absoluteFilePath(styleFile);
-    getStyleFormat(styleFilePath);
+    //QDir pathDir(languageFilePath);
+    //pathDir.cd("../../styles");
+    //QString styleFilePath = pathDir.absoluteFilePath(styleFile);
+    //getStyleFormat(styleFilePath);
+    getStyleFormat( GeneralConfig::getStyleFilePath(styleFile) );
     /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% The code above gets executed multiple times because of the 'use' attribute %%
     %%% which causes an other language file to be loaded.  This needs to be fixed. %%
@@ -686,6 +692,15 @@ bool LeptonLexer::getDefaultStyle() {
     setDefaultPaper( QColor(200, 200, 200) );
     setDefaultColor( QColor(0, 0, 0) );
     setDefaultFont( QFont("Monospace", 10) );
+
+    //set styling in editor settings
+    if (editor() == NULL) return false;
+    editor()->setUnmatchedBraceBackgroundColor( QColor(200, 200, 200) );
+    editor()->setMatchedBraceBackgroundColor( QColor(200, 200, 200) );
+    editor()->setWhitespaceVisibility(QsciScintilla::WsVisible);
+    editor()->setWhitespaceForegroundColor( QColor(225, 225, 225) );
+
+    return true;
 }
 
 QColor LeptonLexer::getColor(QString colorString) {

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 8, 2014
+Last Modified: May 17, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a

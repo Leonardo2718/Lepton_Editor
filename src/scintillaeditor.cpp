@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 8, 2014
+Last Modified: May 18, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -42,6 +42,7 @@ Usage Agreement:
 #include <Qsci/qscilexercpp.h>
 
 #include "scintillaeditor.h"
+#include "generalconfig.h"
 
 #include <QDebug>
 
@@ -70,7 +71,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     langFileFromAction->insert(lang, "" );
 
     //add an action for each language file
-    QDir langsDir("languages");
+    QDir langsDir( GeneralConfig::getLangsDirPath() );
     langsDir.setNameFilters( QStringList("*.xml") );
     QStringList langsFileList = langsDir.entryList();   //get list of file paths
 
@@ -87,17 +88,26 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
         langFileFromAction->insert(lang, langsDir.absoluteFilePath(langFileName) );
     }
     languageMenu->addActions( languageGroup->actions() );
+    languageMenu->setDefaultAction( langFileFromAction->key("Plain Text") );
 
+    //connect signals to slots
     connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
 
-    //*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //set editor properties
+    setAutoIndent(true);
+    setTabWidth(4);
+    editor()->setBraceMatching(QsciScintilla::StrictBraceMatch);
+
+    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
     //$                                                                    $$
         setFolding(BoxedTreeFoldStyle);     //display line folding margins
-        QFont editorFont = QFont("Liberation Mono", 10);
-        editorFont.setStyleHint(QFont::Monospace);
-        setFont( QFont("Liberation Mono", 10) );
-        //QsciLexerCPP* cpp = new QsciLexerCPP();
+        //qDebug() << SendScintilla(QsciScintillaBase::SC_FOLDLEVELHEADERFLAG, 0);
+        setFoldMarker(0);
+        SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL,0, 1);
+        //QFont editorFont;
+        //editorFont.setStyleHint(QFont::Monospace);
+        //setFont( QFont("Liberation Mono", 10) );
         //setLexer(cpp);
         //QSettings s("Lepton", "Lepton");
         //char* c = new char('/Scintilla');

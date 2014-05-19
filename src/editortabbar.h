@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.h
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: May 5, 2014
+Last Modified: May 17, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
