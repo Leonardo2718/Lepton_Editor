@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: May 18, 2014
+Last Modified: May 20, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -689,16 +689,27 @@ void LeptonLexer::getStyleData(QDomElement styleElement, quint8 style) {
 
 bool LeptonLexer::getDefaultStyle() {
 /* -gets the default style values */
+    /*
     setDefaultPaper( QColor(200, 200, 200) );
     setDefaultColor( QColor(0, 0, 0) );
     setDefaultFont( QFont("Monospace", 10) );
+    */
+    setDefaultPaper( GeneralConfig::getDefaultPaper() );
+    setDefaultColor(  GeneralConfig::getDefaultTextColor() );
+    setDefaultFont( GeneralConfig::getDefaultEditorFont() );
 
     //set styling in editor settings
     if (editor() == NULL) return false;
+    /*
     editor()->setUnmatchedBraceBackgroundColor( QColor(200, 200, 200) );
     editor()->setMatchedBraceBackgroundColor( QColor(200, 200, 200) );
     editor()->setWhitespaceVisibility(QsciScintilla::WsVisible);
     editor()->setWhitespaceForegroundColor( QColor(225, 225, 225) );
+    */
+    editor()->setUnmatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
+    editor()->setMatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
+    editor()->setWhitespaceVisibility( GeneralConfig::getWhiteSpaceVisibility() );
+    editor()->setWhitespaceForegroundColor( GeneralConfig::getWhiteSpaceColor() );
 
     return true;
 }

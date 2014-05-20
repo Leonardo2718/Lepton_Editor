@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.h
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: May 18, 2014
+Last Modified: May 20, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,6 +36,9 @@ Usage Agreement:
 #define GENERALCONFIG_H
 
 #include <QString>
+#include <QColor>
+#include <QFont>
+#include <Qsci/qsciscintilla.h>
 
 class GeneralConfig {
     public:
@@ -66,6 +69,27 @@ class GeneralConfig {
 
         static QString getStyleFilePath(const QString& fileName);
         /* -returns absolute path to a styling file */
+
+        static QString getConfigData(const QString &filePath, const QString& item, const QString& field);
+        /* -returns data from config file 'filePath' stored under 'item' and in 'field' */
+
+        static QColor getColorFromString(QString colorString);
+        /* -converts a color defined in a string to a 'QColor' object, using regexp validation, and returnes it */
+
+        static QColor getDefaultPaper();
+        /* -returns default 'QColor' for editor paper/background */
+
+        static QColor getDefaultTextColor();
+        /* -returns default 'QColor' for editor text */
+
+        static QFont getDefaultEditorFont();
+        /* -returns default 'QFont' for editor text */
+
+        static QsciScintilla::WhitespaceVisibility getWhiteSpaceVisibility();
+        /* -returns the visibility of white spaces in editor */
+
+        static QColor getWhiteSpaceColor();
+        /* -returns color of white space when visible in editor */
 };
 
 #endif // GENERALCONFIG_H

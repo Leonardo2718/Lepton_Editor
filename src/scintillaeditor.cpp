@@ -96,7 +96,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //set editor properties
     setAutoIndent(true);
     setTabWidth(4);
-    editor()->setBraceMatching(QsciScintilla::StrictBraceMatch);
+    setBraceMatching(QsciScintilla::StrictBraceMatch);
 
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
