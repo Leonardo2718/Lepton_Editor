@@ -46,8 +46,8 @@ This element contains the style definition for block expressions (like block com
 This is currently the only tag which actually defines a styling feature; color.  It encloses the color which will be used when highlighting
 the token specified by the parent element.  The color can be specified in 3 different ways:
 
-1. By specifing 3 or 4 numbers (between 0 and 255, separated by spaces) which represent the **R (red)**, **G (green)**, **B (blue)**, and **A (alpha/transparency, optional)** values which define the color.  eg. ```<color> 150 80 210 </color>```
-2. By specifing the hex value of the color in one of the following formats:
+1. By specifying 3 or 4 numbers (between 0 and 255, separated by spaces) which represent the **R (red)**, **G (green)**, **B (blue)**, and **A (alpha/transparency, optional)** values which define the color.  eg. ```<color> 150 80 210 </color>```
+2. By specifying the hex value of the color in one of the following formats:
   - #RGB
   - #RRGGBB -> most common
   - #AARRGGBB
