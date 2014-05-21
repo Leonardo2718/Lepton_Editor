@@ -10,7 +10,6 @@
     <linecomment> <color> 0 130 20 </color> </linecomment>
     <blockcomment> <color> 0 130 20 </color> </blockcomment>
     <quotations> <color> 0 0 180 </color> </quotations>
-    <escapedchar> <color> 0 140 255 </color> </escapedchar>
     <lineexpression type="0"> <color> 0 130 20  </color> </lineexpression>
     <lineexpression type="1"> <color> #008282 </color> </lineexpression>
     <blockexpression type="0"> <color> 0 130 20 </color> </blockexpression>
