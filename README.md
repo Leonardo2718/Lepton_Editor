@@ -7,14 +7,15 @@ liking.  It is entirely programmed using C++ and Qt 5.2.1 framework, making it c
 platform and relatively lightweight.
 
 At the moment, Lepton Editor is still in early alpha state.  I am actively developing
-new features so it will be a little buggy.  However, I will do my best to make it
-stable enough so its at least usable.
+new features so it will be buggy.
 
 ### Current Features
 - syntax highlighting for : 
   - C/C++
   - Python
   - Octave/Matlab
+- auto indentation
+- brace matching
 
 See the other README files to add new languages and highlighting styles.
 
@@ -26,8 +27,6 @@ See the other README files to add new languages and highlighting styles.
 - more editing options:
   - tabs vs spaces
   - indent space count
-  - auto indentation.
-- bracket matching
 - code folding
 - saving sessions
 - basic project manager
@@ -37,7 +36,8 @@ Building and Running
 
 After having cloned the repository, you can build Lepton Editor by either opening the project
 (.pro file) in Qt Creator (version 3.0.1 or later) and build it from there or you can manually
-build the .pro file using qmake 5.2.1 or later.
+build the .pro file using qmake 5.2.1 or later.  The only dependency for this build is
+QScintilla2: http://www.riverbankcomputing.co.uk/software/qscintilla/intro
 
 If the build was successful, you should be able to just run the executable.  Make sure that the
 'styles' and 'languages' directories are in the same path as the executable.  If they are not,
