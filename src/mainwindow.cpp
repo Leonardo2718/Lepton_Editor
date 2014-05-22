@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 5, 2014
+Last Modified: May 21, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -34,6 +34,7 @@ Usage Agreement:
 //include necessary files and libraries
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "generalconfig.h"
 
 
 
@@ -64,6 +65,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(tabCloseRequested(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
+
+    QString styleSheet;
+    GeneralConfig::getStyleSheetInto(styleSheet);
+    qApp->setStyleSheet(styleSheet);
+
+    //ui->statusBar->
 }
 
 MainWindow::~MainWindow() {

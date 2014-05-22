@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 18, 2014
+Last Modified: May 20, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -52,7 +52,8 @@ Usage Agreement:
 
 ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //set and display line numbers; margin '1' is the default line number maring
-    setMarginWidth(1, "00000");
+    //setMarginWidth(1, "00000");
+    setMarginWidth(1, 55);
     setMarginLineNumbers(1, true);
 
     //apply lexer
@@ -97,6 +98,8 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setAutoIndent(true);
     setTabWidth(4);
     setBraceMatching(QsciScintilla::StrictBraceMatch);
+    setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
+    setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
 
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$

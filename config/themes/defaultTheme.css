@@ -1,0 +1,109 @@
+/*$$$ from example on http://qt-project.org/doc/qt-5/stylesheet-examples.html $$$*/
+QMenu {
+    background-color: #ABABAB; /* sets background of the menu */
+    border: 1px solid black;
+}
+
+QMenu::item {
+    /* sets background of menu item. set this to something non-transparent
+    if you want menu color and menu item color to be different */
+    background-color: transparent;
+}
+
+QMenu::item:selected { /* when user selects item using mouse or keyboard */
+    background-color: #654321;
+}
+QMenuBar {
+    background-color: darkgray;
+}
+
+QMenuBar::item {
+    /*spacing: 3px;  spacing between menu bar items */
+    /*padding: 1px 4px;*/
+    background: transparent;
+    /*border-radius: 4px;*/
+}
+
+QMenuBar::item:selected { /* when selected using mouse or keyboard */
+    background: #a8a8a8;
+}
+
+QMenuBar::item:pressed {
+    background: #888888;
+}
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
+
+
+/*~Tab bar~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+QTabBar {
+    background-color: #888888;
+}
+
+QTabBar::tab {
+    height: 25px;
+    background-color: #b0b0b0;
+    /*border: 2px 2px 2px 2pxsolid #ffffff;*/
+    border-left: 2px solid #C4C4C4;
+    padding-left: 7px;
+}
+
+QTabBar::tab:selected {
+    background-color: #C4C4C4;
+}
+
+QTabBar::tab:hover {
+    background-color: #CDCDCD;
+}
+
+
+/*~Tool Bar~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+QToolBar {
+    background-color: #BBBBBB;
+}
+
+
+/*~Scroll Bars~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+QScrollBar:horizontal {
+    border: 2px solid #888888;
+    background: #BBBBBB;
+    height: 13px;
+    margin: 0px 20px 0px 20px;
+}
+QScrollBar::handle:horizontal {
+    background: #888888;
+    min-width: 20px;
+}
+QScrollBar::add-line:horizontal {
+    width: 20px;
+    subcontrol-position: right;
+    subcontrol-origin: margin;
+}
+
+ QScrollBar:vertical {
+     border: 2px solid #888888;
+     background: #BBBBBB;
+     width: 13px;
+     margin: 22px 0 22px 0;
+ }
+ QScrollBar::handle:vertical {
+     background: #888888;
+     min-height: 20px;
+ }
+ QScrollBar::add-line:vertical {
+     height: 20px;
+     subcontrol-position: bottom;
+     subcontrol-origin: margin;
+ }
+
+
+/*~Status Bar~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+QStatusBar {
+    height: 16px;
+    background-color: #888888;
+}
+
+/*QStatusBar QSizeGrip {
+    image: url(:/images/sizegrip.png);
+    width: 16px;
+    height: 16px;
+}*/

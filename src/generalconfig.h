@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.h
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: May 20, 2014
+Last Modified: May 21, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -90,6 +90,15 @@ class GeneralConfig {
 
         static QColor getWhiteSpaceColor();
         /* -returns color of white space when visible in editor */
+
+        static QColor getMarginsBackground();
+        /* -returns backgroung color for margins (line numbering etc.) */
+
+        static QColor getMarginsForeground();
+        /* -returns foreground color for margins (line numbering etc.) */
+
+        static void getStyleSheetInto(QString& styleSheet);
+        /* -returns style sheet read from file */
 };
 
 #endif // GENERALCONFIG_H

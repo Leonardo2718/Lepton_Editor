@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: May 20, 2014
+Last Modified: May 21, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -271,4 +271,39 @@ QColor GeneralConfig::getWhiteSpaceColor() {
     QColor c = getColorFromString(colorString);
     if ( c.isValid() ) return c;
     else return QColor(255,255,255);
+}
+
+QColor GeneralConfig::getMarginsBackground() {
+/* -returns backgroung color for margins (line numbering etc.) */
+    //get data from config file
+    QString colorString = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "margins-background");
+
+    //process and return value
+    QColor c = getColorFromString(colorString);
+    if ( c.isValid() ) return c;
+    else return QColor(255,255,255);
+}
+
+QColor GeneralConfig::getMarginsForeground() {
+/* -returns foreground color for margins (line numbering etc.) */
+    //get data from config file
+    QString colorString = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "margins-foreground");
+
+    //process and return value
+    QColor c = getColorFromString(colorString);
+    if ( c.isValid() ) return c;
+    else return QColor(255,255,255);
+}
+
+void GeneralConfig::getStyleSheetInto(QString& styleSheet) {
+/* -returns style sheet read from file */
+    QString path = getConfigData( getConfigFilePath("config/theme.conf"), "MainWindow", "theme").prepend("config/themes/");
+    QFile file( getConfigFilePath(path) );
+    if ( ! file.exists() ) {
+        styleSheet = QString();
+        return;
+    }
+    file.open(QIODevice::ReadOnly | QIODevice::ReadWrite);
+    styleSheet = file.readAll().simplified();
+    file.close();
 }

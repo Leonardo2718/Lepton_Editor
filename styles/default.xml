@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <format>
-    <keywords type="0" >
+    <!--<keywords type="0" >
         <color> 150 80 210 </color>
     </keywords>
     <keywords type="1" >
@@ -13,5 +13,20 @@
     <lineexpression type="0"> <color> 0 130 20  </color> </lineexpression>
     <lineexpression type="1"> <color> #008282 </color> </lineexpression>
     <blockexpression type="0"> <color> 0 130 20 </color> </blockexpression>
-    <blockexpression type="1"> <color> orange </color> </blockexpression>
+    <blockexpression type="1"> <color> orange </color> </blockexpression>-->
+    <keywords type="0" >
+        <color> #AA53F0 </color>
+    </keywords>
+    <keywords type="1" > <color> #AFBA00 </color> </keywords>
+    <numbers> <color> #EB3939 </color> </numbers>
+    <linecomment> <color> #BE7300 </color> </linecomment>
+    <blockcomment> <color> #BE7300 </color> </blockcomment>
+    <quotations> <color> #6C6FFF </color> </quotations>
+    <expression type="0"> <color> #AA53F0 </color> </expression>
+    <expression type="1"> <color> #AFBA00 </color> </expression>
+    <expression type="2"> <color> #EB3939 </color> </expression>
+    <lineexpression type="0"> <color> #BE7300 </color> </lineexpression>
+    <lineexpression type="1"> <color> #0094B1 </color> </lineexpression>
+    <blockexpression type="0"> <color> #BE7300 </color> </blockexpression>
+    <blockexpression type="1"> <color> #6C6FFF </color> </blockexpression>
 </format>
