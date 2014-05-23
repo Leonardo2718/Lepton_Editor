@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 21, 2014
+Last Modified: May 22, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -63,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
-    connect(editors, SIGNAL(tabCloseRequested(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
 
     QString styleSheet;
@@ -249,5 +248,6 @@ void MainWindow::setLanguageSelectorMenu() {
         ui->menuBar->removeAction(langSelector);*/ //stop pointing to it
 
     //langSelector = ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );  //set and point to the new languages selector
+    if ( editors->count() < 1 ) return;
     ui->menuLanguage->menuAction()->setMenu( editors->current()->getLanguageMenu() );
 }

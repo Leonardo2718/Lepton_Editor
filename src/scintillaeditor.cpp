@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 20, 2014
+Last Modified: May 22, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -123,6 +123,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
 
 ScintillaEditor::~ScintillaEditor() {
     setLexer(); //clear lexer use before deleting instance
+    disconnect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
 
     //get all lagnuage actions
     QList< QAction* > actionList = langFileFromAction->keys();

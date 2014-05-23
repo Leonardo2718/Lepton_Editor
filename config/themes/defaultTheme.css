@@ -1,4 +1,8 @@
-/*$$$ from example on http://qt-project.org/doc/qt-5/stylesheet-examples.html $$$*/
+.QWidget {
+    background: #888888;
+}
+
+/*$$$ from example on http://qt-project.org/doc/qt-5/stylesheet-examples.html (colors changed$$$*/
 QMenu {
     background-color: #ABABAB; /* sets background of the menu */
     border: 1px solid black;
@@ -11,25 +15,29 @@ QMenu::item {
 }
 
 QMenu::item:selected { /* when user selects item using mouse or keyboard */
-    background-color: #654321;
+    background-color: #4C4C4C;
 }
 QMenuBar {
-    background-color: darkgray;
+    /*background-color: darkgray;*/
+    background-color: #888888;
 }
 
 QMenuBar::item {
     /*spacing: 3px;  spacing between menu bar items */
     /*padding: 1px 4px;*/
     background: transparent;
+    color: #CCCCCC;
     /*border-radius: 4px;*/
 }
 
 QMenuBar::item:selected { /* when selected using mouse or keyboard */
     background: #a8a8a8;
+    color: #000000;
 }
 
 QMenuBar::item:pressed {
-    background: #888888;
+    background: #a8a8a8;
+    color: #000000;
 }
 /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 
@@ -58,42 +66,64 @@ QTabBar::tab:hover {
 
 /*~Tool Bar~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 QToolBar {
-    background-color: #BBBBBB;
+    background-color: #ADADAD;
 }
 
 
 /*~Scroll Bars~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 QScrollBar:horizontal {
-    border: 2px solid #888888;
+    border: 0px solid #888888;
     background: #BBBBBB;
-    height: 13px;
-    margin: 0px 20px 0px 20px;
+    height: 12px;
+    margin: 0px 15px 0px 15px;
 }
 QScrollBar::handle:horizontal {
-    background: #888888;
-    min-width: 20px;
+    background: #4C4C4C;
+    min-width: 10px;
 }
 QScrollBar::add-line:horizontal {
-    width: 20px;
+    width: 13px;
+    height: 13px;
+    padding: 0px 0px 0px 0px transparent;
+    margin: 0px 0px 0px 0px transparent;
     subcontrol-position: right;
     subcontrol-origin: margin;
 }
+QScrollBar::sub-line:horizontal {
+    width: 13px;
+    height: 13px;
+    padding: 0px 0px 0px 0px transparent;
+    margin: 0px 0px 0px 0px transparent;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
 
- QScrollBar:vertical {
-     border: 2px solid #888888;
-     background: #BBBBBB;
-     width: 13px;
-     margin: 22px 0 22px 0;
- }
- QScrollBar::handle:vertical {
-     background: #888888;
-     min-height: 20px;
- }
- QScrollBar::add-line:vertical {
-     height: 20px;
-     subcontrol-position: bottom;
-     subcontrol-origin: margin;
- }
+QScrollBar:vertical {
+    border: 0px solid #888888;
+    background: #BBBBBB;
+    width: 13px;
+    margin: 16px 0 16px 0;
+}
+QScrollBar::handle:vertical {
+    background: #4C4C4C;
+    min-height: 10px;
+}
+QScrollBar::add-line:vertical {
+    height: 13px;
+    height: 13px;
+    padding: 0px 0px 0px 0px transparent;
+    margin: 0px 0px 0px 0px transparent;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical {
+    height: 13px;
+    height: 13px;
+    padding: 0px 0px 0px 0px transparent;
+    margin: 0px 0px 0px 0px transparent;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
 
 
 /*~Status Bar~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
