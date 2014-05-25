@@ -333,13 +333,17 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
     languageName = langElement.attribute("name").toUtf8().data();
 
     //get the styling file
-    if ( ! langElement.hasAttribute("style") ) return false;
-    QString styleFile = langElement.attribute("style");
-    //QDir pathDir(languageFilePath);
-    //pathDir.cd("../../styles");
-    //QString styleFilePath = pathDir.absoluteFilePath(styleFile);
-    //getStyleFormat(styleFilePath);
-    getStyleFormat( GeneralConfig::getStyleFilePath(styleFile) );
+    if ( langElement.hasAttribute("style") ) {
+        QString styleFile = langElement.attribute("style");
+        //QDir pathDir(languageFilePath);
+        //pathDir.cd("../../styles");
+        //QString styleFilePath = pathDir.absoluteFilePath(styleFile);
+        //getStyleFormat(styleFilePath);
+        QString styleFilePath = GeneralConfig::getStyleFilePath(styleFile);
+        if ( styleFilePath.isEmpty() ) styleFilePath = GeneralConfig::getStyleFilePath("default.xml");
+        bool err  = getStyleFormat( styleFilePath );
+        if (err == false) return false;
+    }
     /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% The code above gets executed multiple times because of the 'use' attribute %%
     %%% which causes an other language file to be loaded.  This needs to be fixed. %%

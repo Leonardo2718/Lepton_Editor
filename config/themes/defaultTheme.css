@@ -1,7 +1,26 @@
+/*~General~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 .QWidget {
     background: #888888;
 }
 
+
+/*~Splitters~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+QSplitter::handle {
+    /*image: url(images/splitter.png);*/
+    background-color: #ADADAD;
+}
+QSplitter::handle:horizontal {
+    width: 3px;
+}
+QSplitter::handle:vertical {
+    height: 3px;
+}
+/*QSplitter::handle:pressed {
+    url(images/splitter_pressed.png);
+}*/
+
+
+/*~Menu Bar~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*$$$ from example on http://qt-project.org/doc/qt-5/stylesheet-examples.html (colors changed$$$*/
 QMenu {
     background-color: #ABABAB; /* sets background of the menu */
