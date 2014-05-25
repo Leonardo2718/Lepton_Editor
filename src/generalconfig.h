@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.h
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: May 21, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,6 +43,7 @@ Usage Agreement:
 class GeneralConfig {
     public:
         GeneralConfig();
+        /* -empty */
 
         static QString getConfigDirPath(const QString& shortPath);
         /*

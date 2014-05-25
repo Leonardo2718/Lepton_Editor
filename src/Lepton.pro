@@ -1,10 +1,10 @@
 #------------------------------------------------------------------------------
 #
 # Project: Lepton Editor - Created by QtCreator 2014-01-31T12:45:13
-# File: main.cpp
+# File: Lepton.pro
 # Author: Leonardo Banderali
 # Created: January 31, 2014
-# Last Modified: May 5, 2014
+# Last Modified: May 24, 2014
 #
 # Description:
 #    Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,17 +44,13 @@ CONFIG      += qscintilla2
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-#    editor.cpp \
     editortabbar.cpp \
-#    syntaxhighlighter.cpp \
     scintillaeditor.cpp \
     leptonlexer.cpp \
     generalconfig.cpp
 
 HEADERS  += mainwindow.h \
-#    editor.h \
     editortabbar.h \
-#    syntaxhighlighter.h \
     scintillaeditor.h \
     leptonlexer.h \
     generalconfig.h
@@ -62,7 +58,3 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui
 
 unix|win32: LIBS += -lqscintilla2
-
-#macx {
-#    QMAKE_POST_LINK = install_name_tool -change libqscintilla2.11.dylib $$[QT_INSTALL_LIBS]/libqscintilla2.11.dylib $(TARGET)
-#}

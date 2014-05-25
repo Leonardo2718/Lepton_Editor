@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: May 21, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,8 +40,6 @@ Usage Agreement:
 #include <QTextStream>
 
 #include "generalconfig.h"
-
-#include <QDebug>
 
 GeneralConfig::GeneralConfig() {}
 
@@ -216,7 +214,7 @@ QColor GeneralConfig::getDefaultTextColor() {
     //process and return value
     QColor c = getColorFromString(colorString);
     if ( c.isValid() ) return c;
-    else return QColor(255,255,255);
+    else return QColor(0,0,0);
 }
 
 QFont GeneralConfig::getDefaultEditorFont() {
@@ -281,7 +279,7 @@ QColor GeneralConfig::getMarginsBackground() {
     //process and return value
     QColor c = getColorFromString(colorString);
     if ( c.isValid() ) return c;
-    else return QColor(255,255,255);
+    else return QColor(200,200,200);
 }
 
 QColor GeneralConfig::getMarginsForeground() {
@@ -292,7 +290,7 @@ QColor GeneralConfig::getMarginsForeground() {
     //process and return value
     QColor c = getColorFromString(colorString);
     if ( c.isValid() ) return c;
-    else return QColor(255,255,255);
+    else return QColor(0,0,0);
 }
 
 void GeneralConfig::getStyleSheetInto(QString& styleSheet) {

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: April 15, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -37,7 +37,6 @@ Usage Agreement:
 //include all necessary files and libraries
 #include <QMainWindow>
 #include <QActionGroup>
-#include "editor.h"
 #include "editortabbar.h"
 
 namespace Ui {
@@ -90,9 +89,7 @@ class MainWindow : public QMainWindow {
 
     private:
         Ui::MainWindow* ui;     //a pointer to the interface used to interact with the main window
-        EditorTabBar* editors;
-        //QAction* langSelector;  //temporary pointer to language selector menu
-
+        EditorTabBar* editors;  //pointer to editor tab bar object
 
         void saveFile(int index);
         /* -save content to open file */

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.h
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: May 17, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,7 +40,7 @@ Usage Agreement:
 #include <QAction>
 #include <QVector>
 #include <QMessageBox>
-//#include "editor.h"
+
 #include "scintillaeditor.h"
 
 class EditorTabBar : public QTabWidget
@@ -49,10 +49,10 @@ class EditorTabBar : public QTabWidget
 
     public:
         explicit EditorTabBar(QWidget *parent = 0);
-        /* -configure the widget */
+        /* -configure the widget and connect signals to slots */
 
         ~EditorTabBar();
-        /* -dealocates (deletes) all the editor tabs stored in 'tabs' */
+        /* -empty */
 
         int addTab(int index = -1);
         /*

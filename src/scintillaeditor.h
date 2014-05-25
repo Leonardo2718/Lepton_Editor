@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 17, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -49,12 +49,13 @@ Usage Agreement:
 class ScintillaEditor : public QsciScintilla
 {
     Q_OBJECT
-    //Q_PROPERTY(QString _fileName READ fileName WRITE setFileName)
 
     public:
         explicit ScintillaEditor(QWidget* parent = 0);
+        /* -setup editor and configurations */
 
         ~ScintillaEditor();
+        /* clean up and delete allocated memory */
 
         void writeToFile(const QString& filePath, bool changeModify = false);
         /*

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.h
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: May 12, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -37,17 +37,6 @@ Usage Agreement:
 #define LEPTONLEXER_H
 
 //define number of types
-/*#define DEFAULT_TYPES 1
-#define NUMBER_TYPES 1
-#define KEYWORD_TYPES 10
-#define EXPRESSION_TYPES 7
-#define LINECOMMENT_TYPES 1
-#define LINEEXPRESSION_TYPES 5
-#define QUOTE_TYPES 1
-#define BLOCKCOMMENT_TYPES 1
-#define BLOCKEXPRESSION_TYPES 6
-#define TOTAL_TYPES 32*/
-
 #define DEFAULT_TYPES 1
 #define NUMBER_TYPES 1
 #define KEYWORD_TYPES 8
@@ -60,15 +49,6 @@ Usage Agreement:
 #define TOTAL_TYPES 32
 
 //define indicies to locate token types in rule arrays
-/*#define NUMBER_INDEX 0
-#define KEYWORD_TYPE_INDEX 1
-#define EXPRESSION_TYPE_INDEX 11
-#define LINECOMMENT_INDEX 0
-#define LINEEXPRESSION_TYPE_INDEX 1
-#define QUOTE_INDEX 0
-#define BLOCKCOMMENT_INDEX 1
-#define BLOCKEXPRESSION_TYPE_INDEX 2*/
-
 #define NUMBER_INDEX 0
 #define KEYWORD_TYPE_INDEX 1
 #define EXPRESSION_TYPE_INDEX 9
@@ -78,10 +58,7 @@ Usage Agreement:
 #define BLOCKCOMMENT_INDEX 1
 #define BLOCKEXPRESSION_TYPE_INDEX 2
 
-//define other useful information
-//#define NO_TYPE false
-//#define HAS_TYPE true
-
+//includes
 #include <QString>
 #include <QDomDocument>
 #include <QColor>
@@ -97,12 +74,7 @@ class LeptonLexer : public QsciLexerCustom
     Q_OBJECT
 
     public:
-        //minimum range for styles
-        /*enum StyleTypeValue { NUMBER_STYLE = 0, QUOTE_STYLE = 1, LINECOMMENT_STYLE = 2, BLOCKCOMMENT_STYLE = 3,
-                              KEYWORD_STYLE_MIN = 4, KEYWORD_STYLE_MAX = 13,
-                              EXPRESSION_STYLE_MIN = 14, EXPRESSION_STYLE_MAX = 20,
-                              LINEEXP_STYLE_MIN = 21, LINEEXP_STYLE_MAX = 25,
-                              BLOCKEXP_STYLE_MIN = 26, BLOCKEXP_STYLE_MAX = 31 };*/
+        //range for styles
         enum StyleTypeValue { DEFAULT_STYLE = 0,
                               NUMBER_STYLE = 1,
                               KEYWORD_STYLE_MIN = 2, KEYWORD_STYLE_MAX = 9,

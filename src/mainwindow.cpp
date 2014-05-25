@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 22, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -32,6 +32,8 @@ Usage Agreement:
 */
 
 //include necessary files and libraries
+#include <QCloseEvent>
+#include <QFileDialog>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "generalconfig.h"
@@ -55,11 +57,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->textEditorArea->insertWidget(0, editors);
 
     //create a new editor
-    int tabIndex = editors->addTab();
-    //ui->menuBar->insertMenu( ui->menuCustomize->menuAction(), editors->getEditor(tabIndex)->getLanguageMenu() );
+    editors->addTab();
 
-    //set language selector menu
-    //langSelector = NULL;        //null initial language selector to allow "dereferencing"
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
@@ -73,9 +72,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 }
 
 MainWindow::~MainWindow() {
-    /*for ( int i = 0, c = editors->count(); i < c; i++) {
-        ui->menuBar->removeAction( editors->getEditor(i)->getLanguageMenu()->menuAction() );
-    }*/
     delete ui;
 }
 
@@ -96,17 +92,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 //~private slot implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void MainWindow::on_actionOpen_triggered() {
-/*
--open a file in an editor tab
-*/
+/* -open a file in an editor tab */
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"));  //open pop-up window to prompt user for file to be opend
-    /*if (!filePath.isEmpty()) {                              //if a file was selected
-        if( !editors->current()->toPlainText().isEmpty() ) {    //check if the current tab contains text; if it does
-            int i = editors->addTab();                              //create new tab
-            editors->setCurrentIndex(i);                            //set the new tab as the current tab
-        }
-        editors->current()->loadFile(filePath);                 //load the file contents into the editor
-    }*/
     if ( filePath.isEmpty() ) return;
     if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
         qint8 i = editors->addTab();
@@ -124,52 +111,21 @@ void MainWindow::on_actionNew_triggered() {
 
 void MainWindow::on_actionSave_triggered() {
 /* -save content of tab to corresponding file */
-    /*QString file = editors->current()->getOpenFilePath();
-    if ( file.isEmpty() ) on_actionSave_As_triggered(); //if no file is currently open, perform a 'save as' instead
-
-    //editors->current()->saveChanges();  //save changes of current editor
-    editors->current()->writeToFile(file, true);        //save changes and mark file as saved*/
     saveFile( editors->currentIndex() );
 }
 
 void MainWindow::save_signal_received(int index) {
 /* -save contents of tab with specified index */
-    /*if ( editors->getEditor(index)->getFileName().isEmpty() ) {    //if no file is being edited
-        on_actionSave_As_triggered();                           //perform a 'save as' instead of a 'save'
-        return;                                                 //
-    }
-    editors->getEditor(index)->saveChanges();  //save changes of current editor
-    QString file = editors->getEditor(index)->getOpenFilePath();
-    if ( file.isEmpty() ) return;
-
-    //editors->current()->saveChanges();  //save changes of current editor
-    editors->getEditor(index)->writeToFile(file, true);*///save changes and mark file as saved
     saveFile( index );
 }
 
 void MainWindow::on_actionSave_As_triggered() {
 /* -save content of tab to a new file */
-    //editors->saveAs();
-    /*QString file = QFileDialog::getSaveFileName(this, tr("Save As") );  //get a new file name
-    if ( file.isEmpty() ) return;                                       //check if file name was specified
-    QFile* file = new QFile(filePath);                                      //connect the new file
-    file->open(QIODevice::WriteOnly | QIODevice::ReadWrite);                //open the new file in order to create it (in case it does not already exist)
-    file->close();                                                         //
-    //editors->current()->saveChangesTo(file);                                //save changes to the new file
-    editors->current()->writeToFile(file);
-    editors->current()->loadFile(file);*/
     saveFileAs( editors->currentIndex() );
 }
 
 void MainWindow::on_actionSave_Copy_As_triggered(){
 /* -save a copy of the content in the tab to a new file */
-    /*QString file = QFileDialog::getSaveFileName(this, tr("Save Copy As") ); //get a new file name
-    if ( file.isEmpty() ) return;                                           //check if file name was specified
-    QFile* file = new QFile(filePath);                                          //open the new file
-    file->open(QIODevice::WriteOnly | QIODevice::ReadWrite);                    //open the new file in order to create it (in case it does not already exist)
-    file->close();                                                              //
-    //editors->current()->saveCopyOfChanges(file);                                //save changes to the new file
-    editors->current()->writeToFile(file);*/
     saveFileCopyAs( editors->currentIndex() );
 }
 
@@ -186,19 +142,6 @@ void MainWindow::on_actionEditor_Tools_toggled(bool visible) {
 void MainWindow::on_actionSave_All_triggered() {
 /* -save changes to all documents */
     for (int i = 0, l = editors->count(); i < l; i++) {
-        /*if ( editors->getEditor(i)->getOpenFileName().isEmpty() ) {
-        //if no file is currently open
-            //perform a 'save as' instead of a 'save'
-            QString file = QFileDialog::getSaveFileName(this, tr("Save Copy As") ); //get a new file name
-            if ( file.isEmpty() ) return;                                           //check if file name was specified
-            QFile* file = new QFile(filePath);                                          //open the new file
-            file->open(QIODevice::WriteOnly | QIODevice::ReadWrite);                    //open the new file in order to create it (in case it does not already exist)
-            file->close();                                                              //
-            editors->getEditor(i)->writeToFile(file);                             //save changes to the new file
-            editors->getEditor(i)->loadFile(file);
-            continue;
-        }
-        editors->getEditor(i)->writeToFile( editors->getEditor(i)->getOpenFilePath(), true);*/   //save changes of current editor
         saveFile(i);
     }
 }
@@ -239,15 +182,6 @@ void MainWindow::saveFileCopyAs(int index) {
 
 void MainWindow::setLanguageSelectorMenu() {
 /* -set the language selector menu from editor object */
-    /*if (editors->count() <= 0) {    //if no editor windows are open
-        langSelector = NULL;            //do not point to any language selectors
-        return;                         //do nothing else
-    }
-
-    if (langSelector != NULL)               //if a language selector is being pointed to (the language selector from previous tab)
-        ui->menuBar->removeAction(langSelector);*/ //stop pointing to it
-
-    //langSelector = ui->menuBar->addMenu( editors->current()->languageSelector->languageMenu );  //set and point to the new languages selector
     if ( editors->count() < 1 ) return;
     ui->menuLanguage->menuAction()->setMenu( editors->current()->getLanguageMenu() );
 }

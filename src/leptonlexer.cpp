@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: May 20, 2014
+Last Modified: May 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,8 +43,6 @@ Usage Agreement:
 #include "leptonlexer.h"
 #include "generalconfig.h"
 
-#include <QDebug>
-
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,11 +53,6 @@ LeptonLexer::LeptonLexer(QObject *parent) : QsciLexerCustom(parent) {
     resetRules();
     getLanguageData();
     setAutoIndentStyle(QsciScintilla::AiMaintain);
-    //getLanguageData("languages/cplusplus.xml");
-    //getLanguageData("languages/python.xml");
-    //connect(this->editor(), SIGNAL(textChanged()), this, SLOT(styleText(0, editor()->text().length())) );
-    //getStyleFormat("styles/default.xml");
-    //this->setAutoIndentStyle(QsciScintilla::AiMaintain);
 }
 
 const char* LeptonLexer::language() const {
@@ -111,24 +104,8 @@ QString LeptonLexer::description(int style) const {
 
 void LeptonLexer::styleText(int start, int end) {
 /* -called whenever text must be (re-) highilighted */
-    //qDebug() << "Got called: start=" << start << " end=" << end;
-    /*startStyling(0, 0);
-    setStyling(end, 0);*/
-    //applyStyleTo(0, end, 0);
-    /*
-    QString* text = new QString( this->editor()->text() );
-    QTextStream doc(text);
-    for (int i = 0; i < 4; i++) {
-        //QString c;
-        //doc >> c;
-        //doc.
-        //qDebug() << doc.readLine();
-    }
-    applyStyleTo(0, end, 0);
-    */
     //lists of all matches of each rule
     applyStyleTo(start, end-start, 0); //apply default style to everything
-    //qDebug() << defaultStyle();
     QVector< QRegularExpressionMatchIterator > expressionRuleMatchList( expressionRules.length() );
     QVector< QRegularExpressionMatchIterator > lineRuleMatchList( lineRules.length() );
     QVector< QRegularExpressionMatchIterator > blockRuleMatchList( blockRules.length() );
@@ -153,19 +130,7 @@ void LeptonLexer::styleText(int start, int end) {
     //get the text being edited
     QString text( this->editor()->text() );
 
-    //match all occurences of each rule in the text
-    /*for (int i = 0, len = expressionRules.length(); i < len; i++) {
-        if ( ignorExpressionRule[i] )  continue;
-        expressionRuleMatchList[i] = expressionRules.at(i)->exp.globalMatch(text);
-    }
-    for (int i = 0, len = lineRules.length(); i < len; i++) {
-        if ( ignorLineRule[i] ) continue;
-         lineRuleMatchList[i] = lineRules.at(i)->exp.globalMatch(text);
-    }
-    for (int i = 0, len = blockRules.length(); i < len; i++) {
-        if ( ignorBlockRule[i] )  continue;
-        blockRuleMatchList[i] = blockRules.at(i)->start.globalMatch(text);
-    }*/
+    //match all expressions
     for (int i = expressionRules.length() - 1; i >= 0; i--) {
         if ( ignorExpressionRule[i] )  continue;
         expressionRuleMatchList[i] = expressionRules.at(i)->exp.globalMatch(text);
@@ -179,14 +144,6 @@ void LeptonLexer::styleText(int start, int end) {
         blockRuleMatchList[i] = blockRules.at(i)->start.globalMatch(text);
     }
 
-    //highlight all the matched rules
-    /*quint32 firstPosition = -1;         //start position first match
-    RuleType ruleType = UNDEF_RULE;     //rule type of match
-    quint8 ruleIndex = 0;  */             //index of the rule in rule type array
-    //QRegularExpressionMatch ruleMatched;//rule matched
-    //QVector< quint16 > expressionMatchNumber( expressionRuleMatchList.length(), 0); //number of the match
-    //QVector< quint16 > lineMatchNumber( lineRuleMatchList.length(), 0);             //
-    //QVector< quint16 > blockMatchNumber( blockRuleMatchList.length(), 0);           //
     quint32 lastEndPosition = 0;  //position where last expression ended
     while (true) {
         //select the first expression matched by performing a linear search
@@ -322,9 +279,7 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
 
     //if the current language uses some of the rules of another language, load the other language first
     if ( langElement.hasAttribute("use") ) {
-        //QString path = QFileInfo(xmlFile).absolutePath().append("/");
         QString file = langElement.attribute("use");
-        //getLanguageData( path.append(file) );
         getLanguageData( GeneralConfig::getLangFilePath(file) );
     }
 
@@ -335,10 +290,6 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
     //get the styling file
     if ( langElement.hasAttribute("style") ) {
         QString styleFile = langElement.attribute("style");
-        //QDir pathDir(languageFilePath);
-        //pathDir.cd("../../styles");
-        //QString styleFilePath = pathDir.absoluteFilePath(styleFile);
-        //getStyleFormat(styleFilePath);
         QString styleFilePath = GeneralConfig::getStyleFilePath(styleFile);
         if ( styleFilePath.isEmpty() ) styleFilePath = GeneralConfig::getStyleFilePath("default.xml");
         bool err  = getStyleFormat( styleFilePath );
@@ -630,17 +581,6 @@ bool LeptonLexer::getBlockRule(const QDomNode& node, quint8 numberOfTypes, quint
 
 bool LeptonLexer::getEscapeFromTo(QDomElement& element, QRegularExpression &escapes) {
 /* -gets escape expression from 'element' and stores them in 'escapes' */
-    /*QDomNodeList nodeList = element.elementsByTagName("escape");
-    for ( int i = 0, len = nodeList.length(); i < len; i++) {
-        if ( ! nodeList.at(i).isElement() ) return false;
-        QRegularExpression exp( nodeList.at(i).toElement().text() );
-        if ( ! exp.isValid() ) {
-            exp.setPattern("");
-            return false;
-        }
-        escapes.append(exp);
-    }
-    return true; */
     QDomElement escapeElement = element.lastChildElement("escapes");
     if ( escapeElement.isNull() ) {
         escapes.setPattern("");
@@ -693,23 +633,12 @@ void LeptonLexer::getStyleData(QDomElement styleElement, quint8 style) {
 
 bool LeptonLexer::getDefaultStyle() {
 /* -gets the default style values */
-    /*
-    setDefaultPaper( QColor(200, 200, 200) );
-    setDefaultColor( QColor(0, 0, 0) );
-    setDefaultFont( QFont("Monospace", 10) );
-    */
     setDefaultPaper( GeneralConfig::getDefaultPaper() );
     setDefaultColor(  GeneralConfig::getDefaultTextColor() );
     setDefaultFont( GeneralConfig::getDefaultEditorFont() );
 
     //set styling in editor settings
     if (editor() == NULL) return false;
-    /*
-    editor()->setUnmatchedBraceBackgroundColor( QColor(200, 200, 200) );
-    editor()->setMatchedBraceBackgroundColor( QColor(200, 200, 200) );
-    editor()->setWhitespaceVisibility(QsciScintilla::WsVisible);
-    editor()->setWhitespaceForegroundColor( QColor(225, 225, 225) );
-    */
     editor()->setUnmatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
     editor()->setMatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
     editor()->setWhitespaceVisibility( GeneralConfig::getWhiteSpaceVisibility() );
@@ -750,7 +679,6 @@ QColor LeptonLexer::getColor(QString colorString) {
     else if ( isName.validate(colorString, p) ) {
         returnColor.setNamedColor( colorString.toLower().remove( QRegularExpression("\\s+") ) );
     }
-    //qDebug() << returnColor.name();
 
     if ( returnColor.isValid() ) return returnColor;
     else return QColor(0, 0, 0);
