@@ -1,23 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <format>
-    <!--<keywords type="0" >
-        <color> 150 80 210 </color>
-    </keywords>
-    <keywords type="1" >
-        <color> 170 0 0 </color>
-    </keywords>
-    <numbers> <color> orange </color> </numbers>
-    <linecomment> <color> 0 130 20 </color> </linecomment>
-    <blockcomment> <color> 0 130 20 </color> </blockcomment>
-    <quotations> <color> 0 0 180 </color> </quotations>
-    <lineexpression type="0"> <color> 0 130 20  </color> </lineexpression>
-    <lineexpression type="1"> <color> #008282 </color> </lineexpression>
-    <blockexpression type="0"> <color> 0 130 20 </color> </blockexpression>
-    <blockexpression type="1"> <color> orange </color> </blockexpression>-->
-    <keywords type="0" >
-        <color> #AA53F0 </color>
-    </keywords>
+    <keywords type="0" > <color> #AA53F0 </color> </keywords>
     <keywords type="1" > <color> #AFBA00 </color> </keywords>
+    <keywords type="2" > <color> #15D80F </color> </keywords>
+    <keywords type="3" > <color> #FF6F34 </color> </keywords>
+    <keywords type="4" > <color> #95FF2A </color> </keywords>
+    <keywords type="5" > <color> #4946FF </color> </keywords>
     <numbers> <color> #EB3939 </color> </numbers>
     <linecomment> <color> #BE7300 </color> </linecomment>
     <blockcomment> <color> #BE7300 </color> </blockcomment>
@@ -25,8 +13,14 @@
     <expression type="0"> <color> #AA53F0 </color> </expression>
     <expression type="1"> <color> #AFBA00 </color> </expression>
     <expression type="2"> <color> #EB3939 </color> </expression>
+    <expression type="3"> <color> #FF43A6 </color> </expression>
+    <expression type="4"> <color> #FFDD30 </color> </expression>
     <lineexpression type="0"> <color> #BE7300 </color> </lineexpression>
     <lineexpression type="1"> <color> #0094B1 </color> </lineexpression>
+    <lineexpression type="2"> <color> #D03AFF </color> </lineexpression>
+    <lineexpression type="3"> <color> #24D478 </color> </lineexpression>
     <blockexpression type="0"> <color> #BE7300 </color> </blockexpression>
     <blockexpression type="1"> <color> #6C6FFF </color> </blockexpression>
+    <blockexpression type="2"> <color> #0094B1 </color> </blockexpression>
+    <blockexpression type="3"> <color> #24F3FF </color> </blockexpression>
 </format>

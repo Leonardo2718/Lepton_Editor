@@ -43,6 +43,8 @@ Usage Agreement:
 #include "leptonlexer.h"
 #include "generalconfig.h"
 
+#include <QDebug>
+
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -703,5 +705,5 @@ int LeptonLexer::convertRuleIndexToStyle(RuleType rType, int index) {
         else if (index == BLOCKCOMMENT_INDEX) return BLOCKCOMMENT_STYLE;
         else if ((index >= BLOCKEXPRESSION_TYPE_INDEX) && (index <= BLOCKEXPRESSION_TYPE_INDEX + BLOCKEXPRESSION_TYPES)) return BLOCKEXP_STYLE_MIN + index - BLOCKEXPRESSION_TYPE_INDEX;
     }
-    return -1;
+    return 0;
 }
