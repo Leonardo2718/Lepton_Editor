@@ -1,0 +1,22 @@
+{
+    "application_theme": {
+      "stylesheet": "themes/defaultTheme.css"
+    },
+    "editor_theme": {
+        "text_color": "#A1A1A1",
+        "paper_color": "#312525",
+        "caret_color": "#A1A1A1",
+        "selection_background": "#44FFFFFF",
+        "selection_foreground": "#CCCCCC",
+        "font": {
+            "font_family": "Monospace",
+            "font_point_size": 10,
+            "font_style": "normal",
+            "font_weight": "normal"
+            },
+        "whitespace_visibility": "visible",
+        "whitespace_color": "#505050",
+        "margins_background": "#3B3B3B",
+        "margins_foreground": "#888888"
+    }
+}

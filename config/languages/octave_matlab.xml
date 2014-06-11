@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<language name="Octave/Matlab" filemask=".*\.m$">
+    <tokenization>
+        <keywords class="1">
+            break case catch continue else elseif end for function global if otherwise persistent return switch try while endif endfor endfunction
+        </keywords>
+        <rule class="8" name="NUMBER">\b\d+\b</rule>
+        <spanrule class="4" name="LINE_COMMENT">
+            <open>#|%</open>
+            <close>(\n)(?&lt;!\\)</close>
+            <rule class="4" name="">.</rule>
+        </spanrule>
+        <spanrule class="6" name="STRING_LITERAL">
+            <open>"</open>
+            <close>"|(\n)</close>
+            <rule class="7" name="ESCAPED_CHARACTER">\\.</rule>
+            <rule class="6" name="">[^"]</rule>
+        </spanrule>
+        <rule class="0" name="IDENTIFIER">\b[A-Za-z_][A-Za-z_0-9]*\b</rule>
+    </tokenization>
+</language>

@@ -1,16 +1,17 @@
 /*
 Project: Lepton Editor
-File: main.cpp
+File: settingseditor.h
 Author: Leonardo Banderali
-Created: January 31, 2014
-Last Modified: September 3, 2014
+Created: October 17, 2014
+Last Modified: October 21, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
     flexible and extensible code editor which developers can easily customize to their
     liking.
 
-    This is the main file which executes when the program starts.
+    This file defines the `SettingsEditor` class.  This class provides a GUI for editing
+    values in Lepton's config files.
 
 Copyright (C) 2014 Leonardo Banderali
 
@@ -31,17 +32,26 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mainwindow.h"
-#include <QApplication>
+#ifndef SETTINGSEDITOR_H
+#define SETTINGSEDITOR_H
 
-int main(int argc, char *argv[]) {
-    QApplication a(argc, argv);
+//include Qt classes
+#include <QWidget>
 
-    QCoreApplication::setOrganizationName("Lepton Editor");
-    QCoreApplication::setApplicationName("Lepton Editor");
-
-    MainWindow w;
-    w.show();
-
-    return a.exec();
+namespace Ui {
+class SettingsEditor;
 }
+
+class SettingsEditor : public QWidget
+{
+    Q_OBJECT
+
+    public:
+        explicit SettingsEditor(QWidget *parent = 0);
+        ~SettingsEditor();
+
+    private:
+        Ui::SettingsEditor* ui;
+};
+
+#endif // SETTINGSEDITOR_H

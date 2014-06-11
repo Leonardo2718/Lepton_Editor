@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: May 24, 2014
+Last Modified: March 10, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -14,7 +14,7 @@ Description:
     instead of the QSyntaxHighlighter class.  It is subclassed fromt the QsciLexerCustom class which
     is part of QScintilla.
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -33,27 +33,35 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QFile>
-#include <QFileInfo>
-#include <QDir>
-#include <QRegularExpressionValidator>
-#include <QTextStream>
-#include <Qsci/qsciscintilla.h>
 
+//include the header that goes with this file
 #include "leptonlexer.h"
-#include "generalconfig.h"
 
-#include <QDebug>
+//include other lepton objects
+#include "leptonconfig.h"
+
+//include Qt classes
+#include <QFile>
+#include <QDomDocument>
 
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonLexer::LeptonLexer(QObject *parent) : QsciLexerCustom(parent) {
-    languageName = NULL;
+LeptonLexer::LeptonLexer(QsciScintilla* parent) : QsciLexerCustom( (QObject*)parent ) {
+    setEditor(parent);
 
-    resetRules();
-    getLanguageData();
+    languageName.clear();
+
+    loadStyle( LeptonConfig::mainSettings->getStyleFilePath("default.xml") );
+
+    rootRule.subRules.clear();
+
+    TokenRuleStack ruleListStack;
+    ruleListStack.push(&rootRule);
+    stackAtPosition.append(ruleListStack);
+
+    loadLanguage();
     setAutoIndentStyle(QsciScintilla::AiMaintain);
 }
 
@@ -62,191 +70,187 @@ const char* LeptonLexer::language() const {
 -returnes language name
 -returns 'NULL' if no language is set
 */
-    return languageName;
+    return languageName.data();
 }
 
 QString LeptonLexer::description(int style) const {
 /* -returnes description of a style */
-
-    //check for extreme cases first
-    if (style == DEFAULT_STYLE) return QString("Style #%1 is the default style.").arg(style);
-    if (style < 0 || style > TOTAL_TYPES) return QString("Style #%1 is not defined.").arg(style);
-
-    QString returnStr;          //dummy string to store return value
-    returnStr = QString("Style #%1 is the style for ").arg(style);
-
-    //append value
-    if (style == NUMBER_STYLE) {
-        returnStr += tr("numbers.");
-    }
-    else if (style == QUOTE_STYLE) {
-        returnStr += tr("quotes.");
-    }
-    else if (style >= KEYWORD_STYLE_MIN && style <= KEYWORD_STYLE_MAX) {
-        returnStr += tr("keywords of type %1.").arg(style - KEYWORD_STYLE_MIN);
-    }
-    else if (style >= EXPRESSION_STYLE_MIN && style <= EXPRESSION_STYLE_MAX) {
-        returnStr += tr("expressions of type %1.").arg(style - EXPRESSION_STYLE_MIN);
-    }
-    else if (style == LINECOMMENT_STYLE) {
-        returnStr += tr("line comments.");
-    }
-    else if (style >= LINEEXP_STYLE_MIN && style <= LINEEXP_STYLE_MAX) {
-        returnStr += tr("line expressions of type %1.").arg(style - LINEEXP_STYLE_MIN);
-    }
-    else if (style == BLOCKCOMMENT_STYLE) {
-        returnStr += tr("block comments.");
-    }
-    else if (style >= BLOCKEXP_STYLE_MIN && style <= BLOCKEXP_STYLE_MAX) {
-        returnStr += tr("block expressions of type %1.").arg(style - BLOCKEXP_STYLE_MIN);
-    }
-
-    return returnStr;
+    return "See the documentation files.";
 }
 
 void LeptonLexer::styleText(int start, int end) {
 /* -called whenever text must be (re-) highilighted */
-    //lists of all matches of each rule
-    applyStyleTo(start, end-start, 0); //apply default style to everything
-    QVector< QRegularExpressionMatchIterator > expressionRuleMatchList( expressionRules.length() );
-    QVector< QRegularExpressionMatchIterator > lineRuleMatchList( lineRules.length() );
-    QVector< QRegularExpressionMatchIterator > blockRuleMatchList( blockRules.length() );
 
-    //list of expressions to be ignored (assume none)
-    QVector< bool > ignorExpressionRule( expressionRules.length(), false );
-    QVector< bool > ignorLineRule( lineRules.length(), false );
-    QVector< bool > ignorBlockRule( blockRules.length(), false );
+    /*##############################################################################
+    ### The general algorythm for tokenizing the text is roughly like this:       ##
+    ###     (1) put a character form the text in the editor to the buffer         ##
+    ###     (2) check which rules match or partially match the text in the buffer ##
+    ###     (3) remove the rules that were neither matched nor partially matched  ##
+    ###     (4) if there are rules that were partially matched, go back to (1)    ##
+    ###     (5) if there are no more partial matches, highlight the text that     ##
+    ###         was matched, move on to the next character in the editor text     ##
+    ###         and go back to (1)                                                ##
+    ##############################################################################*/
 
-    //go through all expressions and find which ones to ignore; all regex that are empty or invalid should be ignored
-    for (int i = 0, len = expressionRules.length(); i < len; i++) {
-        if ( (! expressionRules.at(i)->exp.isValid()) || expressionRules.at(i)->exp.pattern().isEmpty() ) ignorExpressionRule[i] = true;
-    }
-    for (int i = 0, len = lineRules.length(); i < len; i++) {
-        if ( (! lineRules.at(i)->exp.isValid()) || lineRules.at(i)->exp.pattern().isEmpty() ) ignorLineRule[i] = true;
-    }
-    for (int i = 0, len = blockRules.length(); i < len; i++) {
-        if ( (! blockRules.at(i)->start.isValid()) || blockRules.at(i)->start.pattern().isEmpty() ||
-             (! blockRules.at(i)->end.isValid()) || blockRules.at(i)->end.pattern().isEmpty() ) ignorBlockRule[i] = true;
+    const QString& editorText = editor()->text();
+    if ( editorText.isEmpty() ) return;
+
+    if ( rootRule.subRules.isEmpty() ) {
+        applyStyleTo(0, editorText.length() ,0);
+        return;
     }
 
-    //get the text being edited
-    QString text( this->editor()->text() );
+    TokenRuleStack ruleListStack;   //a stack to keep track of the current token rule list being checked
 
-    //match all expressions
-    for (int i = expressionRules.length() - 1; i >= 0; i--) {
-        if ( ignorExpressionRule[i] )  continue;
-        expressionRuleMatchList[i] = expressionRules.at(i)->exp.globalMatch(text);
-    }
-    for (int i = lineRules.length() - 1; i >= 0; i--) {
-        if ( ignorLineRule[i] ) continue;
-         lineRuleMatchList[i] = lineRules.at(i)->exp.globalMatch(text);
-    }
-    for (int i = blockRules.length() - 1; i >= 0; i--) {
-        if ( ignorBlockRule[i] )  continue;
-        blockRuleMatchList[i] = blockRules.at(i)->start.globalMatch(text);
-    }
+    /*##############################################################################################
+    ### The first rule list to be used should be whichever one was last used at position `start`. ##
+    ### However, if `start` is part of new the text, which was not previously highlighted, then   ##
+    ### the first rule should be the one used at the end of the previous text.                    ##
+    ##############################################################################################*/
 
-    quint32 lastEndPosition = 0;  //position where last expression ended
-    while (true) {
-        //select the first expression matched by performing a linear search
-        quint32 firstPosition = -1;         //start position of first match
-        RuleType ruleType = UNDEF_RULE;     //rule type of match
-        quint8 ruleIndex = 0;               //index of the rule in rule type array
-        for (int i = expressionRuleMatchList.length() - 1; i >= 0; i--) {
-            //if the expression must be ignored (eg. if it's inside a block expressions), move to the next matched expression
-            if (expressionRuleMatchList[i].hasNext() && lastEndPosition != 0 && expressionRuleMatchList[i].peekNext().capturedStart() <= lastEndPosition) {
-                expressionRuleMatchList[i].next();
-                i++;
-                continue;
-            }
-            //if an expression matched is positioned before the previously checked match, consider it to be first and check the next match
-            if (expressionRuleMatchList[i].hasNext() && (quint32)(expressionRuleMatchList[i].peekNext().capturedStart()) < firstPosition) {
-                firstPosition = expressionRuleMatchList[i].peekNext().capturedStart();
-                ruleType = EXPRESSION_RULE;
-                ruleIndex = i;
-            }
+    if (stackAtPosition.size() <= start)
+        ruleListStack = stackAtPosition.last();
+    else
+        ruleListStack = stackAtPosition.at(start);
+
+    if (editorText.size() > 1) stackAtPosition.resize( editorText.size() ); //resize the stack list to fit all characters in the text
+
+    QString buffer;             //buffer used to store the string being compared against rule expressions
+    int charPosition = start;   //variable to store the position (in the editor text string) of the last character to be added to the buffer
+
+    //tokenize the text by iteratively traversing it
+    while (1) {
+        if (ruleListStack.isEmpty()) break;             //%%%% this is required to prevent seg-faults when scrolling through a file %%%%
+        TokenRule currentRoot = *(ruleListStack.top()); //get the current rule list
+
+        //create a list of rules
+        QList<const QRegularExpression* > expList;
+        for (int i = 0, c = currentRoot.subRules.length(); i < c; i++) {
+            expList.append( &(currentRoot.subRules.at(i).rule) );
         }
-        for (int i = lineRuleMatchList.length() - 1; i >= 0; i--) {
-            if (lineRuleMatchList[i].hasNext() && lastEndPosition != 0 && lineRuleMatchList[i].peekNext().capturedStart() <= lastEndPosition) {
-                lineRuleMatchList[i].next();
-                i++;
-                continue;
-            }
-            if (lineRuleMatchList[i].hasNext() && (quint32)(lineRuleMatchList[i].peekNext().capturedStart()) < firstPosition) {
-                firstPosition = lineRuleMatchList[i].peekNext().capturedStart();
-                ruleType = LINE_RULE;
-                ruleIndex = i;
-            }
-        }
-        for (int i = blockRuleMatchList.length() - 1; i >= 0; i--) {
-            if (blockRuleMatchList[i].hasNext() && lastEndPosition != 0 && blockRuleMatchList[i].peekNext().capturedStart() <= lastEndPosition) {
-                blockRuleMatchList[i].next();
-                i++;
-                continue;
-            }
-            if (blockRuleMatchList[i].hasNext() && (quint32)(blockRuleMatchList[i].peekNext().capturedStart()) < firstPosition) {
-                firstPosition = blockRuleMatchList[i].peekNext().capturedStart();
-                ruleType = BLOCK_RULE;
-                ruleIndex = i;
-            }
-        }
+        if (ruleListStack.size() > 1) expList.append(&(currentRoot.closeRule));
 
-        //highlight the expression/rule match selected
-        if (ruleType == EXPRESSION_RULE) {
-            //if the rule is for an expression, get the corresponding style and highlight the text
-            if ( !(expressionRuleMatchList[ruleIndex].hasNext()) || firstPosition != expressionRuleMatchList[ruleIndex].peekNext().capturedStart()) break;//sanity check to make sure the correct expression/rule is selected
-            int style = convertRuleIndexToStyle(EXPRESSION_RULE, ruleIndex);
-            if (style < 0) break;
-            applyStyleTo(firstPosition, expressionRuleMatchList[ruleIndex].peekNext().capturedLength(), style);
-            lastEndPosition = expressionRuleMatchList[ruleIndex].next().capturedEnd() - 1;  //redefine the position at which to start checking for matches
-        }
-        else if (ruleType == LINE_RULE) {
-            //if the rule is for a line, get the corresponding style, find the end of the line, highlight everything up to the end of the line (%checks for escapes not implemented yet%)
-            if ( !(lineRuleMatchList[ruleIndex].hasNext()) || firstPosition != lineRuleMatchList[ruleIndex].peekNext().capturedStart()) break;
-            int style = convertRuleIndexToStyle(LINE_RULE, ruleIndex);
-            if (style < 0) break;
-            lineRuleMatchList[ruleIndex].next();
-            QRegularExpressionMatch endExp = QRegularExpression( QString("([^\\\\][\r\n]{1,2})|($)") ).match(text, firstPosition);
-            int endOfLine = endExp.capturedEnd();
-            if (endOfLine < 0) continue;
-            applyStyleTo(firstPosition, endOfLine - firstPosition, style);
-            lastEndPosition = endOfLine - 1;
-        }
-        else if (ruleType == BLOCK_RULE) {
-            //if the rule is for a block, get the corresponding style, find the end of the block, highlight everything withing the block (%checks for escapes not implemented yet%)
-            if ( !(blockRuleMatchList[ruleIndex].hasNext()) || firstPosition != blockRuleMatchList[ruleIndex].peekNext().capturedStart()) break;
-            int style = convertRuleIndexToStyle(BLOCK_RULE, ruleIndex);
-            if (style < 0) break;
-            QRegularExpressionMatch startExp = blockRuleMatchList[ruleIndex].next();
-            QRegularExpressionMatch endExp = blockRules[ruleIndex]->end.match(text, firstPosition + 1);
-            if (endExp.capturedStart() < 0) continue;
-            applyStyleTo(firstPosition, endExp.capturedEnd() - firstPosition, style);
+        int extraCharCount = 0; //variable to store the number of character appended to the buffer that are not part of the text
 
-            //highlight escapes
-            /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-            //$ This code does not currently work so it's commented out. At the moment, the color change does not work because $$$
-            //$ a new style is probably required.  I cannot simply temporarily change the color of a style.                    $$$
-            //$                                                                                                                $$$
-                if ( (! blockRules[ruleIndex]->escapes.pattern().isEmpty()) &&  blockRules[ruleIndex]->escapes.isValid() ) {
-                    QRegularExpressionMatchIterator escapeMatches =  blockRules[ruleIndex]->escapes.globalMatch(text, firstPosition+startExp.capturedLength() -1);
-                    while ( escapeMatches.hasNext() ) {
-                        if ( escapeMatches.peekNext().capturedStart() > endExp.capturedStart() ) break; //breack if escape is outside of block
-                        QColor nonEscapeColor = color(style);
-                        QColor escapeColor(255, 255, 255);
-                        setColor( escapeColor, style );
-                        //colorChanged(escapeColor, style);
-                        applyStyleTo( escapeMatches.peekNext().capturedStart(), escapeMatches.peekNext().capturedLength(), style);
-                        escapeMatches.next();
-                        setColor(nonEscapeColor, style);
+        buffer.clear();
+
+        /*#######################################################################################
+        ### Iteratively check every rule for a token match.  If a match is found, highlight it ##
+        ### and break out of the loop.  If a partial match is found, add one character to the  ##
+        ### buffer and check again.  If neither a partial nor full match is found, apply       ##
+        ### default highlighting and break.  If the end of the text is reached, break.         ##
+        #######################################################################################*/
+
+        while (1) {
+            int matchCount = 0;
+
+            if ( charPosition < editorText.length() ) {
+                buffer.append( editorText.at(charPosition) );
+                stackAtPosition[charPosition] = ruleListStack;  //save the current stack to the list for reference on latter calls to this method
+            }
+            else {
+                buffer.append(" ");
+                extraCharCount++;
+            }
+
+            //check every rule in the list for a token match
+            for (int i = expList.length() - 1; i >= 0; i--) {
+                QRegularExpressionMatch match = expList.at(i)->match(buffer, 0, QRegularExpression::PartialPreferFirstMatch);
+                if ( match.hasMatch() )
+                    matchCount++;
+                else if ( match.hasPartialMatch() )
+                    continue;
+                else {
+                    expList.removeAt(i);
+
+                    /*#####################################################################
+                    ### If the current rule generates neither match nor a partial match, ##
+                    ### then the rule can be safely removed from the list.               ##
+                    #####################################################################*/
+                }
+            }
+
+            if ( matchCount >= expList.length() ) {
+
+                /*################################################################################
+                ### When the match count is equal the number of rules in the list, there are no ##
+                ### more partial matches so there is no need to continue checking the rule      ##
+                ################################################################################*/
+
+                if(matchCount == 0) {
+                    applyStyleTo(charPosition - buffer.length() + 1, buffer.length() - extraCharCount, 0);
+                    charPosition++;
+                }
+
+                else if (matchCount >= 1) {
+                    QRegularExpressionMatch match = currentRoot.closeRule.match(buffer);
+
+                    /*#####################################################################################
+                    ### If one or more rules were matched, start by checking if the rule is the closing  ##
+                    ### expression for the current token.  If it is, highlight the text and remove the   ##
+                    ### current token from the stack.  If it's not, assume that the first rule matched   ##
+                    ### is correct and highlight the text.  If the match was from the opening expression ##
+                    ### of token, highlight the matched text and put the token's sub rules on the stack  ##
+                    #####################################################################################*/
+
+                    if ( ruleListStack.size() > 1 && match.hasMatch() ) {
+                        applyStyleTo(charPosition - buffer.length() + 1, match.capturedLength(), currentRoot.id);
+                        ruleListStack.pop();
+                        currentRoot = *(ruleListStack.top());
+                    }
+                    else {
+                        match = expList.at(0)->match(buffer);
+                        const TokenRule* r;
+
+                        for (int i = 0, l = currentRoot.subRules.length(); i < l; i++) {
+                            if ( expList.at(0) == &(currentRoot.subRules.at(i).rule ) ) r = &(currentRoot.subRules.at(i));
+                        }
+
+                        applyStyleTo(charPosition - buffer.length() + 1, match.capturedLength(), r->id);
+
+                        if ( ! r->subRules.isEmpty() ) {
+                            ruleListStack.push(r);
+                            currentRoot = *r;
+                        }
+                    }
+
+                    /*###########################################################################################
+                    ### As a rule (to prevent some serious bugs), after having matched a token, `charPosition` ##
+                    ### should always reference the character IMMEDIATLY after the last character of the text  ##
+                    ### matched (a.k.a. the character after the last character of the lexeme).                 ##
+                    ###########################################################################################*/
+
+                    if (match.capturedLength() >= buffer.length()){
+                        charPosition += match.capturedLength() - buffer.length() + 1;
+                    }
+                    else if ( match.capturedLength() + 1 < buffer.length() ) {
+                        charPosition -= buffer.length() - match.capturedLength() - 1;
                     }
                 }
-            //$                                                                                                                $$$
-            //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 
-            lastEndPosition = endExp.capturedEnd() - 1;
+                break;
+            }
+            else if ( charPosition > end ) {
+                //%%% this is messy but it works %%%%
+                if ( charPosition + 1 < editorText.length() ) {
+                    if (stackAtPosition.at(charPosition + 1) != ruleListStack) charPosition++;
+                    else break;
+                }
+                else break;
+            }
+            else if ( matchCount < expList.length() ) {
+                charPosition++;
+            }
         }
-        else if (firstPosition == -1 || ruleType == UNDEF_RULE) break;
-        else break;
+
+        if ( charPosition >= end ) {
+            //%%% this is even messier but still works %%%%
+            if ( charPosition + 1 < editorText.length() ) {
+                if (stackAtPosition.at(charPosition + 1) != ruleListStack) /*do nothing*/;
+                else break;
+            }
+            else break;
+        }
     }
 }
 
@@ -256,179 +260,124 @@ void LeptonLexer::applyStyleTo(int start, int length, int style) {
     setStyling(length, style);
 }
 
-bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
+
+
+//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+bool LeptonLexer::loadLanguage(const QString& filePath) {
 /*
--gets language rules from file
+-loads language tokenization rules from file
 -returns true if the data was successfully extracted, false otherwise
 */
-    //reset everything before changing things
-    resetRules();
-
-    //if no language file is specified, assume no syntax highlighting
-    if ( languageFilePath.isEmpty() ) {
-        getDefaultStyle();
+    if ( filePath.isEmpty() ){  //if no language file path is specified
+        rootRule.subRules.clear();  //clear all rules and return
         return true;
     }
 
-    //get the xml file
-    QFile xmlFile(languageFilePath);
-    QDomDocument langDoc("lang_doc");
-    if ( ! langDoc.setContent(&xmlFile) ) return false;
+    //create a file object to load the language tokenization rules (stored in xml)
+    QFile languageFile(filePath);
+    QDomDocument langDoc("language_document");
 
-    //get the document element
-    QDomElement langElement = langDoc.documentElement();
-    if ( langElement.nodeName() != "language") return false;
+    if (! langDoc.setContent(&languageFile) ) return false;
 
-    //if the current language uses some of the rules of another language, load the other language first
-    if ( langElement.hasAttribute("use") ) {
-        QString file = langElement.attribute("use");
-        getLanguageData( GeneralConfig::getLangFilePath(file) );
+    //get the documents root element
+    QDomElement rootElement = langDoc.documentElement();
+    if ( rootElement.nodeName() != "language" ) return false;
+
+    /*###########################################################################################
+    ### Note: When the following line recursively calls this method and passes an empty string ##
+    ### (`use` attribute not present), this will cause the current rules to be cleared, which  ##
+    ### is exactly what we want.  However, if language files link to eachother in a loop       ##
+    ### (which doesn't make any practical sense), a stack overflow will occure.                ##
+    ###########################################################################################*/
+    bool r = loadLanguage( LeptonConfig::mainSettings->getLangFilePath( rootElement.attribute("use", QString() ) ) );
+    if (r == false) return false;
+
+    //get the name of the language (displayed in menu)
+    if ( !rootElement.hasAttribute("name") || rootElement.attribute("name").isEmpty() ) return false;
+    languageName = rootElement.attribute("name").toUtf8();
+
+    //get the element that containes all tokenization rule definitions
+    if ( rootElement.lastChildElement("tokenization").isNull() ) return false;
+    QDomElement tokenizationRules = rootElement.lastChildElement("tokenization");
+
+    //check if any keywords are defined and, if so, extract them
+    QDomNodeList ruleElements = tokenizationRules.elementsByTagName("keywords");
+    for (int i = 0, count = ruleElements.count(); i < count; i++) {
+        QDomElement rule = ruleElements.at(i).toElement();
+        int ruleClass = rule.attribute("class").toInt();
+        if (ruleClass < 0 || ruleClass > 31 ) continue;
+        TokenRule newRule;
+        newRule.name = "KEYWORD";
+        newRule.id = ruleClass;
+        QString exp = rule.firstChild().nodeValue().simplified().replace( QRegularExpression("\\s"), "|").prepend("^\\b(").append(")\\b");
+        newRule.rule.setPattern(exp);
+        if ( ! newRule.rule.isValid() ) continue;
+        rootRule.subRules.append(newRule);
     }
 
-    //get the language name
-    if ( ! langElement.hasAttribute("name") ) return false;
-    languageName = langElement.attribute("name").toUtf8().data();
-
-    //get the styling file
-    if ( langElement.hasAttribute("style") ) {
-        QString styleFile = langElement.attribute("style");
-        QString styleFilePath = GeneralConfig::getStyleFilePath(styleFile);
-        if ( styleFilePath.isEmpty() ) styleFilePath = GeneralConfig::getStyleFilePath("default.xml");
-        bool err  = getStyleFormat( styleFilePath );
-        if (err == false) return false;
-    }
-    /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% The code above gets executed multiple times because of the 'use' attribute %%
-    %%% which causes an other language file to be loaded.  This needs to be fixed. %%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-    //get number data
-    if ( ! langElement.lastChildElement("numbers").isNull() ) {         //if a number expression is specified, extract it
-        expressionRules.at(NUMBER_INDEX)->exp.setPattern("");
-        QRegularExpression regexp( langElement.lastChildElement("numbers").text() );
-        if ( ! regexp.isValid() ) return false;
-        expressionRules.at(NUMBER_INDEX)->exp = regexp;
-    }
-    else {                                                              //if no expression is specified, use default
-        expressionRules.at(NUMBER_INDEX)->exp.setPattern("\\b\\d+\\b");
-    }
-
-    //get quote/string data
-    if ( ! langElement.lastChildElement("quotations").isNull() ) {          //if a quotation expression is specified, extract it
-        QDomElement elem = langElement.lastChildElement("quotations");
-        blockRules.at(QUOTE_INDEX)->start.setPattern("");
-        blockRules.at(QUOTE_INDEX)->end.setPattern("");
-        QRegularExpression start( elem.lastChildElement("start").text() );
-        QRegularExpression end( elem.lastChildElement("end").text() );
-        if ( (! start.isValid()) || (! end.isValid()) || elem.hasAttribute("type") ) return false;
-        blockRules.at(QUOTE_INDEX)->start = start;
-        blockRules.at(QUOTE_INDEX)->end = end;
-        bool err = getEscapeFromTo( elem, blockRules.at(QUOTE_INDEX)->escapes );
-        if (err == false) return false;
-    }
-    else {                                                                  //if no expression is specified, use default
-        blockRules.at(QUOTE_INDEX)->start.setPattern("\"");
-        blockRules.at(QUOTE_INDEX)->end.setPattern("([^\\\\][\"\\r\\n\\f])|$");
-        blockRules.at(QUOTE_INDEX)->escapes.setPattern("\\\\(.?)");
-    }
-
-    //get keyword data
-    QDomNodeList nodeList = langElement.elementsByTagName("keywords");  //get lists of keywords
-    for ( int i = 0, len = nodeList.count(); i < len; i++) {            //for each keyword list
-        //convert node to element
-        if ( ! nodeList.at(i).isElement() ) return false;
-        QDomElement list = nodeList.at(i).toElement();
-        if ( ! list.hasAttribute("type") ) return false;
-
-        //get type of keywords
-        bool* err = new bool;
-        quint8 type = list.attribute("type").toUInt(err);
-        if (err == false || type > KEYWORD_TYPES) return false;
-
-        //create keywords regexp
-        QString keywords = list.text().simplified().replace(' ', '|');
-        keywords = keywords.prepend("\\b(");
-        keywords = keywords.append(")\\b");
-        expressionRules[KEYWORD_TYPE_INDEX + type]->exp.setPattern(keywords);
-        if ( ! expressionRules[KEYWORD_TYPE_INDEX + type]->exp.isValid() ) {
-            //if current expression is not valid, replace it with a blank expression to prevent use while highlighting
-            expressionRules[KEYWORD_TYPE_INDEX + type]->exp.setPattern("");
-            return false;
+    //check if numbers are used and, if so, implement them
+    if (! tokenizationRules.lastChildElement("numbers").isNull() ) {
+        int ruleClass = tokenizationRules.lastChildElement("numbers").attribute("class").toInt();
+        if ( ruleClass >= 0 && ruleClass <= 31) {
+            TokenRule newRule;
+            newRule.name = "NUMBER";
+            newRule.id = ruleClass;
+            QString exp = "^(\\b\\d+\\b)";
+            newRule.rule.setPattern(exp);
+            if ( newRule.rule.isValid() ) rootRule.subRules.append(newRule);
         }
     }
 
-    //get expression data
-    nodeList = langElement.elementsByTagName("expression");
-    for ( int i = 0, len = nodeList.count(); i < len; i++) {
-        bool err = getExpressionRule(nodeList.at(i), EXPRESSION_TYPES, EXPRESSION_TYPE_INDEX);
-        if (err == false) return false;
-    }
-
-    //get line comment rule
-    nodeList = langElement.elementsByTagName("linecomment");
-    if ( nodeList.length() > 0 ) {
-        bool err = getLineRule(nodeList.at(0), LINECOMMENT_TYPES, LINECOMMENT_INDEX);
-        if (err == false) return false;
-    }
-    //else { return false; }
-
-    //get line expression data
-    nodeList = langElement.elementsByTagName("lineexpression");
-    for ( int i = 0, len = nodeList.count(); i < len; i++) {
-        bool err = getLineRule(nodeList.at(i), LINEEXPRESSION_TYPES, LINEEXPRESSION_TYPE_INDEX);
-        if (err == false) return false;
-    }
-
-    //get block comment rule
-    nodeList = langElement.elementsByTagName("blockcomment");
-    if ( nodeList.length() > 0 ) {
-        bool err = getBlockRule(nodeList.at(0), BLOCKCOMMENT_TYPES, BLOCKCOMMENT_INDEX);
-        if (err == false) return false;
-    }
-    //else { return false; }
-
-    //get block expression data
-    nodeList = langElement.elementsByTagName("blockexpression");
-    for ( int i = 0, len = nodeList.count(); i < len; i++) {
-        bool err = getBlockRule(nodeList.at(i), BLOCKEXPRESSION_TYPES, BLOCKEXPRESSION_TYPE_INDEX);
-        if (err == false) return false;
-    }
+    //extract all other tokenization rules defined purly using regular expressions
+    r = extractRulesFrom(tokenizationRules, rootRule.subRules);
+    if (r == false) return false;
 
     return true;
 }
 
-bool LeptonLexer::getStyleFormat(const QString& styleFilePath) {
+bool LeptonLexer::loadStyle(const QString& filePath) {
 /*
--gets styling data from file
--returns true if data was successfully extracted, false otherwise
+-loads styling data from a file specified using its file info
+-returns true if successful, otherwise false
 */
-    getDefaultStyle();
+    setDefaultStyleValues();
 
-    //get the xml file
-    QFile xmlFile(styleFilePath);
-    QDomDocument styleDoc("style_doc");
-    if ( ! styleDoc.setContent(&xmlFile) ) return false;
+    //create a file object to load styling data (stored in xml)
+    QFile styleFile(filePath);
+    QDomDocument styleDoc("styling_document");
 
-    //get the document element
-    QDomElement styleElement = styleDoc.documentElement();
-    if ( styleElement.nodeName() != "format") return false;
+    if (! styleDoc.setContent(&styleFile) ) return false;   //if the file does not open or load properly, return with an error
 
-    //get data from the different elements with no 'type' attribute
-    getStyleData( styleElement.lastChildElement("numbers"), NUMBER_STYLE);
-    getStyleData( styleElement.lastChildElement("linecomment"), LINECOMMENT_STYLE);
-    getStyleData( styleElement.lastChildElement("blockcomment"), BLOCKCOMMENT_STYLE);
-    getStyleData( styleElement.lastChildElement("quotations"), QUOTE_STYLE);
-    //getStyleData( styleElement.lastChildElement("escapedchar"), ESCAPECHAR_STYLE);
+    QDomElement rootElement = styleDoc.documentElement();   //get the root element of the document
+    if ( rootElement.nodeName() != "stylelist") return false;
 
-    //get data from the different elements with 'type' attribute
-    getTypedStyleElementData( styleElement.elementsByTagName("keywords"), KEYWORD_STYLE_MIN, KEYWORD_STYLE_MAX );
-    getTypedStyleElementData( styleElement.elementsByTagName("expression"), EXPRESSION_STYLE_MIN, EXPRESSION_STYLE_MAX ) ;
-    getTypedStyleElementData( styleElement.elementsByTagName("lineexpression"), LINEEXP_STYLE_MIN, LINEEXP_STYLE_MAX );
-    getTypedStyleElementData( styleElement.elementsByTagName("blockexpression"), BLOCKEXP_STYLE_MIN, BLOCKEXP_STYLE_MAX );
+    QDomNodeList styleElements = rootElement.elementsByTagName("style");    //get all elements that define a style
 
-    //set paper for all styles
-    for (int i = 0; i < 32; i++) {
-        setPaper( defaultPaper(), i);
+    //for each style element, extract its data if it's valid
+    for (int i = 0, count = styleElements.count(); i < count; i++) {
+        QDomElement style = styleElements.at(i).toElement();
+
+        if (! style.hasAttribute("class") ) continue;
+        int styleID = style.attribute("class").toInt();
+        if (styleID < 0 || styleID > 31) continue;
+
+        QDomElement styleItem;  //variable in which to store a styling item from the current style
+
+        if (! style.lastChildElement("color").isNull() ) {
+            styleItem = style.lastChildElement("color");
+            setColor(LeptonConfig::mainSettings->getColorFromString(styleItem.attribute("value")), styleID);
+        }
+
+        if (! style.lastChildElement("background").isNull() ) {
+            styleItem = style.lastChildElement("background");
+            setPaper(LeptonConfig::mainSettings->getColorFromString(styleItem.attribute("value")), styleID);
+        }
+
+        if (! style.lastChildElement("font").isNull() ) {
+            styleItem = style.lastChildElement("font");
+            setFont(QFont(styleItem.attribute("name")), styleID);
+        }
     }
 
     return true;
@@ -438,272 +387,54 @@ bool LeptonLexer::getStyleFormat(const QString& styleFilePath) {
 
 //~private methodes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void LeptonLexer::resetRules() {
-/* -resets all rules */
-    for (int i = 0, len = expressionRules.length(); i < len; i++) {
-        delete expressionRules[i];
-    }
-    for (int i = 0, len = lineRules.length(); i < len; i++) {
-        delete lineRules[i];
-    }
-    for (int i = 0, len = blockRules.length(); i < len; i++) {
-        delete blockRules[i];
-    }
-    expressionRules.clear();
-    lineRules.clear();
-    blockRules.clear();
-
-    /*#############################################################################################
-    ### Because QsciLexerCustom, which this class inherits, only allows for 32 different styles, ##
-    ### the number of different types of keywords and expressions is limited.  As a result, I    ##
-    ### have defined different indicies for each types of rules.  I have also lmited themnumber  ##
-    ### of types allowed as follows:                                                             ##
-    ###     1  default type                                                                      ##
-    ###     1  type/style   of number                                                            ##
-    ###     1  type/style   of quote (string)                                                    ##
-    ###     8  types/styles of keywrds                                                           ##
-    ###     7  types/styles of expressions                                                       ##
-    ###     1  type/style   of line comment                                                      ##
-    ###     6  types/styles of line expressions                                                  ##
-    ###     1  type/style   of block comment                                                     ##
-    ###     6  types/styles of block expressions                                                 ##
-    #############################################################################################*/
-
-    //resize rules to fit the restricted number of styles
-    expressionRules.resize(NUMBER_TYPES + KEYWORD_TYPES + EXPRESSION_TYPES);    //index: 0 = numbers, 1-8 = keywords, 9-15 = user expressions
-    lineRules.resize(LINECOMMENT_TYPES + LINEEXPRESSION_TYPES);                 //index: 0 = line comments, 1-6 = user line expressions
-    blockRules.resize(QUOTE_TYPES + BLOCKCOMMENT_TYPES + BLOCKEXPRESSION_TYPES);//index: 0 = quotes, 1 = block comments, 2-7 = user block expressions
-
-    for (int i = 0, len = expressionRules.length(); i < len; i++) {
-        expressionRules[i] = new ExpressionRuleType;
-    }
-    for (int i = 0, len = lineRules.length(); i < len; i++) {
-        lineRules[i] = new LineRuleType;
-    }
-    for (int i = 0, len = blockRules.length(); i < len; i++) {
-        blockRules[i] = new BlockRuleType;
-    }
-}
-
-bool LeptonLexer::getExpressionRule(const QDomNode& node, quint8 numberOfTypes, quint8 typeIndex) {
-/*
--extracts a expression rule from 'node'
--returns true if the data was successfully extracted, false otherwise
-*/
-    //convert node to element
-    if ( (! node.isElement()) || node.isNull() ) return false;
-    QDomElement expElement = node.toElement();
-
-    //if a type is required, extract it from the 'type' attribute
-    quint8 type = 0;
-    if (numberOfTypes > 1) {
-        if ( ! expElement.hasAttribute("type") ) return false;
-        bool* err = new bool;
-        type = expElement.attribute("type").toUInt(err);
-        if (err == false || type >= numberOfTypes) return false;
-    }
-
-    //create regexp
-    QString expression = expElement.text();
-    expressionRules[typeIndex + type]->exp.setPattern(expression);
-    if ( ! expressionRules[typeIndex + type]->exp.isValid() ) {
-        expressionRules[typeIndex + type]->exp.setPattern("");
-        return false;
-    }
-
-    return true;
-}
-
-bool LeptonLexer::getLineRule(const QDomNode& node, quint8 numberOfTypes, quint8 typeIndex) {
-/*
--extracts a line expression rule from 'node'
--returns true if the data was successfully extracted, false otherwise
-*/
-    //convert node to element
-    if ( (! node.isElement()) || node.isNull() ) return false;
-    QDomElement expElement = node.toElement();
-
-    //if a type is required, extract it from the 'type' attribute
-    quint8 type = 0;
-    bool* err = new bool;
-    if (numberOfTypes > 1) {
-        if ( ! expElement.hasAttribute("type") ) return false;
-        type = expElement.attribute("type").toUInt(err);
-        if (*err == false || type >= numberOfTypes) return false;
-    }
-
-    //create regexp
-    QString expression = expElement.text();
-    lineRules[typeIndex + type]->exp.setPattern(expression);
-    if ( ! lineRules[typeIndex + type]->exp.isValid() ) {
-        lineRules[typeIndex + type]->exp.setPattern("");
-        return false;
-    }
-
-    //get escape sequences
-    *err = getEscapeFromTo(expElement, lineRules[typeIndex + type]->escapes);
-    return *err;
-}
-
-bool LeptonLexer::getBlockRule(const QDomNode& node, quint8 numberOfTypes, quint8 typeIndex) {
-/*
--extracts a block expression rule from 'node'
--returns true if the data was successfully extracted, false otherwise
-*/
-    //convert node to element
-    if ( (! node.isElement()) || node.isNull() ) return false;
-    QDomElement expElement = node.toElement();
-
-    //if a type is required, extract it from the 'type' attribute
-    quint8 type = 0;
-    bool* err = new bool;
-    if (numberOfTypes > 1) {
-        if ( ! expElement.hasAttribute("type") ) return false;
-        type = expElement.attribute("type").toUInt(err);
-        if (*err == false || type >= numberOfTypes) return false;
-    }
-
-    //create regexps
-    QString expStart = expElement.lastChildElement("start").text();
-    QString expEnd = expElement.lastChildElement("end").text();
-    expEnd.prepend("(");
-    expEnd.append(")|($)");
-    blockRules[typeIndex + type]->start.setPattern(expStart);
-    blockRules[typeIndex + type]->end.setPattern(expEnd);
-    if ( (! blockRules[typeIndex + type]->start.isValid()) || (! blockRules[typeIndex + type]->end.isValid()) ) {
-        blockRules[typeIndex + type]->start.setPattern("");
-        blockRules[typeIndex + type]->end.setPattern("");
-        return false;
-    }
-
-    //get escape sequences
-    *err = getEscapeFromTo(expElement, blockRules[typeIndex + type]->escapes);
-    return *err;
-}
-
-bool LeptonLexer::getEscapeFromTo(QDomElement& element, QRegularExpression &escapes) {
-/* -gets escape expression from 'element' and stores them in 'escapes' */
-    QDomElement escapeElement = element.lastChildElement("escapes");
-    if ( escapeElement.isNull() ) {
-        escapes.setPattern("");
-        return true;
-    }
-    QString exp = escapeElement.text();
-    if ( exp.isEmpty() ) return false;
-    escapes.setPattern(exp);
-    if ( ! escapes.isValid() ) {
-        escapes.setPattern("");
-        return false;
-    }
-    return true;
-}
-
-bool LeptonLexer::getTypedStyleElementData(const QDomNodeList& styleNodeList, StyleTypeValue min, StyleTypeValue max) {
-/*
--retrieves data from elements with the same name but which are differentiated by the value of the 'type' attribute
- (eg. keywords, expression, lineexpression, blockexpression)
--parameters:
-    styleNodeList: list of all the nodes with the same name
-    min: lowest style number for the item (used to bound the value of 'type') (eg. 5 for keywords)
-    max: highest style number for the item (used to bound the value of 'type') (eg 14 for keywords)
-*/
-    for (int i = 0, len = styleNodeList.length(); i < len; i++) {
-        if ( styleNodeList.at(i).isNull() ) continue;
-
-        QDomElement styleElement = styleNodeList.at(i).toElement();  //convert node to element
-
-        if ( styleElement.attribute("type").isEmpty() ) continue;    //extract the 'type' id number
-        quint8 typeNumber = styleElement.attribute("type").toInt();
-
-        if ( min + typeNumber > max) continue;   //if 'typeNumber' is outside the range of allocated style numbers, continue to next node
-        getStyleData(styleElement, min + typeNumber);
-    }
-    return true;
-}
-
-void LeptonLexer::getStyleData(QDomElement styleElement, quint8 style) {
-/*
--extracts style info from 'styleElement'
--if more than one styling item is defined (eg. multiple 'color' tags used), the last item wins
-*/
-    if ( ! styleElement.lastChildElement("color").isNull() ){
-        QString colorString = styleElement.lastChildElement("color").text();
-        QColor color = getColor(colorString);
-        setColor(color, style);
-    }
-}
-
-bool LeptonLexer::getDefaultStyle() {
+bool LeptonLexer::setDefaultStyleValues() {
 /* -gets the default style values */
-    setDefaultPaper( GeneralConfig::getDefaultPaper() );
-    setDefaultColor(  GeneralConfig::getDefaultTextColor() );
-    setDefaultFont( GeneralConfig::getDefaultEditorFont() );
-
-    //set styling in editor settings
-    if (editor() == NULL) return false;
-    editor()->setUnmatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
-    editor()->setMatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
-    editor()->setWhitespaceVisibility( GeneralConfig::getWhiteSpaceVisibility() );
-    editor()->setWhitespaceForegroundColor( GeneralConfig::getWhiteSpaceColor() );
-
+    setDefaultPaper( LeptonConfig::mainSettings->getDefaultPaper() );
+    setPaper( LeptonConfig::mainSettings->getDefaultPaper(), 0);
+    setDefaultColor( LeptonConfig::mainSettings->getDefaultTextColor() );
+    setColor( LeptonConfig::mainSettings->getDefaultTextColor(), 0);
+    setDefaultFont( LeptonConfig::mainSettings->getDefaultEditorFont() );
+    setFont( LeptonConfig::mainSettings->getDefaultEditorFont(), 0);
     return true;
 }
 
-QColor LeptonLexer::getColor(QString colorString) {
-/* -converts a color defined in a string to a 'QColor' object, using regexp validation, and returnes it */
-    if ( colorString.isEmpty() ) return QColor();   //return if no color is specified
-
-    //cleen up the string
-    colorString = colorString.simplified();
-    colorString = colorString.trimmed();
-
-    QColor returnColor(0, 0, 0);    //dummy color to be returned
-    int p = 0;                      //used for regexp validator
-
-    //regexps to check color value
-    QRegularExpressionValidator isRGB( QRegularExpression("\\d{1,3} \\d{1,3} \\d{1,3}") );              //check if RGB
-    QRegularExpressionValidator isRGBA( QRegularExpression("\\d{1,3} \\d{1,3} \\d{1,3} \\d{1,3}") );    //check if RGBA
-    QRegularExpressionValidator isHEX( QRegularExpression("^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8}|[0-9A-Fa-f]{9}|[0-9A-Fa-f]{12})$") );//check if HEX code
-    QRegularExpressionValidator isName( QRegularExpression("\\w+") ); //check if color name
-
-    //check color value
-    if ( isRGB.validate(colorString, p) == 2) {
-        QStringList rgb = colorString.split( QRegularExpression("\\s") );
-        returnColor.setRgb( rgb.at(0).toInt(), rgb.at(1).toInt(), rgb.at(2).toInt() );
-    }
-    else if ( isRGBA.validate(colorString, p) == 2) {
-        QStringList rgb = colorString.split( QRegularExpression("\\s") );
-        returnColor.setRgb( rgb.at(0).toInt(), rgb.at(1).toInt(), rgb.at(2).toInt(), rgb.at(3).toInt() );
-    }
-    else if ( isHEX.validate(colorString, p) == 2) {
-        returnColor.setNamedColor(colorString);
-    }
-    else if ( isName.validate(colorString, p) ) {
-        returnColor.setNamedColor( colorString.toLower().remove( QRegularExpression("\\s+") ) );
-    }
-
-    if ( returnColor.isValid() ) return returnColor;
-    else return QColor(0, 0, 0);
-}
-
-int LeptonLexer::convertRuleIndexToStyle(RuleType rType, int index) {
+bool LeptonLexer::extractRulesFrom(const QDomElement& tokenizationRules, TokenRuleList& rList) {
 /*
--returns the style corresponding to the givin rule type and index
--returns '-1' if no correspondence was found
+-extracts all tokenization rules from `rule` and `spanrule` elements in `tokenizationRules`
+ and adds them to rList
 */
-    if (rType == EXPRESSION_RULE) {
-        if (index == NUMBER_INDEX) return NUMBER_STYLE;
-        else if ((index >= KEYWORD_TYPE_INDEX) && (index <= KEYWORD_TYPE_INDEX + KEYWORD_TYPES)) return KEYWORD_STYLE_MIN + index - KEYWORD_TYPE_INDEX;
-        else if ((index >= EXPRESSION_TYPE_INDEX) && (index <= EXPRESSION_TYPE_INDEX + EXPRESSION_TYPES)) return EXPRESSION_STYLE_MIN + index - EXPRESSION_TYPE_INDEX;
+
+    QDomNodeList nodes = tokenizationRules.childNodes();
+    for (int i = 0, count = nodes.count(); i < count; i++) {
+        if ( nodes.at(i).isElement() ) {
+            QDomElement ruleElement = nodes.at(i).toElement();
+            if (ruleElement.tagName() == "rule") {
+                int ruleClass = ruleElement.attribute("class").toInt();
+                if (ruleClass < 0 || ruleClass > 31 ) continue;
+                TokenRule newRule;
+                newRule.name = ruleElement.attribute("name");
+                newRule.id = ruleClass;
+                QString exp = ruleElement.firstChild().nodeValue().prepend("^(").append(")");
+                newRule.rule.setPattern(exp);
+                if ( ! newRule.rule.isValid() ) continue;
+                rList.append(newRule);
+            }
+            else if (ruleElement.tagName() == "spanrule") {
+                int ruleClass = ruleElement.attribute("class").toInt();
+                if (ruleClass < 0 || ruleClass > 31 ) continue;
+                TokenRule newRule;
+                newRule.name = ruleElement.attribute("name");
+                newRule.id = ruleClass;
+                QString exp = ruleElement.lastChildElement("open").firstChild().nodeValue().prepend("^(").append(")");
+                newRule.rule.setPattern(exp);
+                exp = ruleElement.lastChildElement("close").firstChild().nodeValue().prepend("^(").append(")");
+                newRule.closeRule.setPattern(exp);
+                if ( ! newRule.rule.isValid() || ! newRule.closeRule.isValid() ) continue;
+                extractRulesFrom(ruleElement, newRule.subRules);
+                rList.append(newRule);
+            }
+        }
     }
-    else if (rType == LINE_RULE) {
-        if (index == LINECOMMENT_INDEX) return LINECOMMENT_STYLE;
-        else if ((index >= LINEEXPRESSION_TYPE_INDEX) && (index <= LINEEXPRESSION_TYPE_INDEX + LINEEXPRESSION_TYPES)) return LINEEXP_STYLE_MIN + index - LINEEXPRESSION_TYPE_INDEX;
-    }
-    else if (rType == BLOCK_RULE) {
-        if (index == QUOTE_INDEX) return QUOTE_STYLE;
-        else if (index == BLOCKCOMMENT_INDEX) return BLOCKCOMMENT_STYLE;
-        else if ((index >= BLOCKEXPRESSION_TYPE_INDEX) && (index <= BLOCKEXPRESSION_TYPE_INDEX + BLOCKEXPRESSION_TYPES)) return BLOCKEXP_STYLE_MIN + index - BLOCKEXPRESSION_TYPE_INDEX;
-    }
-    return 0;
+
+    return true;
 }

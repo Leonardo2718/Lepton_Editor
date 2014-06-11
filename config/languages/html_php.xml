@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<language name="HTML/PHP" filemask=".*\.(html|htm|php)$">
+    <tokenization>
+        <spanrule class="5" name="XML_ENCODING">
+            <open>&lt;\!DOCTYPE</open>
+            <close>&gt;</close>
+            <rule class="11" name="ATTRIBUTE">[A-Za-z0-9_]+</rule>
+            <rule class="6" name="ATTRIBUTE_VALUE">"[^"]*"</rule>
+            <rule class="5" name="">=</rule>
+        </spanrule>
+        <spanrule class="10" name="OPEN_TAG">
+            <open>(&lt;)(a|abbr|acronym|address|applet|area|article|aside|audio|b|base|basefont|bdi|bdo|big|blockquote|body|br|button|canvas|caption|center|cite|code|col|colgroup|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frame|frameset|head|header|hgroup|h[1-6]|hr|html|i|iframe|img|input|ins|kbd|keygen|label|legend|li|link|main|map|mark|menu|menuitem|meta|meter|nav|noframes|noscript|object|ol|optgroup|option|output|p|param|pre|progress|q|rp|rt|ruby|s|samp|section|select|small|source|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video|wbr)\b</open>
+            <close>(/?)(&gt;)</close>
+            <rule class="11" name="ATTRIBUTE">[A-Za-z0-9_]+</rule>
+            <rule class="6" name="ATTRIBUTE_VALUE">"[^"]*"</rule>
+            <rule class="10" name="">=</rule>
+        </spanrule>
+        <spanrule class="10" name="CLOSE_TAG">
+            <open>(&lt;)(/)(a|abbr|acronym|address|applet|area|article|aside|audio|b|base|basefont|bdi|bdo|big|blockquote|body|br|button|canvas|caption|center|cite|code|col|colgroup|datalist|dd|del|details|dfn|dialog|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frame|frameset|head|header|hgroup|h[1-6]|hr|html|i|iframe|img|input|ins|kbd|keygen|label|legend|li|link|main|map|mark|menu|menuitem|meta|meter|nav|noframes|noscript|object|ol|optgroup|option|output|p|param|pre|progress|q|rp|rt|ruby|s|samp|section|select|small|source|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|track|tt|u|ul|var|video|wbr)\b</open>
+            <close>(&gt;)</close>
+            <rule class="10" name="">(&gt;)</rule>
+        </spanrule>
+        <spanrule class="10" name="SCRIPT">
+            <open>&lt;script\b([^&gt;]*)&gt;</open>
+            <close>&lt;/script(\s*)&gt;</close>
+            <rule class="1" name="JS_KEYWORD">\b(break|case|class|catch|const|continue|debugger|default|delete|do|else|export|extends|false|finally|for|function|if|import|in|instanceof|let|new|null|return|super|switch|this|throw|true|try|typeof|var|void|while|with|yield)\b</rule>
+            <rule class="8" name="NUMBER">\b\d([A-Za-z0-9]*)</rule>
+            <spanrule class="4" name="LINE_COMMENT">
+                <open>//</open>
+                <close>(\n)(?&lt;!\\)</close>
+                <rule class="4" name="">.</rule>
+            </spanrule>
+            <spanrule class="4" name="BLOCK_COMMENT">
+                <open>/\*</open>
+                <close>\*/</close>
+                <rule class="4" name="">.</rule>
+            </spanrule>
+            <spanrule class="6" name="DOUBLE_QUOTE_STRING">
+                <open>"</open>
+                <close>"|\n</close>
+                <rule class="7" name="ESCAPED_CHARACTER">\\(.|\n)</rule>
+                <rule class="6" name="CHARACTER">[^"]</rule>
+            </spanrule>
+            <spanrule class="6" name="SINGLE_QUOTE_STRING">
+                <open>'</open>
+                <close>'|\n</close>
+                <rule class="7" name="ESCAPED_CHARACTER">\\(.|\n)</rule>
+                <rule class="6" name="CHARACTER">[^']</rule>
+            </spanrule>
+        </spanrule>
+        <spanrule class="3" name="PHP">
+            <open>&lt;\?php</open>
+            <close>\?&gt;</close>
+            <rule class="0" name="">\b[A-Za-z_][A-Za-z_0-9]*\b</rule>
+        </spanrule>
+        <spanrule class="4" name="COMMENT">
+            <open>(&lt;)(!--)</open>
+            <close>(--)(&gt;)</close>
+            <rule class="4" name="">.</rule>
+        </spanrule>
+        <rule class="2" name="NAME_ENTITY">&amp;(quot|amp|apos|lt|gt|nbsp|iexcl|cent|pound|curren|yen|brvbar|sect|uml|copy|ordf|laquo|not|shy|reg|macr|deg|plusmn|acute|micro|para|middot|cedil|ordm|raquo|iquest|Agrave|Aacute|Acirc|Atilde|Auml|Aring|AElig|Ccedil|Egrave|Eacute|Ecirc|Euml|Igrave|Iacute|Icirc|Iuml|ETH|Ntilde|Ograve|Oacute|Ocirc|Otilde|Ouml|times|Oslash|Ugrave|Uacute|Ucirc|Uuml|Yacute|THORN|szlig|agrave|aacute|acirc|atilde|auml|aring|aelig|ccedil|egrave|eacute|ecirc|euml|igrave|iacute|icirc|iuml|eth|ntilde|ograve|oacute|ocirc|otilde|ouml|divide|oslash|ugrave|uacute|ucirc|uuml|yacute|thorn|yuml|OElig|oelig|Scaron|scaron|Yuml|fnof|circ|tilde|Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta|Iota|Kappa|Lambda|Mu|Nu|Xi|Omicron|Pi|Rho|Sigma|Tau|Upsilon|Phi|Chi|Psi|Omega|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|omicron|pi|rho|sigmaf|sigma|tau|upsilon|phi|chi|psi|omega|thetasym|upsih|piv|ensp|emsp|thinsp|zwnj|zwj|lrm|rlm|ndash|mdash|lsquo|rsquo|sbquo|ldquo|rdquo|bdquo|dagger|Dagger|bull|hellip|permil|prime|Prime|lsaquo|rsaquo|oline|frasl|euro|image|weierp|real|trade|alefsym|larr|uarr|rarr|darr|harr|crarr|lArr|uArr|rArr|dArr|hArr|forall|part|exist|empty|nabla|isin|notin|ni|prod|sum|minus|lowast|radic|prop|infin|ang|and|or|cap|cup|int|sim|cong|asymp|ne|equiv|le|ge|sub|sup|nsub|sube|supe|oplus|otimes|perp|sdot|vellip|lceil|rceil|lfloor|rfloor|lang|rang|loz|spades|clubs|hearts|diams);</rule>
+        <rule class="2" name="NUMBER_ENTITY">&amp;#(x([A-F0-9]{2,4})|x([a-f0-9]{2,4})|([0-9]{2,4}));</rule>
+    </tokenization>
+</language>
+

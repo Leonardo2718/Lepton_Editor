@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectmodel.cpp
 Author: Leonardo Banderali
 Created: June 9, 2014
-Last Modified: June 25, 2014
+Last Modified: September 3, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,9 +40,10 @@ Usage Agreement:
 #include <QFileInfoList>
 #include <QString>
 #include <QFileDialog>
+#include <QSettings>
+#include <QVariant>
+
 #include <QDebug>
-
-
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -66,12 +67,25 @@ ProjectModel::ProjectModel(QObject* parent) : QAbstractItemModel(parent) {
     connect(dirActions, SIGNAL(triggered(QAction*)), this, SLOT(actionOnDirTriggered(QAction*)));
     connect(projectActions, SIGNAL(triggered(QAction*)), this, SLOT(actionOnProjectTriggered(QAction*)));
 
-#ifdef QT_DEBUG
-    addProject("..");   //an example project
-#endif
+    //load project list from previous session
+    QSettings session;
+    QList< QVariant > projectPathList = session.value("projectPathList").toList();
+    for (int i = 0, c = projectPathList.count(); i < c; i++) {
+        addProject( projectPathList.at(i).toString() );
+    }
 }
 
 ProjectModel::~ProjectModel() {
+
+    //save project list in session
+    QSettings session;
+    QList< ProjectItem* > projects = rootProjectItem->getChildren();
+    QList< QVariant > projectPathList;
+    for (int i = 0, c = projects.count(); i < c; i++) {
+        projectPathList.append( projects.at(i)->getPath() );
+    }
+    session.setValue("projectPathList", projectPathList);
+
     delete fileActions;
     delete dirActions;
     delete projectActions;
@@ -137,7 +151,7 @@ QModelIndex ProjectModel::parent(const QModelIndex& child) const {
     if (!parentItem) return QModelIndex();
 
     if (item == rootProjectItem) return QModelIndex();              //return empty if current item is root (root has no parent)
-//qDebug() << "Got to: " << item->getPath() << parentItem;
+
     return createIndex(parentItem->currentRow(), 0, parentItem);    //create and return model index of parent item
 }
 
@@ -182,7 +196,7 @@ int ProjectModel::columnCount(const QModelIndex& parent) const {
 Qt::ItemFlags ProjectModel::flags(const QModelIndex& index) const {
 /* -returns the flags which correspond to the item referenced by 'index' */
     if ( !index.isValid() || index.internalPointer() == rootProjectItem) return Qt::NoItemFlags; //if index is not valid, it cannot have any flags
-    return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
 bool ProjectModel::setData(const QModelIndex &index, const QVariant &value, int role) {
@@ -194,6 +208,12 @@ bool ProjectModel::setData(const QModelIndex &index, const QVariant &value, int 
     ####################################################################################################*/
     if ( (!index.isValid()) || (index.internalPointer() == rootProjectItem) ) return false;
     else return true;
+}
+
+int ProjectModel::projectCount() {
+/*  -return the number of projects in the model */
+
+    return rootProjectItem->childCount();
 }
 
 

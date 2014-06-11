@@ -17,6 +17,8 @@ new features so it will be buggy.
 - auto indentation
 - brace matching
 - custom theme files
+- saving sessions
+- basic project manager
 
 See the other README files to add new languages and highlighting styles.
 
@@ -29,8 +31,6 @@ See the other README files to add new languages and highlighting styles.
   - tabs vs spaces
   - indent space count
 - code folding
-- saving sessions
-- basic project manager
 
 Building and Running
 --------------------

@@ -1,0 +1,43 @@
+{
+    "project_type": "Simple C++ Project",
+    "working_directory": {
+        "directory": {
+            "name": "src",
+            "global_file_type": {
+                "name_regex": ".+\\.(h|hpp|hxx)",
+                "type": "header_file"
+            },
+            "global_file_type": {
+                "name_regex": ".+\\.(cpp|cxx|cc)",
+                "type": "source_file"
+            },
+            "global_file_type": {
+                "name_regex": ".+\\.c",
+                "type": "c_source_file"
+            },
+            "unknown_file_types": {
+                "are_visible": true
+            },
+            "unknown_directories": {
+                "are_visible": true
+            }
+        },
+        "template_file": {
+            "name": "Makefile",
+            "type": "makefile"
+        },
+        "template_file": {
+            "name": "README.md",
+            "type": "readme_doc"
+        },
+        "unknown_file_types": {
+            "are_visible": true,
+            "ignore_hidden": true
+        },
+        "unknown_directories": {
+            "are_visible": true,
+            "ignore_hidden": true,
+            "ignore": [".git", "bin", "lib"]
+        }
+    }
+}

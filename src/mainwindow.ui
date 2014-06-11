@@ -100,6 +100,12 @@
                <enum>Qt::Horizontal</enum>
               </property>
               <widget class="QWidget" name="projectManagerArea" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>1</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <layout class="QVBoxLayout" name="verticalLayout_4">
                 <property name="spacing">
                  <number>0</number>
@@ -118,9 +124,27 @@
                 </property>
                </layout>
               </widget>
-              <widget class="QWidget" name="verticalLayoutWidget">
+              <widget class="QWidget" name="editorArea" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>4</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <layout class="QVBoxLayout" name="textEditorArea">
                 <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
                  <number>0</number>
                 </property>
                </layout>
@@ -176,7 +200,7 @@
      <x>0</x>
      <y>0</y>
      <width>570</width>
-     <height>23</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -218,21 +242,26 @@
     </property>
     <addaction name="actionAbout_Lepton_Editor"/>
     <addaction name="actionGitHub_Page"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionReplace_Tabs_with_Spaces"/>
+    <addaction name="actionReplace_Spaces_with_Tabs"/>
+    <addaction name="separator"/>
+    <addaction name="action_Find_Replace"/>
    </widget>
-   <widget class="QMenu" name="menuDocument">
+   <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Document</string>
+     <string>Settings</string>
     </property>
-   </widget>
-   <widget class="QMenu" name="menuCustomize">
-    <property name="title">
-     <string>Customize</string>
-    </property>
+    <addaction name="actionUse_Tabs"/>
+    <addaction name="actionUse_Spaces"/>
+    <addaction name="separator"/>
+    <addaction name="actionSettings_Editor"/>
    </widget>
    <widget class="QMenu" name="menuLanguage">
     <property name="title">
@@ -241,9 +270,8 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuDocument"/>
    <addaction name="menuLanguage"/>
-   <addaction name="menuCustomize"/>
+   <addaction name="menuSettings"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -287,6 +315,9 @@
    <property name="text">
     <string>Project Manager</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
   </action>
   <action name="actionEditor_Tools">
    <property name="checkable">
@@ -327,7 +358,7 @@
     <string>New Project</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Alt+N</string>
+    <string>Ctrl+Shift+N</string>
    </property>
   </action>
   <action name="actionOpen_File">
@@ -343,7 +374,51 @@
     <string>Project</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Alt+O</string>
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionSettings_Editor">
+   <property name="text">
+    <string>Settings Editor</string>
+   </property>
+  </action>
+  <action name="actionUse_Tabs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use Tabs</string>
+   </property>
+  </action>
+  <action name="actionUse_Spaces">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use Spaces</string>
+   </property>
+  </action>
+  <action name="actionReplace_Tabs_with_Spaces">
+   <property name="text">
+    <string>Replace Tabs with Spaces</string>
+   </property>
+  </action>
+  <action name="actionReplace_Spaces_with_Tabs">
+   <property name="text">
+    <string>Replace Spaces with Tabs</string>
+   </property>
+  </action>
+  <action name="action_Find_Replace">
+   <property name="text">
+    <string>&amp;Find/Replace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

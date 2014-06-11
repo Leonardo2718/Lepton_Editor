@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<language name="Octave/Matlab" style="default.xml">
-    <keywords type="0">
-        break case catch continue else elseif end for function global if otherwise persistent return switch try while
-    </keywords>
-    <linecomment>#</linecomment>
-    <lineexpression type="0">%</lineexpression>
-</language>

@@ -1,18 +1,19 @@
 /*
 Project: Lepton Editor
-File: main.cpp
+File: leptonconfig.h
 Author: Leonardo Banderali
-Created: January 31, 2014
-Last Modified: September 3, 2014
+Created: September 4, 2014
+Last Modified: January 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
     flexible and extensible code editor which developers can easily customize to their
     liking.
 
-    This is the main file which executes when the program starts.
+    This file defines a namespace for objects which hold configuration data and settings.
+    This includes data read from config files.
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -31,17 +32,34 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mainwindow.h"
-#include <QApplication>
+#ifndef LEPTONCONFIG_H
+#define LEPTONCONFIG_H
 
-int main(int argc, char *argv[]) {
-    QApplication a(argc, argv);
+//include Qt classes
+#include <QDir>
 
-    QCoreApplication::setOrganizationName("Lepton Editor");
-    QCoreApplication::setApplicationName("Lepton Editor");
+//include other Lepton files needed
+#include "generalconfig.h"
 
-    MainWindow w;
-    w.show();
 
-    return a.exec();
+
+namespace LeptonConfig {
+/* -a namespace to hold all the objects that define config data and settings */
+
+//get data from the main config file
+#ifdef QT_DEBUG
+
+GeneralConfig* const mainSettings = GeneralConfig::getObject("./config/config.json");
+
+#else
+
+#ifdef Q_OS_UNIX
+//static GeneralConfig mainSettings(QDir::homePath().append("/.config/LeptonEditor/config.json"));
+GeneralConfig* const mainSettings = GeneralConfig::getObject(QDir::homePath().append("/.config/LeptonEditor/config.json"));
+#endif
+
+#endif
+
 }
+
+#endif // LEPTONCONFIG_H

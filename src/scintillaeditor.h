@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 24, 2014
+Last Modified: December 28, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -35,6 +35,7 @@ Usage Agreement:
 #ifndef SCINTILLAEDITOR_H
 #define SCINTILLAEDITOR_H
 
+//include Qt classes
 #include <QWidget>
 #include <QString>
 #include <QHash>
@@ -42,9 +43,15 @@ Usage Agreement:
 #include <QActionGroup>
 #include <QFileInfo>
 #include <QSettings>
+
+//include QScintilla classes
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexercustom.h>
+#include <Qsci/qscilexer.h>
+
+//include Lepton files which are needed by this class
 #include "leptonlexer.h"
+#include "syntaxhighlightmanager.h"
 
 class ScintillaEditor : public QsciScintilla
 {
@@ -68,8 +75,14 @@ class ScintillaEditor : public QsciScintilla
         void loadFile(const QString& filePath);
         /* -load contents of a file to be edited */
 
+        bool isFileOpen();
+        /*  -returns true if a file is open and being edited, false otherwise */
+
         QString getOpenFilePath();
         /* -get the path to the file currently being edited */
+
+        QString getOpenFileDir();
+        /*  -get the directory of the file currently being edited */
 
         QString getOpenFileName();
         /* -get the name of the file currently being edited */
@@ -81,21 +94,17 @@ class ScintillaEditor : public QsciScintilla
         /* -returns the language selection menu */
 
     public slots:
-        void setLanguage(QAction* langAction);
-        /* -sets highlighting language based on 'langAction' */
+        void changeTabsToSpaces();
+        /*  -changes tabs into spaces */
+
+        void changeSpacesToTabs();
+        /*  -changes spaces into tabs */
 
     private:
-        QFileInfo openFile; //path to file currently being edited
+        QFileInfo openFile;                     //path to file currently being edited
+        SyntaxHighlightManager* lexerManager;   //class to provide and manage the syntax highlighting lexer
 
         void setModified(bool m) { QsciScintilla::setModified(m); }    //make method private
-
-        LeptonLexer* lexer; //lexer to be used for highlighting
-
-        QMenu* languageMenu;    //menu to select the language for highlighting
-
-        QActionGroup* languageGroup;    //list of all lenguages actions in the language menu
-
-        QHash<QAction*, QString>* langFileFromAction;   //lookup table to index language file paths from language actions
 };
 
 #endif // SCINTILLAEDITOR_H
