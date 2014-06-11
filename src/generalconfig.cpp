@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: May 24, 2014
+Last Modified: June 10, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -133,7 +133,6 @@ QString GeneralConfig::getStyleFilePath(const QString& fileName) {
 
 QString GeneralConfig::getConfigData(const QString& filePath, const QString& item, const QString& field) {
 /* -returns data from config file stored under 'item' and in 'field' */
-    //QFile configFile( getConfigFilePath("config/theme.conf") );
     QFile configFile( filePath );
     if ( ! configFile.exists() ) return QString("");
     configFile.open(QIODevice::ReadOnly | QIODevice::ReadWrite);

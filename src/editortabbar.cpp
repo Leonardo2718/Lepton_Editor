@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.cpp
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: May 24, 2014
+Last Modified: June 10, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -58,7 +58,7 @@ int EditorTabBar::addTab(int index) {
 -parameters:
     index: the index at which to place the new tab (-1 if at the end)
 */
-    int i = 0;                                  //store the index of the new tab
+    int i = 0;  //store the index of the new tab
     if ( index < 0) {
         i = QTabWidget::addTab( new ScintillaEditor() , "Untitled" );
     }
@@ -68,7 +68,7 @@ int EditorTabBar::addTab(int index) {
 
     this->setCurrentIndex(i);
     connect(current(), SIGNAL(modificationChanged(bool)), this, SLOT(setLabel(bool)) );
-    return i;                   //return the index of the tab
+    return i;   //return the index of the tab
 }
 
 ScintillaEditor* EditorTabBar::current(){

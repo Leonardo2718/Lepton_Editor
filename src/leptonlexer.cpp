@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: May 24, 2014
+Last Modified: June 10, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -42,8 +42,6 @@ Usage Agreement:
 
 #include "leptonlexer.h"
 #include "generalconfig.h"
-
-#include <QDebug>
 
 
 
@@ -217,7 +215,6 @@ void LeptonLexer::styleText(int start, int end) {
             if ( !(blockRuleMatchList[ruleIndex].hasNext()) || firstPosition != blockRuleMatchList[ruleIndex].peekNext().capturedStart()) break;
             int style = convertRuleIndexToStyle(BLOCK_RULE, ruleIndex);
             if (style < 0) break;
-            QRegularExpressionMatch startExp = blockRuleMatchList[ruleIndex].next();
             QRegularExpressionMatch endExp = blockRules[ruleIndex]->end.match(text, firstPosition + 1);
             if (endExp.capturedStart() < 0) continue;
             applyStyleTo(firstPosition, endExp.capturedEnd() - firstPosition, style);

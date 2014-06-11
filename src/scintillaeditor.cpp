@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 24, 2014
+Last Modified: June 10, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,8 +44,6 @@ Usage Agreement:
 #include "scintillaeditor.h"
 #include "generalconfig.h"
 
-#include <QDebug>
-
 
 
 //~public method implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -53,7 +51,6 @@ Usage Agreement:
 ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
 /* -setup editor and configurations */
     //set and display line numbers; margin '1' is the default line number maring
-    //setMarginWidth(1, "00000");
     setMarginWidth(1, 55);
     setMarginLineNumbers(1, true);
 
@@ -105,19 +102,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
     //$                                                                    $$
-        setFolding(BoxedTreeFoldStyle);     //display line folding margins
-        //qDebug() << SendScintilla(QsciScintillaBase::SC_FOLDLEVELHEADERFLAG, 0);
-        setFoldMarker(0);
-        SendScintilla(QsciScintilla::SCI_SETFOLDLEVEL,0, 1);
-        //QFont editorFont;
-        //editorFont.setStyleHint(QFont::Monospace);
-        //setFont( QFont("Liberation Mono", 10) );
-        //setLexer(cpp);
-        //QSettings s("Lepton", "Lepton");
-        //char* c = new char('/Scintilla');
-        //char* c = new char(' ');
-        //cpp->writeSettings(s, c);
-        //qDebug() << s.;
+
     //$                                                                    $$
     //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 }
@@ -166,7 +151,7 @@ void ScintillaEditor::writeToFile(const QString& filePath, bool changeModify) {
         QMessageBox::warning(this, tr("Lepton Error"), tr("Cannot write to file %1:\n%2.").arg(filePath).arg(file.errorString()));
         return;
     }
-    file.write( this->text().toUtf8() );                     //write edited text
+    file.write( this->text().toUtf8() );    //write edited text
     file.close();
 
     if (changeModify) setModified(false);
