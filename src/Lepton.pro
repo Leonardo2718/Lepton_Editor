@@ -47,13 +47,17 @@ SOURCES += main.cpp\
     editortabbar.cpp \
     scintillaeditor.cpp \
     leptonlexer.cpp \
-    generalconfig.cpp
+    generalconfig.cpp \
+    projectmodel.cpp \
+    projectitem.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
     scintillaeditor.h \
     leptonlexer.h \
-    generalconfig.h
+    generalconfig.h \
+    projectmodel.h \
+    projectitem.h
 
 FORMS    += mainwindow.ui
 

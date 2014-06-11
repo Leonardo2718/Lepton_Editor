@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 24, 2014
+Last Modified: June 10, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -34,10 +34,14 @@ Usage Agreement:
 //include necessary files and libraries
 #include <QCloseEvent>
 #include <QFileDialog>
+#include <QTreeView>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "generalconfig.h"
+#include "projectmodel.h"
 
+
+#include <QDebug>
 
 
 //~public method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +53,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);  //reference the main window
 
     //hide the extra featuers
-    ui->projectManager->hide();
+    //ui->projectManager->hide();
+    ui->projectManagerArea->hide();
     ui->editorTools->hide();
 
     //instantiate editing area
@@ -68,7 +73,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     GeneralConfig::getStyleSheetInto(styleSheet);
     qApp->setStyleSheet(styleSheet);
 
-    //ui->statusBar->
+    QTreeView* projectList = new QTreeView(ui->projectManagerArea);
+    //QFileSystemModel* fs = new QFileSystemModel();
+    //fs->setRootPath( QDir::homePath() );
+    //ui->projectManager->addTab(projectList, "Project File List");
+    ui->projectManagerArea->layout()->addWidget(projectList);
+    //projectList->setModel(fs);
+
+    ProjectModel* m = new ProjectModel();
+    projectList->setModel(m);
 }
 
 MainWindow::~MainWindow() {
@@ -131,7 +144,7 @@ void MainWindow::on_actionSave_Copy_As_triggered(){
 
 void MainWindow::on_actionProject_Manager_toggled(bool visible) {
 /* -show/hide the project manager */
-    ui->projectManager->setVisible(visible);
+    ui->projectManagerArea->setVisible(visible);
 }
 
 void MainWindow::on_actionEditor_Tools_toggled(bool visible) {
