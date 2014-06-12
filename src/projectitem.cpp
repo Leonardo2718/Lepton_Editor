@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectitem.cpp
 Author: Leonardo Banderali
 Created: June 9, 2014
-Last Modified: June 10, 2014
+Last Modified: June 11, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -33,16 +33,26 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <QFileIconProvider>
+
 #include "projectitem.h"
 #include <QDebug>
 
 
 
-//~public methods of 'ProjectItem' class~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectItem::ProjectItem(const QList< QVariant > &data, ProjectItem* parent) {
-    itemData = data;
+ProjectItem::ProjectItem(const QList<QVariant>& data, ProjectItem* parent) {
     parentItem = parent;
+    itemDisplayData = data;
+}
+
+ProjectItem::ProjectItem(const QString& itemPath, ProjectItem *parent) {
+    parentItem = parent;
+    item.setFile(itemPath);
+    qDebug() << item.exists() << item.isDir() << item.fileName();
+    if ( ! item.exists() ) itemDisplayData << QString("Path '%1' was not found!").arg(itemPath);
+    else itemDisplayData << item.fileName();
 }
 
 ProjectItem::~ProjectItem() {
@@ -55,21 +65,28 @@ void ProjectItem::appendChild(ProjectItem* item) {
     children.append(item);
 }
 
-void ProjectItem::appendChild(const QList< QVariant > data) {
+void ProjectItem::appendChild(const QString itemPath) {
 /* -adds a child item to this item */
-    ProjectItem* newItem = new ProjectItem(data, this);
+    ProjectItem* newItem = new ProjectItem(itemPath, this);
     children.append(newItem);
 }
 
-ProjectItem* ProjectItem::child(int row) {
-/* -returns child item at 'row' ('row' is index of item) */
+ProjectItem* ProjectItem::child(int index) {
+/* -returns child item at 'index' */
 
-    return children.value(row, NULL);    //will return default item (null pointer) if row/index is not valid
+    return children.value(index, NULL);    //will return default item (null pointer) if row/index is not valid
 }
 
-QVariant ProjectItem::data(int column) const {
+QVariant ProjectItem::getDisplayData(int column) const {
 /* -returns data element of this item with index 'column' */
-    return itemData.value(column, QVariant() );
+    return itemDisplayData.value(column, QVariant() );
+}
+
+QIcon ProjectItem::getDecorationIcon() const {
+/* -returns icon to be displayed next to the item display data in a view */
+    QFileIconProvider iconProvide;
+    if ( item.exists() ) return iconProvide.icon(item);
+    return QIcon();
 }
 
 ProjectItem* ProjectItem::parent() {
@@ -84,35 +101,29 @@ int ProjectItem::childCount() const {
 
 int ProjectItem::columnCount() const {
 /* -returns number of data elements */
-    return itemData.length();
+    return itemDisplayData.length();
 }
 
 int ProjectItem::dataElementCount() const {
 /* -returns number of data elements (same as 'columnCount()' ) */
-    return itemData.length();
+    return itemDisplayData.length();
 }
 
-int ProjectItem::row() const {
-/* -returns the row (index) of this item in its parent ('0' if this item is root) */
+int ProjectItem::currentIndex() const {
+/* -returns the index of this item in its parent ('0' if this item is root) */
+    if (parentItem == NULL) return 0;
+    return parentItem->children.indexOf( const_cast< ProjectItem* >(this) );
+}
+
+int ProjectItem::currentRow() const {
+/* -returns the row (index) of this item (same as 'currentIndex()') */
     if (parentItem == NULL) return 0;
     return parentItem->children.indexOf( const_cast< ProjectItem* >(this) );
 }
 
 
 
-//~public methods of 'ProjectRootItem' class~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-ProjectRootItem::ProjectRootItem(const QList< QVariant >& rootData) : ProjectItem(rootData, 0) {
-
-}
-
-ProjectRootItem::~ProjectRootItem() {
-
-}
-
-
-
-//~private methods of 'ProjectItem' class~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~private methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void ProjectItem::setParent(ProjectItem* newParent) {
 /* -set new parent item of this item */

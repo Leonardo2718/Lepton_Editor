@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectmodel.cpp
 Author: Leonardo Banderali
 Created: June 9, 2014
-Last Modified: June 10, 2014
+Last Modified: June 11, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,6 +36,9 @@ Usage Agreement:
 #include "projectmodel.h"
 
 #include <QList>
+#include <QDir>
+#include <QFileInfoList>
+#include <QString>
 #include <QDebug>
 
 
@@ -45,16 +48,17 @@ Usage Agreement:
 ProjectModel::ProjectModel(QObject* parent) : QAbstractItemModel(parent) {
     //create a new root item
     QList< QVariant > rootData;
-    rootData << "Project" << "More Stuff" << "Even more";
+    rootData << "Projects";
     rootProjectItem = new ProjectItem(rootData);
 
-    QList< QVariant > someData;
-    someData << "someThing" << "some thing else" << "I don't know what to write";
-    rootProjectItem->appendChild(someData);
-    ProjectItem* newItem = rootProjectItem->child(0);
-    newItem->appendChild( someData );
-    ProjectRootItem* root = new ProjectRootItem( someData );
-    qDebug() << root->parent();
+    //rootProjectItem->appendChild(someData);
+    //ProjectItem* newItem = new ProjectItem("/home/leonardo/Programming/Lepton_Editor", rootProjectItem);
+    //rootProjectItem->appendChild( newItem );
+    /*ProjectRootItem* root = new ProjectRootItem( someData );
+    rootProjectItem->appendChild( root );
+    qDebug() << root->parent();*/
+    addProject("/home/leonardo/Programming/Lepton_Editor");
+    addProject("../");
 }
 
 ProjectModel::~ProjectModel() {
@@ -84,13 +88,17 @@ QVariant ProjectModel::data(const QModelIndex& index, int role) const {
 /* -returns data associated with an item stored under a given 'role' */
     if ( !index.isValid() ) return QVariant();  //return empty if the index is not valid (empty)
 
+    ProjectItem* item = static_cast< ProjectItem* >( index.internalPointer() ); //get current model item
+    QVariant returnData;    //data to be returned
+
     if (role == Qt::DisplayRole) {
-        ProjectItem* item = static_cast< ProjectItem* >( index.internalPointer() ); //get current model item
-        return item->data( index.column() );    //return item data
+        returnData = item->getDisplayData( index.column() );
     }
-    else {                  //if the 'role' could not be handled return empty
-        return QVariant();
+    else if (role == Qt::DecorationRole && index.column() == 0) {   //decoration role sets icons
+        returnData = item->getDecorationIcon();
     }
+
+    return returnData;
 }
 
 QModelIndex ProjectModel::parent(const QModelIndex& child) const {
@@ -100,15 +108,15 @@ QModelIndex ProjectModel::parent(const QModelIndex& child) const {
     ProjectItem* item = static_cast< ProjectItem* >( child.internalPointer() ); //get current model item
     ProjectItem* parentItem = item->parent();                                   //get parent item from current model item
 
-    if (item == rootProjectItem) return QModelIndex();  //return empty if current item is root (root has no parent)
+    if (item == rootProjectItem) return QModelIndex();              //return empty if current item is root (root has no parent)
 
-    return createIndex(parentItem->row(), 0, parentItem);   //create and return model index of parent item
+    return createIndex(parentItem->currentRow(), 0, parentItem);    //create and return model index of parent item
 }
 
 QVariant ProjectModel::headerData(int section, Qt::Orientation orientation, int role) const {
 /* -returns data to be put in header of table (header in tree view) */
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
-        return rootProjectItem->data(section);
+        return rootProjectItem->getDisplayData(section);
     }
     else return QVariant();
 }
@@ -138,3 +146,59 @@ int ProjectModel::columnCount(const QModelIndex& parent) const {
     if ( !index.isValid() ) return Qt::NoItemFlags; //if index is not valid, it cannot have any flags
     return QAbstractItemModel::flags(index);
 }*/
+
+
+
+//~private methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void ProjectModel::addProject(const QString& projectPath) {
+/* -builds tree for a new project and adds it to the list */
+    //get directory of project
+    QDir projectDir(projectPath);
+    if ( ! projectDir.exists() ) return;
+
+    //create project root
+    ProjectItem* newProject = new ProjectItem(projectPath, rootProjectItem);
+    rootProjectItem->appendChild( newProject );
+
+    //lists to be used as stacks to avoid using recursion to navigate directory tree
+    QList< ProjectItem* > parentItems;
+    QList< QFileInfoList > dirItemInfoLists;
+    QList< quint32 > dirItemIndices;
+
+    //append initial values to lists
+    parentItems.append(newProject);
+    dirItemInfoLists.append( projectDir.entryInfoList() );
+    dirItemIndices.append( 2 ); //indices '0' and '1' represent the current and parent directories and must therefore be ignored
+
+    //process each file and sub-directory in the project to add them to this model
+    while ( parentItems.count() > 0 || dirItemInfoLists.count() > 0 || dirItemIndices.count() > 0 ) {
+    //while there are items present in the lists, do the following:
+        //if the there are no items left to be added in a directory, remove item form the stacks to return to the parent directory and continue processing its contents
+        if ( dirItemIndices.last() >= dirItemInfoLists.last().count() ) {
+            parentItems.removeLast();
+            dirItemInfoLists.removeLast();
+            dirItemIndices.removeLast();
+        }
+        //otherwise, make sure that there are items to be processed (the first two should be ignored)
+        //  Note that if this condition is false, then the previous condition must be true because the lowest value that is ever assigned as an index is '2' and there
+        //  must always be a minimum of 2 directories (i.e. the current directory '.' and parent directory '..').  As a result, an infinit loop does not occure.
+        else if ( dirItemInfoLists.last().count() > 2 ) {
+            //create and add the new item to the tree model
+            QString itemPath = dirItemInfoLists.last().at( dirItemIndices.last() ).absoluteFilePath();
+            ProjectItem* newItem = new ProjectItem(itemPath, parentItems.last() );
+            parentItems.last()->appendChild(newItem);
+
+            //if the new item is a directory, add it to the stacks to process its contents
+            if ( dirItemInfoLists.last().at( dirItemIndices.last() ).isDir() ) {
+                dirItemIndices.last() += 1;
+                QDir dir( itemPath );
+                parentItems.append(newItem);
+                dirItemInfoLists.append( dir.entryInfoList() );
+                dirItemIndices.append( 2 );
+            }
+            //otherwise, just move on to the next item in the current directory
+            else dirItemIndices.last() += 1;
+        }
+    }
+}
