@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 24, 2014
+Last Modified: June 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -37,7 +37,10 @@ Usage Agreement:
 //include all necessary files and libraries
 #include <QMainWindow>
 #include <QActionGroup>
+#include <QTreeView>
+#include <QPoint>
 #include "editortabbar.h"
+#include "projectmodel.h"
 
 namespace Ui {
     class MainWindow;
@@ -57,10 +60,10 @@ class MainWindow : public QMainWindow {
         /* -called whenever a close window is requested */
 
     private slots:
-        void on_actionOpen_triggered();
+        void on_actionOpen_File_triggered();
         /* -open a file in an editor tab */
 
-        void on_actionNew_triggered();
+        void on_actionNew_File_triggered();
         /* -open a new tab */
 
         void on_actionSave_triggered();
@@ -87,9 +90,26 @@ class MainWindow : public QMainWindow {
         void editTabChanged();
         /* -called when visible tab is changed to update lanugage selector menu */
 
+        void on_actionOpen_Project_triggered();
+        /* -called to add a new project directory to tree model */
+
+        void on_actionNew_Project_triggered();
+        /* -called to create and add a new project to tree model */
+
+        void projectItemContextMenuRequested(const QPoint& position);
+        /* -called when project item is right-clicked */
+
+        void openFileRequested(const QString& filePath);
+        /* -called when an object (ex. project list) requests to open a file */
+
     private:
-        Ui::MainWindow* ui;     //a pointer to the interface used to interact with the main window
-        EditorTabBar* editors;  //pointer to editor tab bar object
+        Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
+        EditorTabBar* editors;          //pointer to editor tab bar object
+        ProjectModel* projectListModel; //model which will display project list
+        QTreeView* projectList;         //view in which projects will be displayed
+
+        void openFile(const QString filePath);
+        /* -opens a specified file in an editor tab */
 
         void saveFile(int index);
         /* -save content to open file */
@@ -102,6 +122,7 @@ class MainWindow : public QMainWindow {
 
         void setLanguageSelectorMenu();
         /* -set the language selector menu from editor object */
+
 };
 
 #endif // MAINWINDOW_H

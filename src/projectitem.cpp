@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectitem.cpp
 Author: Leonardo Banderali
 Created: June 9, 2014
-Last Modified: June 11, 2014
+Last Modified: June 15, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -34,6 +34,7 @@ Usage Agreement:
 */
 
 #include <QFileIconProvider>
+#include <QDir>
 
 #include "projectitem.h"
 #include <QDebug>
@@ -50,25 +51,35 @@ ProjectItem::ProjectItem(const QList<QVariant>& data, ProjectItem* parent) {
 ProjectItem::ProjectItem(const QString& itemPath, ProjectItem *parent) {
     parentItem = parent;
     item.setFile(itemPath);
-    qDebug() << item.exists() << item.isDir() << item.fileName();
+    item.makeAbsolute();
     if ( ! item.exists() ) itemDisplayData << QString("Path '%1' was not found!").arg(itemPath);
     else itemDisplayData << item.fileName();
 }
 
 ProjectItem::~ProjectItem() {
+    //parentItem = NULL;
     qDeleteAll(children);
+    children.clear();
 }
 
-void ProjectItem::appendChild(ProjectItem* item) {
+void ProjectItem::appendChild(ProjectItem* newItem) {
 /* -adds a child item to this item */
-    item->setParent(this);
-    children.append(item);
+    newItem->setParent(this);
+    children.append(newItem);
 }
 
 void ProjectItem::appendChild(const QString itemPath) {
 /* -adds a child item to this item */
     ProjectItem* newItem = new ProjectItem(itemPath, this);
     children.append(newItem);
+}
+
+void ProjectItem::removeChild(ProjectItem* child) {
+/* -removes a child form this item */
+    int childIndex = children.indexOf(child);                               //get the index of the child
+    if ( !(item.isDir() || item.isRoot()) || childIndex < 0) return;   //check that the child exists
+    delete children[childIndex];                                            //remove child form memory
+    children.removeAt(childIndex);
 }
 
 ProjectItem* ProjectItem::child(int index) {
@@ -92,6 +103,11 @@ QIcon ProjectItem::getDecorationIcon() const {
 ProjectItem* ProjectItem::parent() {
 /* -returns pointer to parent item (null if this item is root) */
     return parentItem;
+}
+
+QString ProjectItem::getPath() const {
+/* -returns path to this item */
+    return item.absoluteFilePath();
 }
 
 int ProjectItem::childCount() const {
@@ -119,6 +135,16 @@ int ProjectItem::currentRow() const {
 /* -returns the row (index) of this item (same as 'currentIndex()') */
     if (parentItem == NULL) return 0;
     return parentItem->children.indexOf( const_cast< ProjectItem* >(this) );
+}
+
+bool ProjectItem::isFile() const {
+/* -returns whether this item is a file */
+    return (item.exists() && item.isFile());
+}
+
+bool ProjectItem::isDirectory() const {
+/* -returns whether this item is a directory */
+    return (item.exists() && item.isDir());
 }
 
 

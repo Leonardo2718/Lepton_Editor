@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectitem.h
 Author: Leonardo Banderali
 Created: June 9, 2014
-Last Modified: June 11, 2014
+Last Modified: June 15, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -47,9 +47,12 @@ class ProjectItem {
         ProjectItem(const QString& itemPath, ProjectItem *parent);
         ~ProjectItem();
 
-        void appendChild(ProjectItem* item);
+        void appendChild(ProjectItem* newItem);
         void appendChild(const QString itemPath);
         /* -adds a child item to this item */
+
+        void removeChild(ProjectItem* child);
+        /* -removes a child form this item */
 
         ProjectItem* child(int index);
         /* -returns child item at 'index' */
@@ -62,6 +65,9 @@ class ProjectItem {
 
         ProjectItem* parent();
         /* -returns pointer to parent item (null if this item is root) */
+
+        QString getPath() const;
+        /* -returns path to this item */
 
         int childCount() const;
         /* -returns number of child items */
@@ -77,6 +83,12 @@ class ProjectItem {
 
         int currentRow() const;
         /* -returns the row (index) of this item (same as 'currentIndex()') */
+
+        bool isFile() const;
+        /* -returns whether this item is a file */
+
+        bool isDirectory() const;
+        /* -returns whether this item is a directory */
 
     protected:
         QList< QVariant > itemDisplayData;  //data for this item

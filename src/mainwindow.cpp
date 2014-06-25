@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: June 10, 2014
+Last Modified: June 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -34,11 +34,13 @@ Usage Agreement:
 //include necessary files and libraries
 #include <QCloseEvent>
 #include <QFileDialog>
-#include <QTreeView>
+#include <QMenu>
+#include <QAction>
+#include <QModelIndex>
+#include <QList>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "generalconfig.h"
-#include "projectmodel.h"
 
 
 #include <QDebug>
@@ -66,22 +68,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
+    //projectList = new QTreeView(ui->projectManagerArea);
+    projectList = new QTreeView(this);
+    ui->projectManagerArea->layout()->addWidget(projectList);
+    projectListModel = new ProjectModel();
+    projectList->setModel(projectListModel);
+    projectList->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(projectList, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(projectItemContextMenuRequested(QPoint)) );
+    connect(projectListModel, SIGNAL(openFileRequested(QString)), this, SLOT(openFileRequested(QString)) );
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
 
     QString styleSheet;
     GeneralConfig::getStyleSheetInto(styleSheet);
     qApp->setStyleSheet(styleSheet);
-
-    QTreeView* projectList = new QTreeView(ui->projectManagerArea);
-    //QFileSystemModel* fs = new QFileSystemModel();
-    //fs->setRootPath( QDir::homePath() );
-    //ui->projectManager->addTab(projectList, "Project File List");
-    ui->projectManagerArea->layout()->addWidget(projectList);
-    //projectList->setModel(fs);
-
-    ProjectModel* m = new ProjectModel();
-    projectList->setModel(m);
 }
 
 MainWindow::~MainWindow() {
@@ -104,18 +105,21 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 //~private slot implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void MainWindow::on_actionOpen_triggered() {
+void MainWindow::on_actionOpen_File_triggered() {
 /* -open a file in an editor tab */
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"));  //open pop-up window to prompt user for file to be opend
+    /*
     if ( filePath.isEmpty() ) return;
     if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
         qint8 i = editors->addTab();
         editors->setCurrentIndex(i);
     }
     editors->current()->loadFile(filePath);         //insert text into editor
+    */
+    openFile(filePath);
 }
 
-void MainWindow::on_actionNew_triggered() {
+void MainWindow::on_actionNew_File_triggered() {
 /* -open a new tab */
     int tabIndex = editors->addTab();
     ui->menuBar->insertMenu( ui->menuCustomize->menuAction(), editors->getEditor(tabIndex)->getLanguageMenu() );
@@ -164,9 +168,47 @@ void MainWindow::editTabChanged() {
     setLanguageSelectorMenu();
 }
 
+void MainWindow::on_actionOpen_Project_triggered() {
+/* -called to add a new project directory to tree model */
+    if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
+    projectListModel->openProjectRequest();
+}
+
+void MainWindow::on_actionNew_Project_triggered() {
+/* -called to create and add a new project to tree model */
+    if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
+    projectListModel->newProjectRequest();
+}
+
+void MainWindow::projectItemContextMenuRequested(const QPoint& position) {
+/* -called when project item is right-clicked */
+    QModelIndex itemIndex = projectList->indexAt(position); //get index of clicked item
+    if ( ! itemIndex.isValid() ) return;
+    QMenu* menu = new QMenu(projectList);                   //create menu to be displayed
+    QList< QAction* > actions = projectListModel->getActionsFor(itemIndex); //get context menu actions for item
+    menu->addActions(actions);
+    menu->move( mapToGlobal(ui->centralWidget->pos()) + position + QPoint(0, 25) ); //this is needed to position the menu when it is displayed
+    menu->show();
+}
+
+void MainWindow::openFileRequested(const QString& filePath) {
+/* -called when an object (ex. project list) requests to open a file */
+    openFile(filePath);
+}
+
 
 
 //~private method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void MainWindow::openFile(const QString filePath) {
+/* -opens a specified file in an editor tab */
+    if ( filePath.isEmpty() ) return;
+    if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
+        qint8 i = editors->addTab();
+        editors->setCurrentIndex(i);
+    }
+    editors->current()->loadFile(filePath);         //insert text into editor
+}
 
 void MainWindow::saveFile(int index) {
 /* -save content to open file */
