@@ -55,7 +55,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);  //reference the main window
 
     //hide the extra featuers
-    //ui->projectManager->hide();
     ui->projectManagerArea->hide();
     ui->editorTools->hide();
 
@@ -108,14 +107,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 void MainWindow::on_actionOpen_File_triggered() {
 /* -open a file in an editor tab */
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"));  //open pop-up window to prompt user for file to be opend
-    /*
-    if ( filePath.isEmpty() ) return;
-    if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
-        qint8 i = editors->addTab();
-        editors->setCurrentIndex(i);
-    }
-    editors->current()->loadFile(filePath);         //insert text into editor
-    */
     openFile(filePath);
 }
 

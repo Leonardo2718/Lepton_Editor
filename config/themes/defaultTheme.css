@@ -71,7 +71,8 @@ QTabBar::tab {
     background-color: #b0b0b0;
     /*border: 2px 2px 2px 2pxsolid #ffffff;*/
     border-left: 2px solid #C4C4C4;
-    padding-left: 7px;
+    padding-left: 3px;
+    padding-right: 3px;
 }
 
 QTabBar::tab:selected {
@@ -156,3 +157,14 @@ QStatusBar {
     width: 16px;
     height: 16px;
 }*/
+
+/*~Widget Headers~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+QHeaderView::section {
+	background-color: #888888;
+	color: #CCCCCC;
+}
+
+/*~Tree view~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+QTreeView {
+	background: #BBBBBB;
+}

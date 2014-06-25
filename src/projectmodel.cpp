@@ -65,14 +65,10 @@ ProjectModel::ProjectModel(QObject* parent) : QAbstractItemModel(parent) {
     connect(fileActions, SIGNAL(triggered(QAction*)), this, SLOT(actionOnFileTriggered(QAction*)));
     connect(dirActions, SIGNAL(triggered(QAction*)), this, SLOT(actionOnDirTriggered(QAction*)));
     connect(projectActions, SIGNAL(triggered(QAction*)), this, SLOT(actionOnProjectTriggered(QAction*)));
-    //rootProjectItem->appendChild(someData);
-    //ProjectItem* newItem = new ProjectItem("/home/leonardo/Programming/Lepton_Editor", rootProjectItem);
-    //rootProjectItem->appendChild( newItem );
-    /*ProjectRootItem* root = new ProjectRootItem( someData );
-    rootProjectItem->appendChild( root );
-    qDebug() << root->parent();*/
-    addProject("..");
-    addProject(QDir::homePath().append("/Programming/TestFiles"));
+
+#ifdef QT_DEBUG
+    addProject("..");   //an example project
+#endif
 }
 
 ProjectModel::~ProjectModel() {
@@ -283,48 +279,7 @@ void ProjectModel::addProject(const QString& projectPath) {
     rootProjectItem->appendChild( newProject );
     populateProject(newProject);
 
-    /*%%% Old project population code can be removed %%%*/
-    //lists to be used as stacks to avoid using recursion to navigate directory tree
-    /*QList< ProjectItem* > parentItems;
-    QList< QFileInfoList > dirItemInfoLists;
-    QList< quint32 > dirItemIndices;
-
-    //append initial values to lists
-    parentItems.append(newProject);
-    dirItemInfoLists.append( projectDir.entryInfoList() );
-    dirItemIndices.append( 2 ); //indices '0' and '1' represent the current and parent directories and must therefore be ignored
-
-    //process each file and sub-directory in the project to add them to this model
-    while ( parentItems.count() > 0 || dirItemInfoLists.count() > 0 || dirItemIndices.count() > 0 ) {
-    //while there are items present in the lists, do the following:
-        //if the there are no items left to be added in a directory, remove item form the stacks to return to the parent directory and continue processing its contents
-        if ( dirItemIndices.last() >= dirItemInfoLists.last().count() ) {
-            parentItems.removeLast();
-            dirItemInfoLists.removeLast();
-            dirItemIndices.removeLast();
-        }
-        //otherwise, make sure that there are items to be processed (the first two should be ignored)
-        //  Note that if this condition is false, then the previous condition must be true because the lowest value that is ever assigned as an index is '2' and there
-        //  must always be a minimum of 2 directories (i.e. the current directory '.' and parent directory '..').  As a result, an infinit loop does not occure.
-        else if ( dirItemInfoLists.last().count() > 2 ) {
-            //create and add the new item to the tree model
-            QString itemPath = dirItemInfoLists.last().at( dirItemIndices.last() ).absoluteFilePath();
-            ProjectItem* newItem = new ProjectItem(itemPath, parentItems.last() );
-            parentItems.last()->appendChild(newItem);
-
-            //if the new item is a directory, add it to the stacks to process its contents
-            if ( dirItemInfoLists.last().at( dirItemIndices.last() ).isDir() ) {
-                dirItemIndices.last() += 1;
-                QDir dir( itemPath );
-                parentItems.append(newItem);
-                dirItemInfoLists.append( dir.entryInfoList() );
-                dirItemIndices.append( 2 );
-            }
-            //otherwise, just move on to the next item in the current directory
-            else dirItemIndices.last() += 1;
-        }
-    }*/
-    emit layoutChanged();   //emit signal to notify viewing class that model has changed
+    emit layoutChanged();           //emit signal to notify viewing class that model has changed
 }
 
 void ProjectModel::populateProject(ProjectItem* projectRoot) {
