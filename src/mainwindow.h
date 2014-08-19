@@ -102,6 +102,9 @@ class MainWindow : public QMainWindow {
         void openFileRequested(const QString& filePath);
         /* -called when an object (ex. project list) requests to open a file */
 
+        void on_actionGitHub_Page_triggered();
+        /* -called to open the Lepton Editor GitHub page in the user's default web browser */
+
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object

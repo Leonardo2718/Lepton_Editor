@@ -38,7 +38,8 @@ Usage Agreement:
 #include <QAction>
 #include <QModelIndex>
 #include <QList>
-#include <QSizePolicy>
+#include <QDesktopServices>
+#include <QUrl>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "generalconfig.h"
@@ -187,6 +188,11 @@ void MainWindow::projectItemContextMenuRequested(const QPoint& position) {
 void MainWindow::openFileRequested(const QString& filePath) {
 /* -called when an object (ex. project list) requests to open a file */
     openFile(filePath);
+}
+
+void MainWindow::on_actionGitHub_Page_triggered() {
+/* -called to open the Lepton Editor GitHub page in the user's default web browser */
+    QDesktopServices::openUrl( QUrl("https://github.com/Leonardo2718/Lepton_Editor") );  //open the Lepton Editor GitHub page the user's default web browser
 }
 
 
