@@ -38,6 +38,7 @@ Usage Agreement:
 #include <QAction>
 #include <QModelIndex>
 #include <QList>
+#include <QSizePolicy>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "generalconfig.h"
@@ -60,7 +61,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     //instantiate editing area
     editors = new EditorTabBar(this);
-    ui->textEditorArea->insertWidget(0, editors);
+    //ui->textEditorArea->insertWidget(0, editors);
+    ui->editorArea->layout()->addWidget(editors);
 
     //create a new editor
     editors->addTab();
