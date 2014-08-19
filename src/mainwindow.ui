@@ -287,6 +287,9 @@
    <property name="text">
     <string>Project Manager</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
   </action>
   <action name="actionEditor_Tools">
    <property name="checkable">
