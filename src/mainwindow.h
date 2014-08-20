@@ -105,6 +105,9 @@ class MainWindow : public QMainWindow {
         void on_actionGitHub_Page_triggered();
         /* -called to open the Lepton Editor GitHub page in the user's default web browser */
 
+        void on_actionAbout_Lepton_Editor_triggered();
+        /* -called to display an "about window" for Lepton */
+
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object

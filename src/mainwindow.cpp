@@ -40,6 +40,7 @@ Usage Agreement:
 #include <QList>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QMessageBox>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "generalconfig.h"
@@ -193,6 +194,26 @@ void MainWindow::openFileRequested(const QString& filePath) {
 void MainWindow::on_actionGitHub_Page_triggered() {
 /* -called to open the Lepton Editor GitHub page in the user's default web browser */
     QDesktopServices::openUrl( QUrl("https://github.com/Leonardo2718/Lepton_Editor") );  //open the Lepton Editor GitHub page the user's default web browser
+}
+
+void MainWindow::on_actionAbout_Lepton_Editor_triggered() {
+/* -called to display an "about window" for Lepton */
+    QMessageBox::about(this, "About - Lepton Editor",
+                      "<p>Lepton Editor is a text editor oriented towards programmers.  It's intended to be a "
+                      "flexible and extensible code editor which developers can easily customize to their liking.</p> "
+                      "<p>Copyright &copy; 2014 Leonardo Banderali</p>"
+                      "<p>Lepton Editor is free software: you can redistribute it and/or modify "
+                      "it under the terms of the GNU General Public License as published by "
+                      "the Free Software Foundation, either version 3 of the License, or "
+                      "any later version.</p> "
+                      "<p>Lepton Editor is distributed in the hope that it will be useful, "
+                      "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+                      "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+                      "GNU General Public License for more details.</p>"
+                      "<p>You should have received a copy of the GNU General Public License "
+                      "along with this program.  If not, see <a href='http://www.gnu.org/licenses/'> "
+                      "http://www.gnu.org/licenses/<a>.</p> "
+                      );
 }
 
 
