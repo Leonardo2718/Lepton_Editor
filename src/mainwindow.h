@@ -108,6 +108,9 @@ class MainWindow : public QMainWindow {
         void on_actionAbout_Lepton_Editor_triggered();
         /* -called to display an "about window" for Lepton */
 
+        void on_actionAbout_Qt_triggered();
+        /* -called to display an "about window" for Qt */
+
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object

@@ -242,6 +242,8 @@
     </property>
     <addaction name="actionAbout_Lepton_Editor"/>
     <addaction name="actionGitHub_Page"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -371,6 +373,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+O</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>

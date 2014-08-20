@@ -216,6 +216,11 @@ void MainWindow::on_actionAbout_Lepton_Editor_triggered() {
                       );
 }
 
+void MainWindow::on_actionAbout_Qt_triggered(){
+/* -called to display an "about window" for Qt */
+    QMessageBox::aboutQt(this, "About Qt - LeptonEditor");
+}
+
 
 
 //~private method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
