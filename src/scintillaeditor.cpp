@@ -98,6 +98,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setBraceMatching(QsciScintilla::StrictBraceMatch);
     setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
     setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
+    setIndentationsUseTabs(false);  //use spaces instead of tabs for indentation
 
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
