@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: June 10, 2014
+Last Modified: August 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -311,7 +311,7 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
     }
 
     //get quote/string data
-    if ( ! langElement.lastChildElement("quotations").isNull() ) {          //if a quotation expression is specified, extract it
+    if ( ! langElement.lastChildElement("quotations").isNull() ) {      //if a quotation expression is specified, extract it
         QDomElement elem = langElement.lastChildElement("quotations");
         blockRules.at(QUOTE_INDEX)->start.setPattern("");
         blockRules.at(QUOTE_INDEX)->end.setPattern("");
@@ -323,7 +323,7 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
         bool err = getEscapeFromTo( elem, blockRules.at(QUOTE_INDEX)->escapes );
         if (err == false) return false;
     }
-    else {                                                                  //if no expression is specified, use default
+    else {                                                              //if no expression is specified, use default
         blockRules.at(QUOTE_INDEX)->start.setPattern("\"");
         blockRules.at(QUOTE_INDEX)->end.setPattern("([^\\\\][\"\\r\\n\\f])|$");
         blockRules.at(QUOTE_INDEX)->escapes.setPattern("\\\\(.?)");
@@ -348,7 +348,7 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
         keywords = keywords.append(")\\b");
         expressionRules[KEYWORD_TYPE_INDEX + type]->exp.setPattern(keywords);
         if ( ! expressionRules[KEYWORD_TYPE_INDEX + type]->exp.isValid() ) {
-            //if current expression is not valid, replace it with a blank expression to prevent use while highlighting
+        //if current expression is not valid, replace it with a blank expression to prevent use while highlighting
             expressionRules[KEYWORD_TYPE_INDEX + type]->exp.setPattern("");
             return false;
         }
@@ -607,12 +607,12 @@ bool LeptonLexer::getTypedStyleElementData(const QDomNodeList& styleNodeList, St
     for (int i = 0, len = styleNodeList.length(); i < len; i++) {
         if ( styleNodeList.at(i).isNull() ) continue;
 
-        QDomElement styleElement = styleNodeList.at(i).toElement();  //convert node to element
+        QDomElement styleElement = styleNodeList.at(i).toElement(); //convert node to element
 
-        if ( styleElement.attribute("type").isEmpty() ) continue;    //extract the 'type' id number
+        if ( styleElement.attribute("type").isEmpty() ) continue;   //extract the 'type' id number
         quint8 typeNumber = styleElement.attribute("type").toInt();
 
-        if ( min + typeNumber > max) continue;   //if 'typeNumber' is outside the range of allocated style numbers, continue to next node
+        if ( min + typeNumber > max) continue;                      //if 'typeNumber' is outside the range of allocated style numbers, continue to next node
         getStyleData(styleElement, min + typeNumber);
     }
     return true;
@@ -654,14 +654,14 @@ QColor LeptonLexer::getColor(QString colorString) {
     colorString = colorString.simplified();
     colorString = colorString.trimmed();
 
-    QColor returnColor(0, 0, 0);    //dummy color to be returned
-    int p = 0;                      //used for regexp validator
+    QColor returnColor(0, 0, 0);                    //dummy color to be returned
+    int p = 0;                                      //used for regexp validator
 
     //regexps to check color value
     QRegularExpressionValidator isRGB( QRegularExpression("\\d{1,3} \\d{1,3} \\d{1,3}") );              //check if RGB
     QRegularExpressionValidator isRGBA( QRegularExpression("\\d{1,3} \\d{1,3} \\d{1,3} \\d{1,3}") );    //check if RGBA
     QRegularExpressionValidator isHEX( QRegularExpression("^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8}|[0-9A-Fa-f]{9}|[0-9A-Fa-f]{12})$") );//check if HEX code
-    QRegularExpressionValidator isName( QRegularExpression("\\w+") ); //check if color name
+    QRegularExpressionValidator isName( QRegularExpression("\\w+") );                                   //check if color name
 
     //check color value
     if ( isRGB.validate(colorString, p) == 2) {

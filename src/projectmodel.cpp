@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectmodel.cpp
 Author: Leonardo Banderali
 Created: June 9, 2014
-Last Modified: June 25, 2014
+Last Modified: August 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,7 +40,6 @@ Usage Agreement:
 #include <QFileInfoList>
 #include <QString>
 #include <QFileDialog>
-#include <QDebug>
 
 
 
@@ -137,7 +136,7 @@ QModelIndex ProjectModel::parent(const QModelIndex& child) const {
     if (!parentItem) return QModelIndex();
 
     if (item == rootProjectItem) return QModelIndex();              //return empty if current item is root (root has no parent)
-//qDebug() << "Got to: " << item->getPath() << parentItem;
+
     return createIndex(parentItem->currentRow(), 0, parentItem);    //create and return model index of parent item
 }
 

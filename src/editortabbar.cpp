@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: editortabbar.cpp
 Author: Leonardo Banderali
 Created: February 9, 2014
-Last Modified: June 10, 2014
+Last Modified: August 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -139,7 +139,7 @@ int EditorTabBar::closeEditor(const int& index){
 
     ScintillaEditor* tmp = getEditor(index);//a new pointer is created because the allocated memory must be deleted last
     disconnect(tmp, SIGNAL(modificationChanged(bool)), this, SLOT(setLabel(bool)) );
-    this->removeTab(index);   //I don't know why but for some reason, '1' is subtracted from the tab index when this method is
+    this->removeTab(index);                 //I don't know why but for some reason, '1' is subtracted from the tab index when this method is
     delete tmp;
     return 0;
 }

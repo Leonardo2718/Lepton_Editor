@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectitem.cpp
 Author: Leonardo Banderali
 Created: June 9, 2014
-Last Modified: June 15, 2014
+Last Modified: August 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -37,7 +37,6 @@ Usage Agreement:
 #include <QDir>
 
 #include "projectitem.h"
-#include <QDebug>
 
 
 
@@ -76,8 +75,8 @@ void ProjectItem::appendChild(const QString itemPath) {
 
 void ProjectItem::removeChild(ProjectItem* child) {
 /* -removes a child form this item */
-    int childIndex = children.indexOf(child);                               //get the index of the child
-    if ( !(item.isDir() || item.isRoot()) || childIndex < 0) return;   //check that the child exists
+    int childIndex = children.indexOf(child);                           //get the index of the child
+    if ( !(item.isDir() || item.isRoot()) || childIndex < 0) return;    //check that the child exists
     delete children[childIndex];                                            //remove child form memory
     children.removeAt(childIndex);
 }

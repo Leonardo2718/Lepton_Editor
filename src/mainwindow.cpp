@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: August 19, 2014
+Last Modified: August 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -63,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     //instantiate editing area
     editors = new EditorTabBar(this);
-    //ui->textEditorArea->insertWidget(0, editors);
     ui->editorArea->layout()->addWidget(editors);
 
     //create a new editor
@@ -71,7 +70,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
-    //projectList = new QTreeView(ui->projectManagerArea);
     projectList = new QTreeView(this);
     ui->projectManagerArea->layout()->addWidget(projectList);
     projectListModel = new ProjectModel();

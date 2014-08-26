@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: June 10, 2014
+Last Modified: August 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -172,7 +172,7 @@ QColor GeneralConfig::getColorFromString(QString colorString) {
     QRegularExpressionValidator isRGB( QRegularExpression("\\d{1,3} \\d{1,3} \\d{1,3}") );              //check if RGB
     QRegularExpressionValidator isRGBA( QRegularExpression("\\d{1,3} \\d{1,3} \\d{1,3} \\d{1,3}") );    //check if RGBA
     QRegularExpressionValidator isHEX( QRegularExpression("^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8}|[0-9A-Fa-f]{9}|[0-9A-Fa-f]{12})$") );//check if HEX code
-    QRegularExpressionValidator isName( QRegularExpression("\\w+") ); //check if color name
+    QRegularExpressionValidator isName( QRegularExpression("\\w+") );                                   //check if color name
 
     //check color value
     if ( isRGB.validate(colorString, p) == 2) {
