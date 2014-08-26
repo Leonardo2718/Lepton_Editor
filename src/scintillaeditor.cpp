@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: June 10, 2014
+Last Modified: August 26, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -66,6 +66,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //add action to select 'plain text' mode
     QAction* lang = new QAction("Plain Text", languageMenu);
     lang->setCheckable(true);
+    lang->setChecked(true);
     languageGroup->addAction(lang);
     langFileFromAction->insert(lang, "" );
 
@@ -87,7 +88,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
         langFileFromAction->insert(lang, langsDir.absoluteFilePath(langFileName) );
     }
     languageMenu->addActions( languageGroup->actions() );
-    languageMenu->setDefaultAction( langFileFromAction->key("Plain Text") );
+    //languageMenu->setDefaultAction( langFileFromAction->key("Plain Text") );
 
     //connect signals to slots
     connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
@@ -99,6 +100,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
     setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
     setIndentationsUseTabs(false);  //use spaces instead of tabs for indentation
+    lexer->getLanguageData();       //set the default highlighting to be for plain text
 
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
