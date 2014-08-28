@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 27, 2014
+Last Modified: August 28, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -54,9 +54,6 @@ Usage Agreement:
 #include <Qsci/qscilexerxml.h>
 #include <Qsci/qscilexeryaml.h>
 
-//include Lepton files which are needed by this class
-#include "leptonlexer.h"
-
 //include Lepton files used for this class implementation
 #include "generalconfig.h"
 
@@ -67,6 +64,7 @@ SyntaxHighlightManager::SyntaxHighlightManager(ScintillaEditor* _parent) {
 
     //initialize private data members
     parent = _parent;                   //initialize parent object
+    langFileLexer = new LeptonLexer();  //create the lexer which will be populated with data from a language file
 
     //get the language files' directory
     QString languagesDirPath = GeneralConfig::getLangsDirPath();    //get path to the directory where the language files are
@@ -136,11 +134,90 @@ SyntaxHighlightManager::SyntaxHighlightManager(ScintillaEditor* _parent) {
         specialLanguages[langAction] = new QsciLexerYAML();
 
         //add all language actions to the language menu
+        languageMenu = new QMenu("Language");
         languageMenu->addActions(languageActions->actions());
     }
 }
 
 SyntaxHighlightManager::~SyntaxHighlightManager() {
 /* -Class destructor */
+
     parent = 0;
+    langFileLexer->setEditor(parent);
+    delete langFileLexer;
+    QList<QAction* > actionList = specialLanguages.keys();
+    for (int i = 0, c = actionList.count(); i < c; i++) {
+        QsciLexer* lexer = specialLanguages[ actionList[i] ];
+        lexer->setEditor(parent);
+        delete specialLanguages[ actionList[i] ];
+    }
+    specialLanguages.clear();
+    for (int i = 0, c = fileExtensionTable.count(); i < c; i++) {
+        fileExtensionTable[i].nullActionPointer();
+    }
+    languageMenu->setParent(parent);
+    delete languageMenu;
+    actionList = languageActions->actions();
+    delete languageActions;
+    for (int i = 0, c = actionList.count(); i < c; i++) {
+        delete actionList[i];
+    }
+}
+
+
+QMenu* SyntaxHighlightManager::getLanguageMenu() {
+/* -access function to get the language menu created from the language actions */
+    return languageMenu;
+}
+
+
+QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
+/*
+-return a language's syntax highlighting lexer based on the associated action
+-return a 0 pointer if an error occures
+*/
+
+    QsciLexer* lexer = 0;                           //the language lexer to be returned
+
+    if ( specialLanguages.contains(langAction) ){   //if the action corresponds to one of the special, predefined languages
+        lexer = specialLanguages[langAction];               //get associated special lexer to be returned
+    }
+    else {                                          //else the action must correspond to a language defined in a file
+        QString filePath = langAction->data().toString();   //get the language file path
+        bool ok = langFileLexer->getLanguageData(filePath); //set lexer data based on the data from the language file
+        if (ok) lexer = langFileLexer;                      //if the lexer data was set successfully, assign the lexer for return
+    }
+
+    return lexer;                                   //return the lexer matched with the action
+}
+
+
+void SyntaxHighlightManager::setLexerFromAction(QAction* langAction) {
+/*  -a convenience method to set the language lexer of the parent editor based on the associated action */
+
+    parent->setLexer( getLexerFromAction(langAction) );
+}
+
+
+QsciLexer* SyntaxHighlightManager::getLexerFromSuffix(const QString& ext) {
+/*  -return a language's syntax highlighting lexer based on the extension of a file */
+
+    QsciLexer* lexer = 0;                           //the language lexer to be returned
+
+    for (int i = 0, c = fileExtensionTable.count(); i < c; i++) {   //for every 'extension list - action' pair
+        if ( fileExtensionTable[i].hasExtension(ext) ) {                //if the extension is in the list
+            QAction* a = fileExtensionTable[i].getLanguageAction();         //get the corresponding language action
+            lexer = getLexerFromAction(a);                                  //set the lexer to be returned
+            break;                                                          //break out of the loop for return
+        }
+    }
+
+    return lexer;
+}
+
+
+void SyntaxHighlightManager::setLexerFromSuffix(const QString& ext) {
+/*  -a convenience method to set the language lexer of the parent editor based on the extension of a file */
+
+    parent->setLexer( getLexerFromSuffix(ext) );
 }

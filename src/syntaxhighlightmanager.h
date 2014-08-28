@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.h
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 27, 2014
+Last Modified: August 28, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -52,6 +52,7 @@ Usage Agreement:
 
 //include Lepton files which are needed by this class
 #include "scintillaeditor.h"
+#include "leptonlexer.h"
 
 
 
@@ -97,10 +98,33 @@ class SyntaxHighlightManager {
                     else return 0;
                 }
 
+                void nullActionPointer() {
+                /*  -nulls the pointer to the language action*/
+                    action = 0;
+                }
+
             private:
                 QStringList extensionList;
                 QAction* action;
         };
+
+        QMenu* getLanguageMenu();
+        /*  -access function to get the language menu created from the language actions */
+
+        QsciLexer* getLexerFromAction(QAction* langAction);
+        /*
+            -return a language's syntax highlighting lexer based on the associated action
+            -return a 0 pointer if an error occures
+        */
+
+        void setLexerFromAction(QAction* langAction);
+        /*  -a convenience method to set the language lexer of the parent editor based on the associated action */
+
+        QsciLexer* getLexerFromSuffix(const QString& ext);
+        /*  -return a language's syntax highlighting lexer based on the extension of a file */
+
+        void setLexerFromSuffix(const QString& ext);
+        /*  -a convenience method to set the language lexer of the parent editor based on the extension of a file */
 
     private:
         ScintillaEditor* parent;                        //pointer the editing class which uses this manager
@@ -108,6 +132,7 @@ class SyntaxHighlightManager {
         QMenu* languageMenu;                            //a menu to select a language
         QList<ExtensionActionPair> fileExtensionTable;  //a table to match file extensions with an action to select a language
         QHash<QAction*, QsciLexer*> specialLanguages;   //a list of specialized languages/lexers which do not require user definition
+        LeptonLexer* langFileLexer;                     //the lexer used for languages defined in files
 };
 
 #endif // SYNTAXHIGHLIGHTMANAGER_H
