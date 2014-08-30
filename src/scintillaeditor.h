@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: May 24, 2014
+Last Modified: August 29, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -35,6 +35,7 @@ Usage Agreement:
 #ifndef SCINTILLAEDITOR_H
 #define SCINTILLAEDITOR_H
 
+//include Qt classes
 #include <QWidget>
 #include <QString>
 #include <QHash>
@@ -42,9 +43,15 @@ Usage Agreement:
 #include <QActionGroup>
 #include <QFileInfo>
 #include <QSettings>
+
+//include QScintilla classes
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexercustom.h>
+#include <Qsci/qscilexer.h>
+
+//include Lepton files which are needed by this class
 #include "leptonlexer.h"
+#include "syntaxhighlightmanager.h"
 
 class ScintillaEditor : public QsciScintilla
 {
@@ -89,13 +96,11 @@ class ScintillaEditor : public QsciScintilla
 
         void setModified(bool m) { QsciScintilla::setModified(m); }    //make method private
 
-        LeptonLexer* lexer; //lexer to be used for highlighting
-
-        QMenu* languageMenu;    //menu to select the language for highlighting
-
-        QActionGroup* languageGroup;    //list of all lenguages actions in the language menu
-
+        QsciLexer* lexer;                               //lexer to be used for highlighting
+        QMenu* languageMenu;                            //menu to select the language for highlighting
+        QActionGroup* languageGroup;                    //list of all lenguages actions in the language menu
         QHash<QAction*, QString>* langFileFromAction;   //lookup table to index language file paths from language actions
+        SyntaxHighlightManager* lexerManager;           //class to manage the syntax highlighting lexers
 };
 
 #endif // SCINTILLAEDITOR_H

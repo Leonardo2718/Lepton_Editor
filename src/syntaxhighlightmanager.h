@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.h
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 28, 2014
+Last Modified: August 29, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -48,10 +48,10 @@ Usage Agreement:
 #include <QHash>
 
 //include QScintilla classes
+#include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexer.h>
 
 //include Lepton files which are needed by this class
-#include "scintillaeditor.h"
 #include "leptonlexer.h"
 
 
@@ -60,7 +60,7 @@ class SyntaxHighlightManager {
 /* -A class that provides an interface for managing the language lexers used in the ScintillaEditor class. */
 
     public:
-        explicit SyntaxHighlightManager(ScintillaEditor* _parent);
+        explicit SyntaxHighlightManager(QsciScintilla *_parent);
         /*
             -Class constructor
             -initialize the parent object which points to the ScintillaEditor class which uses this manager.
@@ -127,7 +127,7 @@ class SyntaxHighlightManager {
         /*  -a convenience method to set the language lexer of the parent editor based on the extension of a file */
 
     private:
-        ScintillaEditor* parent;                        //pointer the editing class which uses this manager
+        QsciScintilla* parent;                          //pointer the editing class which uses this manager
         QActionGroup* languageActions;                  //a group of actions to use for selecting a syntax highlighting language
         QMenu* languageMenu;                            //a menu to select a language
         QList<ExtensionActionPair> fileExtensionTable;  //a table to match file extensions with an action to select a language

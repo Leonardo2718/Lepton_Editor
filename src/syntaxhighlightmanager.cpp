@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 28, 2014
+Last Modified: August 29, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -57,14 +57,16 @@ Usage Agreement:
 //include Lepton files used for this class implementation
 #include "generalconfig.h"
 
+#include <QDebug>
 
-
-SyntaxHighlightManager::SyntaxHighlightManager(ScintillaEditor* _parent) {
+SyntaxHighlightManager::SyntaxHighlightManager(QsciScintilla* _parent) {
 /* -Class constructor */
 
     //initialize private data members
     parent = _parent;                   //initialize parent object
     langFileLexer = new LeptonLexer();  //create the lexer which will be populated with data from a language file
+    languageMenu = new QMenu("Language");
+    languageActions = new QActionGroup(languageMenu);
 
     //get the language files' directory
     QString languagesDirPath = GeneralConfig::getLangsDirPath();    //get path to the directory where the language files are
@@ -134,7 +136,6 @@ SyntaxHighlightManager::SyntaxHighlightManager(ScintillaEditor* _parent) {
         specialLanguages[langAction] = new QsciLexerYAML();
 
         //add all language actions to the language menu
-        languageMenu = new QMenu("Language");
         languageMenu->addActions(languageActions->actions());
     }
 }
@@ -179,13 +180,20 @@ QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
 
     QsciLexer* lexer = 0;                           //the language lexer to be returned
 
-    if ( specialLanguages.contains(langAction) ){   //if the action corresponds to one of the special, predefined languages
-        lexer = specialLanguages[langAction];               //get associated special lexer to be returned
+
+    if (langAction == 0){                           //if the action is null, return the plain text lexer
+        lexer = specialLanguages.begin().value();       //plain text lexer should be first in the list
     }
-    else {                                          //else the action must correspond to a language defined in a file
-        QString filePath = langAction->data().toString();   //get the language file path
-        bool ok = langFileLexer->getLanguageData(filePath); //set lexer data based on the data from the language file
-        if (ok) lexer = langFileLexer;                      //if the lexer data was set successfully, assign the lexer for return
+    else if (langAction == languageActions->checkedAction() ) {
+        if ( specialLanguages.contains(langAction) ){   //if the action corresponds to one of the special, predefined languages
+            lexer = specialLanguages[langAction];               //get associated special lexer to be returned
+        }
+        else {                                          //else the action must correspond to a language defined in a file
+            QString filePath = langAction->data().toString();   //get the language file path
+            bool ok = langFileLexer->getLanguageData(filePath); //set lexer data based on the data from the language file
+            if (ok) lexer = langFileLexer;                      //if the lexer data was set successfully, assign the lexer for return
+            qDebug() << langFileLexer;
+        }
     }
 
     return lexer;                                   //return the lexer matched with the action

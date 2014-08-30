@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: August 26, 2014
+Last Modified: August 29, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -54,9 +54,14 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setMarginWidth(1, 55);
     setMarginLineNumbers(1, true);
 
-    //apply lexer
-    lexer = new LeptonLexer(this);
+    //create the lexer manager
+    lexerManager = new SyntaxHighlightManager(this);
+    lexer = lexerManager->getLexerFromAction(0);
     setLexer(lexer);
+
+    //apply lexer
+    //lexer = new LeptonLexer(this);
+    //setLexer(lexer);
 
     //language menu to select the language for syntax highlighting
     languageMenu = new QMenu("Language", this);
@@ -64,14 +69,14 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     langFileFromAction = new QHash<QAction*, QString>;
 
     //add action to select 'plain text' mode
-    QAction* lang = new QAction("Plain Text", languageMenu);
+    /*QAction* lang = new QAction("Plain Text", languageMenu);
     lang->setCheckable(true);
     lang->setChecked(true);
     languageGroup->addAction(lang);
-    langFileFromAction->insert(lang, "" );
+    langFileFromAction->insert(lang, "" );*/
 
     //add an action for each language file
-    QDir langsDir( GeneralConfig::getLangsDirPath() );
+    /*QDir langsDir( GeneralConfig::getLangsDirPath() );
     langsDir.setNameFilters( QStringList("*.xml") );
     QStringList langsFileList = langsDir.entryList();   //get list of file paths
 
@@ -87,11 +92,12 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
         languageGroup->addAction(lang);
         langFileFromAction->insert(lang, langsDir.absoluteFilePath(langFileName) );
     }
-    languageMenu->addActions( languageGroup->actions() );
+    languageMenu->addActions( languageGroup->actions() );*/
     //languageMenu->setDefaultAction( langFileFromAction->key("Plain Text") );
 
     //connect signals to slots
-    connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
+    //connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
+    connect(lexerManager->getLanguageMenu(), SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
 
     //set editor properties/settings
     setAutoIndent(true);
@@ -100,7 +106,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
     setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
     setIndentationsUseTabs(false);  //use spaces instead of tabs for indentation
-    lexer->getLanguageData();       //set the default highlighting to be for plain text
+    //lexer->getLanguageData();       //set the default highlighting to be for plain text
 
     /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
@@ -196,7 +202,8 @@ bool ScintillaEditor::wasFileSaved() {
 
 QMenu* ScintillaEditor::getLanguageMenu() {
 /* -returns the language selection menu */
-    return languageMenu;
+    //return languageMenu;
+    return lexerManager->getLanguageMenu();
 }
 
 
@@ -204,6 +211,7 @@ QMenu* ScintillaEditor::getLanguageMenu() {
 //~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void ScintillaEditor::setLanguage(QAction* langAction) {
 /* -sets highlighting language based on 'langAction' */
-    lexer->getLanguageData( langFileFromAction->value(langAction) );
+    //lexer->getLanguageData( langFileFromAction->value(langAction) );
+    lexerManager->getLexerFromAction(langAction);
     this->recolor();
 }
