@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.h
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 29, 2014
+Last Modified: August 30, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -111,7 +111,7 @@ class SyntaxHighlightManager {
         QMenu* getLanguageMenu();
         /*  -access function to get the language menu created from the language actions */
 
-        QsciLexer* getLexerFromAction(QAction* langAction);
+        QsciLexer* getLexerFromAction(QAction* langAction = 0);
         /*
             -return a language's syntax highlighting lexer based on the associated action
             -return a 0 pointer if an error occures

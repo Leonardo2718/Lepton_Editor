@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: August 29, 2014
+Last Modified: August 30, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,7 +44,7 @@ Usage Agreement:
 #include "scintillaeditor.h"
 #include "generalconfig.h"
 
-
+#include <QDebug>
 
 //~public method implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -56,7 +56,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
 
     //create the lexer manager
     lexerManager = new SyntaxHighlightManager(this);
-    lexer = lexerManager->getLexerFromAction(0);
+    lexer = lexerManager->getLexerFromAction();
     setLexer(lexer);
 
     //apply lexer
@@ -212,6 +212,6 @@ QMenu* ScintillaEditor::getLanguageMenu() {
 void ScintillaEditor::setLanguage(QAction* langAction) {
 /* -sets highlighting language based on 'langAction' */
     //lexer->getLanguageData( langFileFromAction->value(langAction) );
-    lexerManager->getLexerFromAction(langAction);
+    lexerManager->setLexerFromAction(langAction);
     this->recolor();
 }

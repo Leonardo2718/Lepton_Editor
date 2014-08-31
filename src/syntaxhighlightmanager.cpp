@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 29, 2014
+Last Modified: August 30, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -57,7 +57,7 @@ Usage Agreement:
 //include Lepton files used for this class implementation
 #include "generalconfig.h"
 
-#include <QDebug>
+
 
 SyntaxHighlightManager::SyntaxHighlightManager(QsciScintilla* _parent) {
 /* -Class constructor */
@@ -192,7 +192,6 @@ QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
             QString filePath = langAction->data().toString();   //get the language file path
             bool ok = langFileLexer->getLanguageData(filePath); //set lexer data based on the data from the language file
             if (ok) lexer = langFileLexer;                      //if the lexer data was set successfully, assign the lexer for return
-            qDebug() << langFileLexer;
         }
     }
 
