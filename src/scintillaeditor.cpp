@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: August 30, 2014
+Last Modified: August 31, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -56,8 +56,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
 
     //create the lexer manager
     lexerManager = new SyntaxHighlightManager(this);
-    lexer = lexerManager->getLexerFromAction();
-    setLexer(lexer);
+    lexerManager->setLexerFromAction();
 
     //apply lexer
     //lexer = new LeptonLexer(this);
@@ -105,13 +104,15 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setBraceMatching(QsciScintilla::StrictBraceMatch);
     setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
     setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
+    setWhitespaceVisibility( GeneralConfig::getWhiteSpaceVisibility() );
+    setWhitespaceForegroundColor( GeneralConfig::getWhiteSpaceColor() );
     setIndentationsUseTabs(false);  //use spaces instead of tabs for indentation
     //lexer->getLanguageData();       //set the default highlighting to be for plain text
 
-    /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    //*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
     //$                                                                    $$
-
+//qDebug() << whitespaceVisibility();
     //$                                                                    $$
     //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 }
@@ -120,6 +121,7 @@ ScintillaEditor::~ScintillaEditor() {
 /* clean up and delete allocated memory */
     setLexer(); //clear lexer use before deleting instance
     disconnect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
+    lexer = 0;
 
     //get all lagnuage actions
     QList< QAction* > actionList = langFileFromAction->keys();
@@ -212,6 +214,7 @@ QMenu* ScintillaEditor::getLanguageMenu() {
 void ScintillaEditor::setLanguage(QAction* langAction) {
 /* -sets highlighting language based on 'langAction' */
     //lexer->getLanguageData( langFileFromAction->value(langAction) );
-    lexerManager->setLexerFromAction(langAction);
+    lexer = lexerManager->getLexerFromAction(langAction);
+    setLexer(lexer);
     this->recolor();
 }

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: August 25, 2014
+Last Modified: August 31, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -640,8 +640,8 @@ bool LeptonLexer::getDefaultStyle() {
     if (editor() == NULL) return false;
     editor()->setUnmatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
     editor()->setMatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
-    editor()->setWhitespaceVisibility( GeneralConfig::getWhiteSpaceVisibility() );
-    editor()->setWhitespaceForegroundColor( GeneralConfig::getWhiteSpaceColor() );
+    //editor()->setWhitespaceVisibility( GeneralConfig::getWhiteSpaceVisibility() );
+    //editor()->setWhitespaceForegroundColor( GeneralConfig::getWhiteSpaceColor() );
 
     return true;
 }

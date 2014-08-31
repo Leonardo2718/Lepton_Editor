@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 30, 2014
+Last Modified: August 31, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -110,12 +110,17 @@ SyntaxHighlightManager::SyntaxHighlightManager(QsciScintilla* _parent) {
 
         //define list of specialized lexers
         languageActions->addAction(new QAction(languageActions))->setSeparator(true); //%% may need to be removed (not sure what this does) %%
-        QAction* langAction = languageActions->addAction("Plain Text");
-        langAction->setCheckable(true);
-        langAction->setChecked(true);
-        specialLanguages[langAction] = new LeptonLexer();
+        plainTextAction = languageActions->addAction("Plain Text");
+        plainTextAction->setCheckable(true);
+        plainTextAction->setChecked(true);
+        parent->setLexer(langFileLexer);
+        langFileLexer->getLanguageData();
+        //specialLanguages[plainTextAction] = langFileLexer;
+        /*specialLanguages[langAction] = new LeptonLexer();
+        parent->setLexer(specialLanguages[langAction]);
+        specialLanguages[langAction]->*/
 
-        langAction = languageActions->addAction("HTML");
+        /*langAction = languageActions->addAction("HTML");
         langAction->setCheckable(true);
         langAction->setChecked(false);
         specialLanguages[langAction] = new QsciLexerHTML();
@@ -133,7 +138,7 @@ SyntaxHighlightManager::SyntaxHighlightManager(QsciScintilla* _parent) {
         langAction = languageActions->addAction("YAML");
         langAction->setCheckable(true);
         langAction->setChecked(false);
-        specialLanguages[langAction] = new QsciLexerYAML();
+        specialLanguages[langAction] = new QsciLexerYAML();*/
 
         //add all language actions to the language menu
         languageMenu->addActions(languageActions->actions());
@@ -180,13 +185,18 @@ QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
 
     QsciLexer* lexer = 0;                           //the language lexer to be returned
 
-
     if (langAction == 0){                           //if the action is null, return the plain text lexer
-        lexer = specialLanguages.begin().value();       //plain text lexer should be first in the list
+        lexer = langFileLexer;                          //plain text lexer should be first in the list
     }
     else if (langAction == languageActions->checkedAction() ) {
         if ( specialLanguages.contains(langAction) ){   //if the action corresponds to one of the special, predefined languages
-            lexer = specialLanguages[langAction];               //get associated special lexer to be returned
+            if (langAction == plainTextAction) {                //for plain text action, set the language
+                langFileLexer->getLanguageData();
+                lexer = langFileLexer;
+            }
+            else {
+                lexer = specialLanguages[langAction];               //get associated special lexer to be returned
+            }
         }
         else {                                          //else the action must correspond to a language defined in a file
             QString filePath = langAction->data().toString();   //get the language file path
@@ -202,7 +212,23 @@ QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
 void SyntaxHighlightManager::setLexerFromAction(QAction* langAction) {
 /*  -a convenience method to set the language lexer of the parent editor based on the associated action */
 
-    parent->setLexer( getLexerFromAction(langAction) );
+    if (langAction == 0){                               //if the action is null, set the plain text lexer
+        parent->setLexer(langFileLexer);                    //set the lexer
+        langFileLexer->getLanguageData();                   //set the language
+    }
+    else if (langAction == languageActions->checkedAction() ) {
+        if ( specialLanguages.contains(langAction) ){   //if the action corresponds to one of the special, predefined languages
+            parent->setLexer(specialLanguages[langAction]);     //set associated special lexer
+            if (langAction == plainTextAction) {                //for plain text action, set the language
+                langFileLexer->getLanguageData();
+            }
+        }
+        else {                                          //else the action must correspond to a language defined in a file
+            QString filePath = langAction->data().toString();   //get the language file path
+            parent->setLexer(langFileLexer);
+            langFileLexer->getLanguageData(filePath);            //set lexer data based on the data from the language file
+        }
+    }
 }
 
 
