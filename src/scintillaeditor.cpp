@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: August 31, 2014
+Last Modified: September 1, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -217,4 +217,6 @@ void ScintillaEditor::setLanguage(QAction* langAction) {
     lexer = lexerManager->getLexerFromAction(langAction);
     setLexer(lexer);
     this->recolor();
+    setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
+    setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
 }
