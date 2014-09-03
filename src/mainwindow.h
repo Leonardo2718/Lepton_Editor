@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: June 25, 2014
+Last Modified: September 3, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,6 +39,7 @@ Usage Agreement:
 #include <QActionGroup>
 #include <QTreeView>
 #include <QPoint>
+#include <QModelIndex>
 #include "editortabbar.h"
 #include "projectmodel.h"
 
@@ -111,13 +112,16 @@ class MainWindow : public QMainWindow {
         void on_actionAbout_Qt_triggered();
         /* -called to display an "about window" for Qt */
 
+        void openFileFromProjecManager(QModelIndex index);
+        /* -opens a file when it is double clicked in the project manager list */
+
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object
         ProjectModel* projectListModel; //model which will display project list
         QTreeView* projectList;         //view in which projects will be displayed
 
-        void openFile(const QString filePath);
+        void openFile(const QString& filePath);
         /* -opens a specified file in an editor tab */
 
         void saveFile(int index);

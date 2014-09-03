@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: August 25, 2014
+Last Modified: September 3, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,7 +36,6 @@ Usage Agreement:
 #include <QFileDialog>
 #include <QMenu>
 #include <QAction>
-#include <QModelIndex>
 #include <QList>
 #include <QDesktopServices>
 #include <QUrl>
@@ -80,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(projectListModel, SIGNAL(openFileRequested(QString)), this, SLOT(openFileRequested(QString)) );
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
+    connect(projectList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openFileFromProjecManager(QModelIndex)) );
 
     QString styleSheet;
     GeneralConfig::getStyleSheetInto(styleSheet);
@@ -219,11 +219,22 @@ void MainWindow::on_actionAbout_Qt_triggered(){
     QMessageBox::aboutQt(this, "About Qt - LeptonEditor");
 }
 
+void MainWindow::openFileFromProjecManager(QModelIndex index) {
+/* -opens a file when it is double clicked in the project manager list */
+    if ( index.isValid() ) {                            //if the index provided is valid
+        ProjectItem* item = (ProjectItem*)index.internalPointer();  //get the model item
+        if ( item->isFile() ) {                                     //if the item is a file
+            QString filePath = item->getPath();                         //get the path to the file
+            openFile(filePath);                                         //open the file
+        }
+    }
+}
+
 
 
 //~private method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void MainWindow::openFile(const QString filePath) {
+void MainWindow::openFile(const QString& filePath) {
 /* -opens a specified file in an editor tab */
     if ( filePath.isEmpty() ) return;
     if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
