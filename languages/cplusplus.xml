@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="C++" use="c.xml" style="default.xml">
+<language name="C++" use="c.xml" style="default.xml" ext="h hpp cpp cxx cc">
     <keywords type="0">
         alignof and and_eq bitand bitor break case catch compl const_cast continue default
         delete do dynamic_cast else false for goto if namespace new not not_eq nullptr operator

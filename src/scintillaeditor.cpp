@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: September 1, 2014
+Last Modified: September 3, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -184,7 +184,12 @@ void ScintillaEditor::loadFile(const QString& filePath) {
     //save the new file path
     openFile.setFile(filePath);
 
+    //do not consider the file as having been modified (it was just opened)
     setModified(false);
+
+    //try setting a lexer based on the file extension (suffix) of the file's name (if this fails, the default lexer is used)
+    QAction* a = lexerManager->getLangActionFromSuffix( openFile.suffix() );
+    if (a != 0) setLanguage(a);
 }
 
 QString ScintillaEditor::getOpenFilePath() {
@@ -219,4 +224,5 @@ void ScintillaEditor::setLanguage(QAction* langAction) {
     this->recolor();
     setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
     setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
+    if ( ! langAction->isChecked() ) langAction->setChecked(true);
 }

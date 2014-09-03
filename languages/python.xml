@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="Python" style="default.xml">
+<language name="Python" style="default.xml" ext="py pyw">
     <keywords type="0">
     and as assert break class continue def del elif
     else except exec finally for from global if import

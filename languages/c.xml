@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="C" style="default.xml">
+<language name="C" style="default.xml" ext="c">
     <keywords type="0">
     if else switch case default break goto return for while do continue typedef sizeof NULL
     </keywords>

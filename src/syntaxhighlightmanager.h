@@ -126,6 +126,9 @@ class SyntaxHighlightManager {
         void setLexerFromSuffix(const QString& ext);
         /*  -a convenience method to set the language lexer of the parent editor based on the extension of a file */
 
+        QAction* getLangActionFromSuffix(const QString& ext);
+        /*  -return the language action for a suffix (file extensions) */
+
     private:
         QsciScintilla* parent;                          //pointer the editing class which uses this manager
         QActionGroup* languageActions;                  //a group of actions to use for selecting a syntax highlighting language

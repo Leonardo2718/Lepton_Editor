@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 31, 2014
+Last Modified: September 3, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -188,7 +188,7 @@ QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
     if (langAction == 0){                           //if the action is null, return the plain text lexer
         lexer = langFileLexer;                          //plain text lexer should be first in the list
     }
-    else if (langAction == languageActions->checkedAction() ) {
+    else {
         if ( specialLanguages.contains(langAction) ){   //if the action corresponds to one of the special, predefined languages
             if (langAction == plainTextAction) {                //for plain text action, set the language
                 langFileLexer->getLanguageData();
@@ -216,7 +216,7 @@ void SyntaxHighlightManager::setLexerFromAction(QAction* langAction) {
         parent->setLexer(langFileLexer);                    //set the lexer
         langFileLexer->getLanguageData();                   //set the language
     }
-    else if (langAction == languageActions->checkedAction() ) {
+    else {
         if ( specialLanguages.contains(langAction) ){   //if the action corresponds to one of the special, predefined languages
             parent->setLexer(specialLanguages[langAction]);     //set associated special lexer
             if (langAction == plainTextAction) {                //for plain text action, set the language
@@ -227,6 +227,9 @@ void SyntaxHighlightManager::setLexerFromAction(QAction* langAction) {
             QString filePath = langAction->data().toString();   //get the language file path
             parent->setLexer(langFileLexer);
             langFileLexer->getLanguageData(filePath);            //set lexer data based on the data from the language file
+
+            //if the action is not checked in the menu, check it
+            if (langAction != languageActions->checkedAction() ) langAction->setChecked(true);
         }
     }
 }
@@ -252,5 +255,28 @@ QsciLexer* SyntaxHighlightManager::getLexerFromSuffix(const QString& ext) {
 void SyntaxHighlightManager::setLexerFromSuffix(const QString& ext) {
 /*  -a convenience method to set the language lexer of the parent editor based on the extension of a file */
 
-    parent->setLexer( getLexerFromSuffix(ext) );
+    //parent->setLexer( getLexerFromSuffix(ext) );
+    for (int i = 0, c = fileExtensionTable.count(); i < c; i++) {   //for every 'extension list - action' pair
+        if ( fileExtensionTable[i].hasExtension(ext) ) {                //if the extension is in the list
+            QAction* a = fileExtensionTable[i].getLanguageAction();         //get the corresponding language action
+            setLexerFromAction(a);                                          //set the lexer
+            break;                                                          //break out of the loop for return
+        }
+    }
+}
+
+
+QAction* SyntaxHighlightManager::getLangActionFromSuffix(const QString& ext) {
+/*  -return the language action for a suffix (file extensions) */
+
+    QAction* action = 0;                            //the language action to be returned
+
+    for (int i = 0, c = fileExtensionTable.count(); i < c; i++) {   //for every 'extension list - action' pair
+        if ( fileExtensionTable[i].hasExtension(ext) ) {                //if the extension is in the list
+            action = fileExtensionTable[i].getLanguageAction();             //get the corresponding language action
+            break;                                                          //break out of the loop for return
+        }
+    }
+
+    return action;
 }
