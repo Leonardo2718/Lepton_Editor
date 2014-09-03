@@ -136,6 +136,11 @@ class MainWindow : public QMainWindow {
         void setLanguageSelectorMenu();
         /* -set the language selector menu from editor object */
 
+        void loadSession();
+        /* -load settings and configs from saved session */
+
+        void saveSession();
+        /* -save settings and configs of this session */
 };
 
 #endif // MAINWINDOW_H

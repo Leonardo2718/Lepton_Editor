@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: main.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 1, 2014
+Last Modified: September 3, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,6 +36,10 @@ Usage Agreement:
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
+
+    QCoreApplication::setOrganizationName("Lepton Editor");
+    QCoreApplication::setApplicationName("Lepton Editor");
+
     MainWindow w;
     w.show();
 

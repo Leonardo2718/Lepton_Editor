@@ -40,13 +40,13 @@ Usage Agreement:
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include <QSettings>
+#include <QVariant>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "generalconfig.h"
 
-
 #include <QDebug>
-
 
 //~public method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -57,8 +57,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);  //reference the main window
 
     //hide the extra featuers
-    ui->projectManagerArea->hide();
-    ui->editorTools->hide();
+    //ui->projectManagerArea->hide();
+    //ui->editorTools->hide();
 
     //instantiate editing area
     editors = new EditorTabBar(this);
@@ -84,6 +84,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     QString styleSheet;
     GeneralConfig::getStyleSheetInto(styleSheet);
     qApp->setStyleSheet(styleSheet);
+
+    loadSession();
 }
 
 MainWindow::~MainWindow() {
@@ -96,6 +98,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
 /* -called whenever a close window is requested */
+    saveSession();
     disconnect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     int err = editors->closeAll();  //request to close all open tabs
     if (err != 0) event->ignore();  //if a tab was not closed, do not close the window
@@ -273,4 +276,39 @@ void MainWindow::setLanguageSelectorMenu() {
 /* -set the language selector menu from editor object */
     if ( editors->count() < 1 ) return;
     ui->menuLanguage->menuAction()->setMenu( editors->current()->getLanguageMenu() );
+}
+
+void MainWindow::loadSession() {
+/* -load settings and configs from saved session */
+
+    QSettings session;  //session object
+
+    //load layout settings
+    ui->projectManagerArea->setVisible( session.value("managerVisible", false).toBool() );
+    ui->actionProject_Manager->setChecked( session.value("managerVisible", false).toBool() );
+    ui->editorTools->setVisible( session.value("toolsVisible", false).toBool() );
+    ui->actionEditor_Tools->setChecked( session.value("toolsVisible", false).toBool() );
+
+    //load previously opened files
+    QList< QVariant > fileList = session.value("listOfOpenFiles").toList();
+    for (int i = 0, c = fileList.count(); i < c; i++) {
+        this->openFile( fileList.at(i).toString() );
+    }
+}
+
+void MainWindow::saveSession() {
+/* -save settings and configs of this session */
+
+    QSettings session;  //session object
+
+    //save layout settings
+    session.setValue("managerVisible", ui->projectManagerArea->isVisible() );
+    session.setValue("toolsVisible", ui->editorTools->isVisible() );
+
+    //save opened files
+    QList< QVariant > fileList;
+    for (int i = 0, c = editors->count(); i < c; i++) {
+        fileList.append( editors->getEditor(i)->getOpenFilePath() );
+    }
+    session.setValue("listOfOpenFiles", fileList);
 }
