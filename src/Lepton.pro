@@ -24,7 +24,8 @@ HEADERS  += mainwindow.h \
     generalconfig.h \
     projectmodel.h \
     projectitem.h \
-    syntaxhighlightmanager.h
+    syntaxhighlightmanager.h \
+    leptonconfig.h
 
 FORMS    += mainwindow.ui
 
