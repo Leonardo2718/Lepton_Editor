@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: August 25, 2014
+Last Modified: September 4, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -38,10 +38,37 @@ Usage Agreement:
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QTextStream>
+#include <QJsonObject>
+#include <QJsonValue>
 
 #include "generalconfig.h"
 
-GeneralConfig::GeneralConfig() {}
+
+
+GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
+/* -get main config data from file */
+
+    QFile configFile(mainConfigFilePath);               //get the config file
+
+    if ( configFile.exists() ) {                        //if the file actually exists
+
+        configFile.open(QFile::ReadOnly);                           //open the file
+        configData = configData.fromJson( configFile.readAll() );   //store the config data
+        configFile.close();                                         //close the file
+
+        if ( ! configData.isObject() ) {                            //if document is not value
+            configData = configData.fromRawData("{\"NO_VALUE\": null}");//set a default value
+        }
+    }
+}
+
+
+QVariant GeneralConfig::getValue(const QString& key) {
+/* -get the value that corresponds to `key` from the JSON config data object */
+
+    return configData.object().value(key).toVariant();
+}
+
 
 QString GeneralConfig::getConfigDirPath(const QString& shortPath) {
 /*

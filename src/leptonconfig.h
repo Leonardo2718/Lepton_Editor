@@ -35,7 +35,23 @@ Usage Agreement:
 #ifndef LEPTONCONFIG_H
 #define LEPTONCONFIG_H
 
+//include Qt classes
+#include <QDir>
+
+//include other Lepton files needed
+#include "generalconfig.h"
+
+
+
 namespace LeptonConfig {
+/* -a namespace to hold all the objects that define config data and settings */
+
+//get data from the main config file
+#ifdef QT_DEBUG
+GeneralConfig mainSettings("./config/config.json");
+#else
+GeneralConfig mainSettings(QDir::homePath().append("./Lepton_Editor/config.json"));
+#endif
 
 }
 

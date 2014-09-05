@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.h
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: May 24, 2014
+Last Modified: September 4, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -35,15 +35,22 @@ Usage Agreement:
 #ifndef GENERALCONFIG_H
 #define GENERALCONFIG_H
 
+//include Qt classes
 #include <QString>
 #include <QColor>
 #include <QFont>
+#include <QJsonDocument>
+
+//include QScintilla classes
 #include <Qsci/qsciscintilla.h>
 
 class GeneralConfig {
     public:
-        GeneralConfig();
-        /* -empty */
+        GeneralConfig(const QString& mainConfigFilePath);
+        /* -get main config data from file */
+
+        QVariant getValue(const QString& key);
+        /* -get the value that corresponds to `key` from the JSON config data object */
 
         static QString getConfigDirPath(const QString& shortPath);
         /*
@@ -100,6 +107,11 @@ class GeneralConfig {
 
         static void getStyleSheetInto(QString& styleSheet);
         /* -returns style sheet read from file */
+
+
+    private:
+
+        QJsonDocument configData;   //a JSON object to store the config data
 };
 
 #endif // GENERALCONFIG_H
