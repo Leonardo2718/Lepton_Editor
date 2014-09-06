@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: September 3, 2014
+Last Modified: September 5, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,7 +44,7 @@ Usage Agreement:
 #include "scintillaeditor.h"
 #include "generalconfig.h"
 
-#include <QDebug>
+
 
 //~public method implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -58,41 +58,10 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     lexerManager = new SyntaxHighlightManager(this);
     lexerManager->setLexerFromAction();
 
-    //apply lexer
-    //lexer = new LeptonLexer(this);
-    //setLexer(lexer);
-
     //language menu to select the language for syntax highlighting
     languageMenu = new QMenu("Language", this);
     languageGroup = new QActionGroup(languageMenu);
     langFileFromAction = new QHash<QAction*, QString>;
-
-    //add action to select 'plain text' mode
-    /*QAction* lang = new QAction("Plain Text", languageMenu);
-    lang->setCheckable(true);
-    lang->setChecked(true);
-    languageGroup->addAction(lang);
-    langFileFromAction->insert(lang, "" );*/
-
-    //add an action for each language file
-    /*QDir langsDir( GeneralConfig::getLangsDirPath() );
-    langsDir.setNameFilters( QStringList("*.xml") );
-    QStringList langsFileList = langsDir.entryList();   //get list of file paths
-
-    //for each file in the path list, parse the file to get the language name and create an action for the language
-    foreach (const QString& langFileName, langsFileList) {
-        QFile langFile( langsDir.absoluteFilePath(langFileName) );
-        QDomDocument langDef("language_def");
-        if ( ! langDef.setContent(&langFile) ) continue;
-        QString langName = langDef.documentElement().attribute("name"); //get the language name
-        if ( langName.isEmpty() ) continue;
-        lang = new QAction(langName, languageMenu); //create language action
-        lang->setCheckable(true);
-        languageGroup->addAction(lang);
-        langFileFromAction->insert(lang, langsDir.absoluteFilePath(langFileName) );
-    }
-    languageMenu->addActions( languageGroup->actions() );*/
-    //languageMenu->setDefaultAction( langFileFromAction->key("Plain Text") );
 
     //connect signals to slots
     //connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
@@ -112,7 +81,7 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
     //$                                                                    $$
-//qDebug() << whitespaceVisibility();
+
     //$                                                                    $$
     //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 }
@@ -224,5 +193,7 @@ void ScintillaEditor::setLanguage(QAction* langAction) {
     this->recolor();
     setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
     setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
+    setUnmatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
+    setMatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
     if ( ! langAction->isChecked() ) langAction->setChecked(true);
 }

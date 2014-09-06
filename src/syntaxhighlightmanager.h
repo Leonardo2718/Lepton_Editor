@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.h
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: August 31, 2014
+Last Modified: September 5, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -137,6 +137,9 @@ class SyntaxHighlightManager {
         QList<ExtensionActionPair> fileExtensionTable;  //a table to match file extensions with an action to select a language
         QHash<QAction*, QsciLexer*> specialLanguages;   //a list of specialized languages/lexers which do not require user definition
         LeptonLexer* langFileLexer;                     //the lexer used for languages defined in files
+
+        void addSpecialLanguage(const QString& name, QsciLexer* lexer, const QString& extList);
+        /*  -add a special language lexer to the list using its name, lexer, and file extension (suffix) list */
 };
 
 #endif // SYNTAXHIGHLIGHTMANAGER_H
