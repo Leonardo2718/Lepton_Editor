@@ -1,3 +1,18 @@
 {
-    "theme_config": "theme.conf"
+    "theme_config": "theme.conf",
+    "theme_data": {
+        "stylesheet_file": "../sytles/defaultTheme.css",
+        "text_color": "#A1A1A1",
+        "paper_color": "#312525",
+        "font": {
+            "font_family": "Monospace",
+            "font_point_size": 10,
+            "font_style": "normal",
+            "font_weight": "normal"
+            },
+        "whitespace_visibility": "visible",
+        "whitespace_color": "#C0C0C0",
+        "margins_background": "#3B3B3B",
+        "margins_foreground": "#888888"
+    }
 }

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: September 5, 2014
+Last Modified: September 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -42,9 +42,9 @@ Usage Agreement:
 #include <Qsci/qscilexercpp.h>
 
 #include "scintillaeditor.h"
-#include "generalconfig.h"
+#include "leptonconfig.h"
 
-
+#include <QDebug>
 
 //~public method implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -71,10 +71,10 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setAutoIndent(true);
     setTabWidth(4);
     setBraceMatching(QsciScintilla::StrictBraceMatch);
-    setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
-    setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
-    setWhitespaceVisibility( GeneralConfig::getWhiteSpaceVisibility() );
-    setWhitespaceForegroundColor( GeneralConfig::getWhiteSpaceColor() );
+    setMarginsBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_background") );
+    setMarginsForegroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_foreground") );
+    setWhitespaceVisibility( LeptonConfig::mainSettings.getWhiteSpaceVisibility() );
+    setWhitespaceForegroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "whitespace_color") );
     setIndentationsUseTabs(false);  //use spaces instead of tabs for indentation
     //lexer->getLanguageData();       //set the default highlighting to be for plain text
 
@@ -191,9 +191,9 @@ void ScintillaEditor::setLanguage(QAction* langAction) {
     lexer = lexerManager->getLexerFromAction(langAction);
     setLexer(lexer);
     this->recolor();
-    setMarginsBackgroundColor( GeneralConfig::getMarginsBackground() );
-    setMarginsForegroundColor( GeneralConfig::getMarginsForeground() );
-    setUnmatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
-    setMatchedBraceBackgroundColor( GeneralConfig::getDefaultPaper() );
+    setMarginsBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_background") );
+    setMarginsForegroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_foreground") );
+    setUnmatchedBraceBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "paper_color") );
+    setMatchedBraceBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "paper_color") );
     if ( ! langAction->isChecked() ) langAction->setChecked(true);
 }

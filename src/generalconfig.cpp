@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: September 4, 2014
+Last Modified: September 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,10 +40,11 @@ Usage Agreement:
 #include <QTextStream>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QMap>
 
 #include "generalconfig.h"
 
-
+#include <QDebug>
 
 GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
 /* -get main config data from file */
@@ -63,10 +64,71 @@ GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
 }
 
 
-QVariant GeneralConfig::getValue(const QString& key) {
+QVariant GeneralConfig::getValue(const QString& key, const QString& subKey_1, const QString &subKey_2) const {
 /* -get the value that corresponds to `key` from the JSON config data object */
 
-    return configData.object().value(key).toVariant();
+    QVariant returnValue;
+
+    if ( ! subKey_2.isEmpty() ) {
+        returnValue = configData.object().value(key).toObject().value(subKey_1).toObject().value(subKey_2).toVariant();
+    }
+    else if ( ! subKey_1.isEmpty() ) {
+        returnValue = configData.object().value(key).toObject().value(subKey_1).toVariant();
+    }
+    else {
+        returnValue = configData.object().value(key).toVariant();
+    }
+
+    return returnValue;
+}
+
+
+QColor GeneralConfig::getValueAsColor(const QString& key, const QString& subKey_1, const QString& subKey_2) const {
+/*
+    -get the value that corresponds to the given keys and return it as a color value
+    -an empty color is returned if the value is not a valid color string
+*/
+
+    QString colorString = getValue(key, subKey_1, subKey_2).toString(); //get the configured value using the keys
+
+    return getColorFromString( colorString );                           //convert the value to a color and return it
+}
+
+
+QFont GeneralConfig::getValueAsFont(const QString& key, const QString& subKey_1, const QString& subKey_2 ) const {
+/*  -return a font based on the values from the keys */
+
+    //define the return value
+    QFont returnValue;
+
+    //get a key-value list of the font properties
+    QMap<QString, QVariant> fontProperties = getValue(key, subKey_1, subKey_2).toMap();
+
+    //define a map of font styles for easy indexing using a string
+    QMap<QString, QFont::Style> fontStyles;
+    fontStyles["normal"] = QFont::StyleNormal;
+    fontStyles["italic"] = QFont::StyleItalic;
+    fontStyles["oblique"] = QFont::StyleOblique;
+
+    //define a map of font weights for easy indexing using a string
+    QMap<QString, QFont::Weight> fontWeights;//Light, Normal, DemiBold, Bold, Black
+    fontWeights["light"] = QFont::Light;
+    fontWeights["normal"] = QFont::Normal;
+    fontWeights["demibold"] = QFont::DemiBold;
+    fontWeights["bold"] = QFont::Bold;
+    fontWeights["black"] = QFont::Black;
+
+    //set the values for the font
+    if ( fontProperties.contains("font_family") )
+        returnValue.setFamily( fontProperties["font_family"].toString() );
+    if ( fontProperties.contains("font_point_size") )
+        returnValue.setPixelSize( fontProperties["font_point_size"].toInt() );
+    if ( fontProperties.contains("font_style") )
+        returnValue.setStyle( fontStyles[ fontProperties["font_style"].toString() ] );
+    if ( fontProperties.contains("font_weight") )
+        returnValue.setWeight( fontWeights[ fontProperties["font_weight"].toString() ] );
+
+    return returnValue;
 }
 
 
@@ -277,8 +339,9 @@ QFont GeneralConfig::getDefaultEditorFont() {
 
 QsciScintilla::WhitespaceVisibility GeneralConfig::getWhiteSpaceVisibility() {
 /* -returns the visibility of white spaces in editor */
+
     //get data from config file
-    QString s = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "whitespace").toLower();
+    QString s = getValue("theme_data", "whitespace_visibility").toString();
 
     //process and return value
     if (s == "visible") return QsciScintilla::WsVisible;

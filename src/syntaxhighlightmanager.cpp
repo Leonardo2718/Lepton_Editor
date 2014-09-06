@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: September 5, 2014
+Last Modified: September 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -56,7 +56,8 @@ Usage Agreement:
 #include <Qsci/qscilexeryaml.h>
 
 //include Lepton files used for this class implementation
-#include "generalconfig.h"
+//#include "generalconfig.h"
+#include "leptonconfig.h"
 
 
 
@@ -187,9 +188,9 @@ QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
             lexer = specialLanguages[langAction];
 
             //set the default styling for the lexer
-            lexer->setDefaultPaper( GeneralConfig::getDefaultPaper() );
-            lexer->setDefaultColor(  GeneralConfig::getDefaultTextColor() );
-            lexer->setDefaultFont( GeneralConfig::getDefaultEditorFont() );
+            lexer->setDefaultPaper( LeptonConfig::mainSettings.getValueAsColor("theme_data", "paper_color") );
+            lexer->setDefaultColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "text_color") );
+            lexer->setDefaultFont( LeptonConfig::mainSettings.getValueAsFont("theme_data", "font") );
 
             //set the styling based on the style from a "normal" lexer
             LeptonLexer l;

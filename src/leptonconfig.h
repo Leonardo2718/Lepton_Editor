@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonconfig.h
 Author: Leonardo Banderali
 Created: September 4, 2014
-Last Modified: September 4, 2014
+Last Modified: September 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -48,9 +48,9 @@ namespace LeptonConfig {
 
 //get data from the main config file
 #ifdef QT_DEBUG
-GeneralConfig mainSettings("./config/config.json");
+static GeneralConfig mainSettings("./config/config.json");
 #else
-GeneralConfig mainSettings(QDir::homePath().append("./Lepton_Editor/config.json"));
+static GeneralConfig mainSettings(QDir::homePath().append("./Lepton_Editor/config.json"));
 #endif
 
 }

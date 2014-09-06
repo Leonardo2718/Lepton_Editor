@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.h
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: September 4, 2014
+Last Modified: September 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -49,8 +49,17 @@ class GeneralConfig {
         GeneralConfig(const QString& mainConfigFilePath);
         /* -get main config data from file */
 
-        QVariant getValue(const QString& key);
-        /* -get the value that corresponds to `key` from the JSON config data object */
+        QVariant getValue(const QString& key, const QString& subKey_1 = 0, const QString& subKey_2 = 0) const;
+        /*  -get the value that corresponds to `key` from the JSON config data object */
+
+        QColor getValueAsColor(const QString& key, const QString& subKey_1 = 0, const QString& subKey_2 = 0) const;
+        /*
+            -get the value that corresponds to the given keys and return it as a color value
+            -an empty color is returned if the value is not a valid color string
+        */
+
+        QFont getValueAsFont(const QString& key, const QString& subKey_1 = 0, const QString& subKey_2 = 0) const;
+        /*  -return a font based on the values from the keys */
 
         static QString getConfigDirPath(const QString& shortPath);
         /*
@@ -93,7 +102,7 @@ class GeneralConfig {
         static QFont getDefaultEditorFont();
         /* -returns default 'QFont' for editor text */
 
-        static QsciScintilla::WhitespaceVisibility getWhiteSpaceVisibility();
+        QsciScintilla::WhitespaceVisibility getWhiteSpaceVisibility();
         /* -returns the visibility of white spaces in editor */
 
         static QColor getWhiteSpaceColor();
