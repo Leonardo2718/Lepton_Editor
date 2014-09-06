@@ -57,7 +57,7 @@ GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
         configFile.close();                                         //close the file
 
         if ( ! configData.isObject() ) {                            //if document is not value
-            configData = configData.fromRawData("{\"NO_VALUE\": null}");//set a default value
+            configData = configData.fromRawData("{\"NO_VALUE\": null}", 20);//set a default value
         }
     }
 }
