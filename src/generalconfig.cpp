@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: September 6, 2014
+Last Modified: October 13, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -140,11 +140,11 @@ QString GeneralConfig::getConfigDirPath(const QString& shortPath) {
 */
 #ifdef QT_DEBUG
     //check if file is in active directory
-    QDir dir( QString("./").append(shortPath) );
+    QDir dir( QString("./config/").append(shortPath) );
     if ( dir.exists() ) return dir.absolutePath();
 
     //check if file is in parent directory
-    dir.setCurrent( QString("../").append(shortPath) );
+    dir = QDir( QString("../config/").append(shortPath) );
     if ( dir.exists() ) return dir.absolutePath();
 
     //if file was not found return nothing

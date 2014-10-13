@@ -1,5 +1,4 @@
 {
-    "theme_config": "theme.conf",
     "theme_data": {
         "stylesheet_file": "../sytles/defaultTheme.css",
         "text_color": "#A1A1A1",
@@ -11,7 +10,7 @@
             "font_weight": "normal"
             },
         "whitespace_visibility": "visible",
-        "whitespace_color": "#202020",
+        "whitespace_color": "#505050",
         "margins_background": "#3B3B3B",
         "margins_foreground": "#888888"
     }
