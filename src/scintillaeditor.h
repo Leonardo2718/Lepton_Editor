@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: August 29, 2014
+Last Modified: October 14, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -75,8 +75,14 @@ class ScintillaEditor : public QsciScintilla
         void loadFile(const QString& filePath);
         /* -load contents of a file to be edited */
 
+        bool isFileOpen();
+        /*  -returns true if a file is open and being edited, false otherwise */
+
         QString getOpenFilePath();
         /* -get the path to the file currently being edited */
+
+        QString getOpenFileDir();
+        /*  -get the directory of the file currently being edited */
 
         QString getOpenFileName();
         /* -get the name of the file currently being edited */

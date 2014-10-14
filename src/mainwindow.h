@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: September 3, 2014
+Last Modified: October 14, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,6 +40,8 @@ Usage Agreement:
 #include <QTreeView>
 #include <QPoint>
 #include <QModelIndex>
+#include <QString>
+
 #include "editortabbar.h"
 #include "projectmodel.h"
 
@@ -141,6 +143,13 @@ class MainWindow : public QMainWindow {
 
         void saveSession();
         /* -save settings and configs of this session */
+
+        QString getDialogDirPath(const QString& location = 0);
+        /*
+            -gets path to a directory for dialogs to open
+            -returns directory of file open in current editor tab when `location = 0` and when a file is actually open
+            -returns home directory (or executable's directory if `QT_DEBUG` is defined) when no file is open or `location = "home"`
+        */
 };
 
 #endif // MAINWINDOW_H

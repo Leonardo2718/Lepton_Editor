@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: September 3, 2014
+Last Modified: October 14, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -60,6 +60,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //ui->projectManagerArea->hide();
     //ui->editorTools->hide();
 
+    //setup main window
+    setWindowTitle("Lepton Editor");
+
     //instantiate editing area
     editors = new EditorTabBar(this);
     ui->editorArea->layout()->addWidget(editors);
@@ -112,7 +115,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::on_actionOpen_File_triggered() {
 /* -open a file in an editor tab */
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"));  //open pop-up window to prompt user for file to be opend
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), getDialogDirPath() );    //open pop-up window to prompt user for file to be opend
     openFile(filePath);
 }
 
@@ -260,15 +263,15 @@ void MainWindow::saveFile(int index) {
 
 void MainWindow::saveFileAs(int index) {
 /* -save content to a new file and load it */
-    QString file = QFileDialog::getSaveFileName(this, tr("Save As") );  //get a new file name
-    if ( file.isEmpty() ) return;                                       //check if file name was actually specified
+    QString file = QFileDialog::getSaveFileName(this, tr("Save As"), getDialogDirPath() );  //get a new file name
+    if ( file.isEmpty() ) return;                                                           //check if file name was actually specified
     editors->getEditor(index)->writeToFile(file);
-    editors->getEditor(index)->loadFile(file);                          //open the newly created file
+    editors->getEditor(index)->loadFile(file);                                              //open the newly created file
 }
 
 void MainWindow::saveFileCopyAs(int index) {
 /* -save a copy of content to a new file (new file not loaded) */
-    QString file = QFileDialog::getSaveFileName(this, tr("Save Copy As") );
+    QString file = QFileDialog::getSaveFileName(this, tr("Save Copy As"), getDialogDirPath() );
     if ( file.isEmpty() ) return;
     editors->getEditor(index)->writeToFile(file);
 }
@@ -312,4 +315,26 @@ void MainWindow::saveSession() {
         fileList.append( editors->getEditor(i)->getOpenFilePath() );
     }
     session.setValue("listOfOpenFiles", fileList);
+}
+
+QString MainWindow::getDialogDirPath(const QString& location) {
+/*
+    -gets path to a directory for dialogs to open
+    -returns directory of file open in current editor tab when `location = 0` and when a file is actually open
+    -returns home directory (or executable's directory if `QT_DEBUG` is defined) when no file is open or `location = "home"`
+*/
+    QString path;
+
+    if (location == "home" || (! editors->current()->isFileOpen()) ) {
+#ifdef QT_DEBUG
+        path = QDir::currentPath(); //use the executable's directory
+#else
+        path = QDir::homePath();    //use the home directory
+#endif
+    }
+    else {
+        path = editors->current()->getOpenFileDir();    //get the directory of the file being edited in the current tab
+    }
+
+    return path;
 }
