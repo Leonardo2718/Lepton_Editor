@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: September 6, 2014
+Last Modified: October 14, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -56,7 +56,6 @@ Usage Agreement:
 #include <Qsci/qscilexeryaml.h>
 
 //include Lepton files used for this class implementation
-//#include "generalconfig.h"
 #include "leptonconfig.h"
 
 
@@ -73,8 +72,8 @@ SyntaxHighlightManager::SyntaxHighlightManager(QsciScintilla* _parent) {
     languageActions = new QActionGroup(languageMenu);
 
     //get the language files' directory
-    QString languagesDirPath = GeneralConfig::getLangsDirPath();    //get path to the directory where the language files are
-    QDir languagesDir(languagesDirPath);                            //create a directory object for it
+    QString languagesDirPath = LeptonConfig::mainSettings.getLangsDirPath();//get path to the directory where the language files are
+    QDir languagesDir(languagesDirPath);                                    //create a directory object for it
 
     //define the normal language actions based on the data from language files
     if ( languagesDir.exists() ) {      //only proceed if the languages directory actually exists (which it should)
@@ -194,7 +193,7 @@ QsciLexer* SyntaxHighlightManager::getLexerFromAction(QAction* langAction) {
 
             //set the styling based on the style from a "normal" lexer
             LeptonLexer l;
-            l.getStyleFormat( GeneralConfig::getStyleFilePath("default.xml") );
+            l.getStyleFormat( LeptonConfig::mainSettings.getStyleFilePath("default.xml") );
             for (int i = 0; i < 128; i++) {
                 lexer->setColor(l.color(i % 32), i);
                 lexer->setFont(l.font(i % 32), i);

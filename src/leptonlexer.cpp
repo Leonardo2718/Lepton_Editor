@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: September 5, 2014
+Last Modified: October 14, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,7 +41,7 @@ Usage Agreement:
 #include <Qsci/qsciscintilla.h>
 
 #include "leptonlexer.h"
-#include "generalconfig.h"
+#include "leptonconfig.h"
 
 
 
@@ -279,7 +279,7 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
     //if the current language uses some of the rules of another language, load the other language first
     if ( langElement.hasAttribute("use") ) {
         QString file = langElement.attribute("use");
-        getLanguageData( GeneralConfig::getLangFilePath(file) );
+        getLanguageData( LeptonConfig::mainSettings.getLangFilePath(file) );
     }
 
     //get the language name
@@ -289,8 +289,8 @@ bool LeptonLexer::getLanguageData(const QString& languageFilePath) {
     //get the styling file
     if ( langElement.hasAttribute("style") ) {
         QString styleFile = langElement.attribute("style");
-        QString styleFilePath = GeneralConfig::getStyleFilePath(styleFile);
-        if ( styleFilePath.isEmpty() ) styleFilePath = GeneralConfig::getStyleFilePath("default.xml");
+        QString styleFilePath = LeptonConfig::mainSettings.getStyleFilePath(styleFile);
+        if ( styleFilePath.isEmpty() ) styleFilePath = LeptonConfig::mainSettings.getStyleFilePath("default.xml");
         bool err  = getStyleFormat( styleFilePath );
         if (err == false) return false;
     }
@@ -632,9 +632,9 @@ void LeptonLexer::getStyleData(QDomElement styleElement, quint8 style) {
 
 bool LeptonLexer::getDefaultStyle() {
 /* -gets the default style values */
-    setDefaultPaper( GeneralConfig::getDefaultPaper() );
-    setDefaultColor(  GeneralConfig::getDefaultTextColor() );
-    setDefaultFont( GeneralConfig::getDefaultEditorFont() );
+    setDefaultPaper( LeptonConfig::mainSettings.getDefaultPaper() );
+    setDefaultColor( LeptonConfig::mainSettings.getDefaultTextColor() );
+    setDefaultFont( LeptonConfig::mainSettings.getDefaultEditorFont() );
 
     //set styling in editor settings
     //if (editor() == NULL) return false;

@@ -1,6 +1,6 @@
 {
     "theme_data": {
-        "stylesheet_file": "../sytles/defaultTheme.css",
+        "stylesheet_file": "themes/defaultTheme.css",
         "text_color": "#A1A1A1",
         "paper_color": "#312525",
         "font": {

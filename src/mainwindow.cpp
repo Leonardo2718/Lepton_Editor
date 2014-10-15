@@ -44,7 +44,7 @@ Usage Agreement:
 #include <QVariant>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "generalconfig.h"
+#include "leptonconfig.h"
 
 #include <QDebug>
 
@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(projectList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openFileFromProjecManager(QModelIndex)) );
 
     QString styleSheet;
-    GeneralConfig::getStyleSheetInto(styleSheet);
+    LeptonConfig::mainSettings.getStyleSheetInto(styleSheet);
     qApp->setStyleSheet(styleSheet);
 
     loadSession();

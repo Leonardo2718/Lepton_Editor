@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: October 13, 2014
+Last Modified: October 15, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -32,6 +32,7 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <QApplication>
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
@@ -46,10 +47,13 @@ Usage Agreement:
 
 #include <QDebug>
 
+//QDir GeneralConfig::configsDir = QDir(QString());
+
 GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
 /* -get main config data from file */
 
     QFile configFile(mainConfigFilePath);               //get the config file
+    configsDir.setPath( QFileInfo(mainConfigFilePath).absolutePath() );
 
     if ( configFile.exists() ) {                        //if the file actually exists
 
@@ -122,7 +126,7 @@ QFont GeneralConfig::getValueAsFont(const QString& key, const QString& subKey_1,
     if ( fontProperties.contains("font_family") )
         returnValue.setFamily( fontProperties["font_family"].toString() );
     if ( fontProperties.contains("font_point_size") )
-        returnValue.setPixelSize( fontProperties["font_point_size"].toInt() );
+        returnValue.setPointSize( fontProperties["font_point_size"].toInt() );
     if ( fontProperties.contains("font_style") )
         returnValue.setStyle( fontStyles[ fontProperties["font_style"].toString() ] );
     if ( fontProperties.contains("font_weight") )
@@ -157,8 +161,8 @@ QString GeneralConfig::getConfigDirPath(const QString& shortPath) {
     QString userDirPath = QString("%1/%2").arg(appData).arg(shortPath);
     QString systemDirPath  = QString("%1/%2").arg(qApp->applicationDirPath()).arg(shortPath);
 #else
-    QString userDirPath = QString("%1/%2/%3/%4").arg(QDir::homePath()).arg(".config").arg(qApp->applicationName().toLower()).arg(shortPath);
-    QString systemDirPath  = QString("/usr/share/%1/%2").arg(qApp->applicationName().toLower()).arg(shortPath);
+    QString userDirPath = configsDir.absolutePath().append("/").append(shortPath);
+    QString systemDirPath  = QString("/etc/LeptonEditor/%1/").arg(shortPath);
 #endif
     if ( QDir(userDirPath).exists() ) return userDirPath;
     return systemDirPath;
@@ -286,54 +290,28 @@ QColor GeneralConfig::getColorFromString(QString colorString) {
 
 QColor GeneralConfig::getDefaultPaper() {
 /* -returns default 'QColor' for editor paper/background */
-    //get data from config file
-    QString colorString = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "paper");
 
-    //process and return value
-    QColor c = getColorFromString(colorString);
+    //get data from config file, process it, and return value
+    QColor c = getValueAsColor("theme_data", "paper_color");
     if ( c.isValid() ) return c;
     else return QColor(255,255,255);
+
 }
 
 QColor GeneralConfig::getDefaultTextColor() {
 /* -returns default 'QColor' for editor text */
-    QString colorString = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "text-color");
+    //QString colorString = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "text-color");
 
     //process and return value
-    QColor c = getColorFromString(colorString);
+    //QColor c = getColorFromString(colorString);
+    QColor c = getValueAsColor("theme_data", "text_color");
     if ( c.isValid() ) return c;
     else return QColor(0,0,0);
 }
 
 QFont GeneralConfig::getDefaultEditorFont() {
 /* -returns default 'QFont' for editor text */
-    QFont* f = new QFont();  //dummy variable (using just a normal object does not work but using a pointer does?)
-    f->setStyleHint(QFont::Monospace);
-
-    //get values from config file
-    bool ok = true;
-    QString family = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "font-family");
-    qint16 point = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "font-point").toInt(&ok);
-    QString weight = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "font-weight").toLower();
-    QString italic = getConfigData( getConfigFilePath("config/theme.conf"), "Editor", "font-italic").toLower();
-
-    //process and validate data; assign some value if invalid
-    f->setFamily(family);
-    if (ok == false) point = 10;
-    f->setPointSize(point);
-    if (weight == "normal") f->setWeight(QFont::Normal);
-    else if (weight == "light" || weight == "thin") f->setWeight(QFont::Light);
-    else if (weight == "demibold" || weight == "semibold") f->setWeight(QFont::DemiBold);
-    else if (weight == "bold") f->setWeight(QFont::Bold);
-    else if (weight == "black" || weight == " extra bold" || "heavy") f->setWeight(QFont::Black);
-    else f->setWeight(QFont::Normal);
-    if (italic == "true") f->setItalic(true);
-    else if (italic == "false") f->setItalic(false);
-    else f->setItalic(false);
-
-    //return font
-    QFont font = *f;
-    delete f;
+    QFont font = getValueAsFont("theme_data", "font");  //get values from config file
     return font;
 }
 
@@ -378,14 +356,17 @@ QColor GeneralConfig::getMarginsForeground() {
 
     //process and return value
     QColor c = getColorFromString(colorString);
+    //QColor c = getValueAsColor("theme_data", "paper_color");
     if ( c.isValid() ) return c;
     else return QColor(0,0,0);
 }
 
 void GeneralConfig::getStyleSheetInto(QString& styleSheet) {
 /* -returns style sheet read from file */
-    QString path = getConfigData( getConfigFilePath("config/theme.conf"), "MainWindow", "theme").prepend("config/themes/");
-    QFile file( getConfigFilePath(path) );
+    //QString path = getConfigData( getConfigFilePath("config/theme.conf"), "MainWindow", "theme").prepend("config/themes/");
+    QString path = getValue("theme_data", "stylesheet_file").toString();
+    path = configsDir.absolutePath().append("/").append(path);
+    QFile file(path);
     if ( ! file.exists() ) {
         styleSheet = QString();
         return;

@@ -39,6 +39,7 @@ Usage Agreement:
 #include <QString>
 #include <QColor>
 #include <QFont>
+#include <QDir>
 #include <QJsonDocument>
 
 //include QScintilla classes
@@ -61,7 +62,7 @@ class GeneralConfig {
         QFont getValueAsFont(const QString& key, const QString& subKey_1 = 0, const QString& subKey_2 = 0) const;
         /*  -return a font based on the values from the keys */
 
-        static QString getConfigDirPath(const QString& shortPath);
+        QString getConfigDirPath(const QString& shortPath);
         /*
         -returns absolute path to a sub-directory of the config directory
         -takes into account that local config files override system files
@@ -75,16 +76,16 @@ class GeneralConfig {
         -returns empty string if file is not found
         */
 
-        static QString getLangsDirPath();
+        QString getLangsDirPath();
         /* -returns absolute path to language files directory */
 
-        static QString getStylesDirPath();
+        QString getStylesDirPath();
         /* -returns absolute path to style files directory */
 
-        static QString getLangFilePath(const QString& fileName);
+        QString getLangFilePath(const QString& fileName);
         /* -returns absolute path to a language file */
 
-        static QString getStyleFilePath(const QString& fileName);
+        QString getStyleFilePath(const QString& fileName);
         /* -returns absolute path to a styling file */
 
         static QString getConfigData(const QString &filePath, const QString& item, const QString& field);
@@ -93,13 +94,13 @@ class GeneralConfig {
         static QColor getColorFromString(QString colorString);
         /* -converts a color defined in a string to a 'QColor' object, using regexp validation, and returnes it */
 
-        static QColor getDefaultPaper();
+        QColor getDefaultPaper();
         /* -returns default 'QColor' for editor paper/background */
 
-        static QColor getDefaultTextColor();
+        QColor getDefaultTextColor();
         /* -returns default 'QColor' for editor text */
 
-        static QFont getDefaultEditorFont();
+        QFont getDefaultEditorFont();
         /* -returns default 'QFont' for editor text */
 
         QsciScintilla::WhitespaceVisibility getWhiteSpaceVisibility();
@@ -114,13 +115,14 @@ class GeneralConfig {
         static QColor getMarginsForeground();
         /* -returns foreground color for margins (line numbering etc.) */
 
-        static void getStyleSheetInto(QString& styleSheet);
+        void getStyleSheetInto(QString& styleSheet);
         /* -returns style sheet read from file */
 
 
     private:
 
         QJsonDocument configData;   //a JSON object to store the config data
+        QDir configsDir;            //the directory containing all config files
 };
 
 #endif // GENERALCONFIG_H
