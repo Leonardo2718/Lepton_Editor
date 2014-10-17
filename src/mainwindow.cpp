@@ -291,9 +291,15 @@ void MainWindow::loadSession() {
     QSettings session;  //session object
 
     //load layout settings
+    if ( session.value("windowMaximized").toBool() ) this->showMaximized();
+    else this->resize( session.value("windowWidth").toInt(), session.value("windowHeight").toInt() );
+
     ui->projectManagerArea->setVisible( session.value("managerVisible", false).toBool() );
+    ui->projectManagerArea->resize( session.value("managerWidth").toInt(), session.value("managerHeight").toInt() );
     ui->actionProject_Manager->setChecked( session.value("managerVisible", false).toBool() );
+
     ui->editorTools->setVisible( session.value("toolsVisible", false).toBool() );
+    ui->editorTools->resize( session.value("toolsWidth").toInt(), session.value("toolsHeight").toInt() );
     ui->actionEditor_Tools->setChecked( session.value("toolsVisible", false).toBool() );
 
     //load previously opened files
@@ -309,8 +315,19 @@ void MainWindow::saveSession() {
     QSettings session;  //session object
 
     //save layout settings
+    if ( this->isMaximized() ) session.setValue("windowMaximized", true);
+    else {
+        session.setValue("windowWidth", this->width() );
+        session.setValue("windowHeight", this->height() );
+    }
+
     session.setValue("managerVisible", ui->projectManagerArea->isVisible() );
+    session.setValue("managerWidth", ui->projectManagerArea->width() );
+    session.setValue("managerHeight", ui->projectManagerArea->height() );
+
     session.setValue("toolsVisible", ui->editorTools->isVisible() );
+    session.setValue("toolsWidth", ui->editorTools->width() );
+    session.setValue("toolsHeight", ui->editorTools->height() );
 
     //save opened files
     QList< QVariant > fileList;
