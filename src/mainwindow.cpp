@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 14, 2014
+Last Modified: October 17, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -88,6 +88,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     LeptonConfig::mainSettings.getStyleSheetInto(styleSheet);
     qApp->setStyleSheet(styleSheet);
 
+    //set session object information and load previous session
+    QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings.getConfigDirPath("sessions"));
     loadSession();
 }
 
