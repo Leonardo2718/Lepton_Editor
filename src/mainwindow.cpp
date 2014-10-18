@@ -63,6 +63,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //setup main window
     setWindowTitle("Lepton Editor");
 
+    //setup other windows
+    configsEditor.setParent(this, Qt::Dialog);
+
     //instantiate editing area
     editors = new EditorTabBar(this);
     ui->editorArea->layout()->addWidget(editors);
@@ -238,6 +241,11 @@ void MainWindow::openFileFromProjecManager(QModelIndex index) {
             openFile(filePath);                                         //open the file
         }
     }
+}
+
+void MainWindow::on_actionSettings_Editor_triggered() {
+/*  -opens the settings editor window */
+    configsEditor.show();
 }
 
 

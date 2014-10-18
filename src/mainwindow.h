@@ -44,6 +44,7 @@ Usage Agreement:
 
 #include "editortabbar.h"
 #include "projectmodel.h"
+#include "settingseditor.h"
 
 namespace Ui {
     class MainWindow;
@@ -117,11 +118,15 @@ class MainWindow : public QMainWindow {
         void openFileFromProjecManager(QModelIndex index);
         /* -opens a file when it is double clicked in the project manager list */
 
+        void on_actionSettings_Editor_triggered();
+        /*  -opens the settings editor window */
+
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object
         ProjectModel* projectListModel; //model which will display project list
         QTreeView* projectList;         //view in which projects will be displayed
+        SettingsEditor configsEditor;   //a window to facilitate editing config files
 
         void openFile(const QString& filePath);
         /* -opens a specified file in an editor tab */

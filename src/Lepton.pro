@@ -15,7 +15,8 @@ SOURCES += main.cpp\
     generalconfig.cpp \
     projectmodel.cpp \
     projectitem.cpp \
-    syntaxhighlightmanager.cpp
+    syntaxhighlightmanager.cpp \
+    settingseditor.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -25,7 +26,8 @@ HEADERS  += mainwindow.h \
     projectmodel.h \
     projectitem.h \
     syntaxhighlightmanager.h \
-    leptonconfig.h
+    leptonconfig.h \
+    settingseditor.h
 
 FORMS    += mainwindow.ui
 

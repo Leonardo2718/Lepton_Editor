@@ -200,7 +200,7 @@
      <x>0</x>
      <y>0</y>
      <width>570</width>
-     <height>23</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -259,6 +259,7 @@
     <property name="title">
      <string>Customize</string>
     </property>
+    <addaction name="actionSettings_Editor"/>
    </widget>
    <widget class="QMenu" name="menuLanguage">
     <property name="title">
@@ -378,6 +379,11 @@
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionSettings_Editor">
+   <property name="text">
+    <string>Settings Editor</string>
    </property>
   </action>
  </widget>
