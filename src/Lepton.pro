@@ -29,6 +29,7 @@ HEADERS  += mainwindow.h \
     leptonconfig.h \
     settingseditor.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    settingseditor.ui
 
 unix|win32: LIBS += -lqscintilla2

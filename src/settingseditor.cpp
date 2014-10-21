@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: settingseditor.cpp
 Author: Leonardo Banderali
 Created: October 17, 2014
-Last Modified: October 17, 2014
+Last Modified: October 21, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -31,8 +31,18 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//include the header for this class
+//include the header files for this class
 #include "settingseditor.h"
+#include "ui_settingseditor.h"
 
-SettingsEditor::SettingsEditor(QWidget *parent) : QWidget(parent) {
+
+
+//~public methodes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SettingsEditor::SettingsEditor(QWidget *parent) : QWidget(parent), ui(new Ui::SettingsEditor) {
+    ui->setupUi(this);
+}
+
+SettingsEditor::~SettingsEditor() {
+    delete ui;
 }

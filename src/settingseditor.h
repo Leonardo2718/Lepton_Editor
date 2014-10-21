@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: settingseditor.h
 Author: Leonardo Banderali
 Created: October 17, 2014
-Last Modified: October 17, 2014
+Last Modified: October 21, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -38,11 +38,20 @@ Usage Agreement:
 //include Qt classes
 #include <QWidget>
 
+namespace Ui {
+class SettingsEditor;
+}
+
 class SettingsEditor : public QWidget
 {
     Q_OBJECT
+
     public:
         explicit SettingsEditor(QWidget *parent = 0);
+        ~SettingsEditor();
+
+    private:
+        Ui::SettingsEditor* ui;
 };
 
 #endif // SETTINGSEDITOR_H
