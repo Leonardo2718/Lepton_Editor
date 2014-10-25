@@ -60,6 +60,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //ui->projectManagerArea->hide();
     //ui->editorTools->hide();
 
+    //set session object information
+    QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings.getConfigDirPath("sessions"));
+
     //setup main window
     setWindowTitle("Lepton Editor");
 
@@ -91,9 +95,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     LeptonConfig::mainSettings.getStyleSheetInto(styleSheet);
     qApp->setStyleSheet(styleSheet);
 
-    //set session object information and load previous session
-    QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
-    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings.getConfigDirPath("sessions"));
+    //load previous session
     loadSession();
 }
 
