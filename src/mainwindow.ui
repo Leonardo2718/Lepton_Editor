@@ -396,9 +396,6 @@
    <property name="text">
     <string>Use Tabs</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+T</string>
-   </property>
   </action>
   <action name="actionUse_Spaces">
    <property name="checkable">
@@ -406,9 +403,6 @@
    </property>
    <property name="text">
     <string>Use Spaces</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+T</string>
    </property>
   </action>
  </widget>
