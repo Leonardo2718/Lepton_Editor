@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 17, 2014
+Last Modified: November 5, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -54,7 +54,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 /*
 -class constructor builds the main window
 */
+    //setup UI elements
     ui->setupUi(this);  //reference the main window
+
+    selectorSpaceTab = new QActionGroup(this);
+    selectorSpaceTab->addAction( ui->actionUse_Tabs );
+    selectorSpaceTab->addAction( ui->actionUse_Spaces );
 
     //hide the extra featuers
     //ui->projectManagerArea->hide();
@@ -90,6 +95,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
     connect(projectList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openFileFromProjecManager(QModelIndex)) );
+    connect(selectorSpaceTab, SIGNAL(triggered(QAction*)), this, SLOT(changeSpaceTabUse(QAction*)) );
 
     QString styleSheet;
     LeptonConfig::mainSettings.getStyleSheetInto(styleSheet);
@@ -172,8 +178,9 @@ void MainWindow::on_actionSave_All_triggered() {
 }
 
 void MainWindow::editTabChanged() {
-/* -called when visible tab is changed to update lanugage selector menu */
+/* -called when visible tab is changed to update main window */
     setLanguageSelectorMenu();
+    setSpaceTabSelector();
 }
 
 void MainWindow::on_actionOpen_Project_triggered() {
@@ -250,6 +257,12 @@ void MainWindow::on_actionSettings_Editor_triggered() {
     configsEditor.show();
 }
 
+void MainWindow::changeSpaceTabUse(QAction* actionTriggered) {
+/*  -sets the current editor tab to use tabs or spaces, depending on `actionTriggered` */
+    if ( actionTriggered->text() == ui->actionUse_Spaces->text() ) editors->current()->setIndentationsUseTabs(false);
+    else if ( actionTriggered->text() == ui->actionUse_Tabs->text() ) editors->current()->setIndentationsUseTabs(true);
+}
+
 
 
 //~private method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,6 +306,14 @@ void MainWindow::setLanguageSelectorMenu() {
 /* -set the language selector menu from editor object */
     if ( editors->count() < 1 ) return;
     ui->menuLanguage->menuAction()->setMenu( editors->current()->getLanguageMenu() );
+}
+
+void MainWindow::setSpaceTabSelector() {
+/*  -set the space/tab selector to match the state of the current editor tab */
+    if ( editors->count() < 1) return;
+
+    if ( editors->current()->indentationsUseTabs() ) ui->actionUse_Tabs->setChecked(true);
+    else ui->actionUse_Spaces->setChecked(true);
 }
 
 void MainWindow::loadSession() {

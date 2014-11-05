@@ -259,6 +259,9 @@
     <property name="title">
      <string>Settings</string>
     </property>
+    <addaction name="actionUse_Tabs"/>
+    <addaction name="actionUse_Spaces"/>
+    <addaction name="separator"/>
     <addaction name="actionSettings_Editor"/>
    </widget>
    <widget class="QMenu" name="menuLanguage">
@@ -384,6 +387,28 @@
   <action name="actionSettings_Editor">
    <property name="text">
     <string>Settings Editor</string>
+   </property>
+  </action>
+  <action name="actionUse_Tabs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use Tabs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionUse_Spaces">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use Spaces</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
    </property>
   </action>
  </widget>

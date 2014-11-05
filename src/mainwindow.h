@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 14, 2014
+Last Modified: November 5, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -92,7 +92,7 @@ class MainWindow : public QMainWindow {
         /* -save changes to all documents */
 
         void editTabChanged();
-        /* -called when visible tab is changed to update lanugage selector menu */
+        /* -called when visible tab is changed to update main window */
 
         void on_actionOpen_Project_triggered();
         /* -called to add a new project directory to tree model */
@@ -121,12 +121,16 @@ class MainWindow : public QMainWindow {
         void on_actionSettings_Editor_triggered();
         /*  -opens the settings editor window */
 
+        void changeSpaceTabUse(QAction* actionTriggered);
+        /*  -sets the current editor tab to use tabs or spaces, depending on `actionTriggered` */
+
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object
         ProjectModel* projectListModel; //model which will display project list
         QTreeView* projectList;         //view in which projects will be displayed
         SettingsEditor configsEditor;   //a window to facilitate editing config files
+        QActionGroup* selectorSpaceTab; //group of actions to select whether to use spaces or tabs
 
         void openFile(const QString& filePath);
         /* -opens a specified file in an editor tab */
@@ -142,6 +146,9 @@ class MainWindow : public QMainWindow {
 
         void setLanguageSelectorMenu();
         /* -set the language selector menu from editor object */
+
+        void setSpaceTabSelector();
+        /*  -set the space/tab selector to match the state of the current editor tab */
 
         void loadSession();
         /* -load settings and configs from saved session */
