@@ -130,7 +130,7 @@ void MainWindow::on_actionOpen_File_triggered() {
 void MainWindow::on_actionNew_File_triggered() {
 /* -open a new tab */
     int tabIndex = editors->addTab();
-    ui->menuBar->insertMenu( ui->menuCustomize->menuAction(), editors->getEditor(tabIndex)->getLanguageMenu() );
+    ui->menuBar->insertMenu( ui->menuSettings->menuAction(), editors->getEditor(tabIndex)->getLanguageMenu() );
     setLanguageSelectorMenu();
 }
 
