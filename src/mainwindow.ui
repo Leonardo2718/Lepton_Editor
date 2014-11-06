@@ -249,6 +249,8 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionReplace_Tabs_with_Spaces"/>
+    <addaction name="actionReplace_Spaces_with_Tabs"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -397,6 +399,16 @@
    </property>
    <property name="text">
     <string>Use Spaces</string>
+   </property>
+  </action>
+  <action name="actionReplace_Tabs_with_Spaces">
+   <property name="text">
+    <string>Replace Tabs with Spaces</string>
+   </property>
+  </action>
+  <action name="actionReplace_Spaces_with_Tabs">
+   <property name="text">
+    <string>Replace Spaces with Tabs</string>
    </property>
   </action>
  </widget>

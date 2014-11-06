@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: October 14, 2014
+Last Modified: November 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -206,4 +206,35 @@ void ScintillaEditor::setLanguage(QAction* langAction) {
     setUnmatchedBraceBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "paper_color") );
     setMatchedBraceBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "paper_color") );
     if ( ! langAction->isChecked() ) langAction->setChecked(true);
+}
+
+void ScintillaEditor::changeTabsToSpaces() {
+/*  -changes indentation tabs into spaces */
+    //go through the text line by line and replace tabs with spaces
+    QStringList editorTextLines = text().split( QRegularExpression("\n") );
+
+    QString replaceText("");
+    for (int i = 0, l = tabWidth(); i < l; i++) {
+        replaceText.append(' ');
+    }
+
+    for (int i = 0, l = editorTextLines.length(); i < l; i++) {
+        editorTextLines[i].replace('\t', replaceText);
+    }
+
+    setText( editorTextLines.join("\n") );
+}
+
+void ScintillaEditor::changeSpacesToTabs() {
+/*  -changes spaces into tabs */
+    //go through the text line by line and replace spaces with tabs
+    QStringList editorTextLines = text().split( QRegularExpression("\n") );
+
+    QString textExpression = tr("\\s{2,%1}").arg( tabWidth() );
+
+    for (int i = 0, l = editorTextLines.length(); i < l; i++) {
+        editorTextLines[i].replace( QRegularExpression(textExpression), "\t");
+    }
+
+    setText( editorTextLines.join("\n") );
 }

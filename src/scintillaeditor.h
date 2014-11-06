@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: October 14, 2014
+Last Modified: November 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -96,6 +96,12 @@ class ScintillaEditor : public QsciScintilla
     public slots:
         void setLanguage(QAction* langAction);
         /* -sets highlighting language based on 'langAction' */
+
+        void changeTabsToSpaces();
+        /*  -changes tabs into spaces */
+
+        void changeSpacesToTabs();
+        /*  -changes spaces into tabs */
 
     private:
         QFileInfo openFile; //path to file currently being edited

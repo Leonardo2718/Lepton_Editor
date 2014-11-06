@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: November 5, 2014
+Last Modified: November 6, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -123,6 +123,12 @@ class MainWindow : public QMainWindow {
 
         void changeSpaceTabUse(QAction* actionTriggered);
         /*  -sets the current editor tab to use tabs or spaces, depending on `actionTriggered` */
+
+        void on_actionReplace_Tabs_with_Spaces_triggered();
+        /*  -called to replace tabs with spaces */
+
+        void on_actionReplace_Spaces_with_Tabs_triggered();
+        /*  -called to replace spaces with tabs */
 
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
