@@ -250,11 +250,6 @@
      <string>Edit</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuDocument">
-    <property name="title">
-     <string>Document</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>Settings</string>
@@ -271,7 +266,6 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuDocument"/>
    <addaction name="menuLanguage"/>
    <addaction name="menuSettings"/>
    <addaction name="menuView"/>
