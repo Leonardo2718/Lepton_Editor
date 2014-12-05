@@ -16,7 +16,8 @@ SOURCES += main.cpp\
     projectmodel.cpp \
     projectitem.cpp \
     syntaxhighlightmanager.cpp \
-    settingseditor.cpp
+    settingseditor.cpp \
+    findreplacedialog.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -27,9 +28,11 @@ HEADERS  += mainwindow.h \
     projectitem.h \
     syntaxhighlightmanager.h \
     leptonconfig.h \
-    settingseditor.h
+    settingseditor.h \
+    findreplacedialog.h
 
 FORMS    += mainwindow.ui \
-    settingseditor.ui
+    settingseditor.ui \
+    findreplacedialog.ui
 
 unix|win32: LIBS += -lqscintilla2
