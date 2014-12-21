@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: findreplacedialog.h
 Author: Leonardo Banderali
 Created: December 5, 2014
-Last Modified: December 5, 2014
+Last Modified: December 20, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -47,6 +47,7 @@ namespace Ui {
 
 
 
+//define class
 class FindReplaceDialog : public QWidget {
 
     Q_OBJECT
@@ -55,8 +56,51 @@ class FindReplaceDialog : public QWidget {
         explicit FindReplaceDialog(QWidget *parent = 0);
         ~FindReplaceDialog();
 
+        typedef struct paramater_data {
+                QString findText;
+                QString replaceText;
+                bool isRegex;
+                bool caseSensitive;
+                bool matchWholeWord;
+                bool wrap;
+                bool forwardSearch;
+        } DialogParameters;
+
+        const DialogParameters& getDialogParameters();
+        /*  -returns the parameters selected in the dialog */
+
+    signals:
+        void findClicked(const FindReplaceDialog::DialogParameters&);
+        /*  -emited to signal other objects that `Find` has been clicked
+            -the only argument is the dialog parameters when the button was clicked
+        */
+
+        void findNextClicked(const FindReplaceDialog::DialogParameters&);
+        /*  -emited to signal other objects that `Find Next` has been clicked */
+
+        void replaceClicked(const FindReplaceDialog::DialogParameters&);
+        /*  -emited to signal other objects that `Replace` has been clicked */
+
+    private slots:
+        void on_findButton_clicked();
+        /*  -called when the `Find` button is clicked */
+
+        void on_findNextButton_clicked();
+        /*  -called when the `Find Next` button is clicked */
+
+        void on_replaceButton_clicked();
+        /*  -called when the `Replace` button is clicked */
+
+        void on_cancelButton_clicked();
+        /*  -called when the `Cancel` button is clicked */
+
+
     private:
-        Ui::FindReplaceDialog *ui;
+        Ui::FindReplaceDialog *ui;  //GUI object
+        DialogParameters params;    //used to store the parameters of the dialog
+
+        void storeParams();
+        /*  -read paramaters from the dialog and store their values */
 };
 
 

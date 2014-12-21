@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: findreplacedialog.cpp
 Author: Leonardo Banderali
 Created: December 5, 2014
-Last Modified: December 5, 2014
+Last Modified: December 20, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,9 +41,58 @@ Usage Agreement:
 //~public methodes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 FindReplaceDialog::FindReplaceDialog(QWidget *parent) : QWidget(parent), ui(new Ui::FindReplaceDialog) {
+/*  -setup the dialog with default values */
     ui->setupUi(this);
+    storeParams();
 }
 
 FindReplaceDialog::~FindReplaceDialog() {
     delete ui;
+}
+
+const FindReplaceDialog::DialogParameters& FindReplaceDialog::getDialogParameters() {
+/*  -returns the parameters selected in the dialog */
+    return params;
+}
+
+
+
+//~private slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void FindReplaceDialog::on_findButton_clicked() {
+/*  -called when the `Find` button is clicked */
+    storeParams();
+    emit findClicked(params);
+}
+
+void FindReplaceDialog::on_findNextButton_clicked() {
+/*  -called when the `Find Next` button is clicked */
+    storeParams();
+    emit findNextClicked(params);
+}
+
+void FindReplaceDialog::on_replaceButton_clicked() {
+/*  -called when the `Replace` button is clicked */
+    storeParams();
+    emit replaceClicked(params);
+}
+
+void FindReplaceDialog::on_cancelButton_clicked() {
+/*  -called when the `Cancel` button is clicked */
+    this->close();
+}
+
+
+
+//~private methodes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void FindReplaceDialog::storeParams() {
+/*  -read paramaters from the dialog and store their values */
+    params.findText = ui->findText->text();
+    params.replaceText = ui->replaceText->text();
+    params.isRegex = ui->useRegEx->isChecked();
+    params.caseSensitive = ui->caseSensitive->isChecked();
+    params.forwardSearch = ! ui->reverseSearch->isChecked();
+    params.matchWholeWord = ui->wholeWord->isChecked();
+    params.wrap = ui->wrap->isChecked();
 }

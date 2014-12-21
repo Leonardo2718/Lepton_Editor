@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Find/Replace</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
    <item>
@@ -54,7 +54,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="useRegEx">
         <property name="text">
          <string>Use regular expression </string>
         </property>
@@ -64,6 +64,9 @@
        <widget class="QCheckBox" name="caseSensitive">
         <property name="text">
          <string>Make search case sensitive</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -78,6 +81,9 @@
        <widget class="QCheckBox" name="wrap">
         <property name="text">
          <string>Wrap search</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

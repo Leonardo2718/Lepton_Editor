@@ -251,6 +251,8 @@
     </property>
     <addaction name="actionReplace_Tabs_with_Spaces"/>
     <addaction name="actionReplace_Spaces_with_Tabs"/>
+    <addaction name="separator"/>
+    <addaction name="action_Find_Replace"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -409,6 +411,14 @@
   <action name="actionReplace_Spaces_with_Tabs">
    <property name="text">
     <string>Replace Spaces with Tabs</string>
+   </property>
+  </action>
+  <action name="action_Find_Replace">
+   <property name="text">
+    <string>&amp;Find/Replace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

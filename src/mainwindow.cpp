@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: November 6, 2014
+Last Modified: December 20, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     //setup other windows
     configsEditor.setParent(this, Qt::Dialog);
+    findReplace.setParent(this, Qt::Dialog);
 
     //instantiate editing area
     editors = new EditorTabBar(this);
@@ -90,12 +91,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     projectList->setModel(projectListModel);
     projectList->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    //connect signals to appropriate slots
     connect(projectList, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(projectItemContextMenuRequested(QPoint)) );
     connect(projectListModel, SIGNAL(openFileRequested(QString)), this, SLOT(openFileRequested(QString)) );
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
     connect(projectList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openFileFromProjecManager(QModelIndex)) );
     connect(selectorSpaceTab, SIGNAL(triggered(QAction*)), this, SLOT(changeSpaceTabUse(QAction*)) );
+    connect(&findReplace, SIGNAL(findClicked(FindReplaceDialog::DialogParameters)), this, SLOT(findInCurrent(FindReplaceDialog::DialogParameters)) );
+    connect(&findReplace, SIGNAL(findNextClicked(FindReplaceDialog::DialogParameters)), this, SLOT(findNextInCurrent()) );
+    connect(&findReplace, SIGNAL(replaceClicked(FindReplaceDialog::DialogParameters)), this, SLOT(replaceInCurrent(FindReplaceDialog::DialogParameters)) );
 
     QString styleSheet;
     LeptonConfig::mainSettings.getStyleSheetInto(styleSheet);
@@ -271,6 +276,27 @@ void MainWindow::on_actionReplace_Tabs_with_Spaces_triggered() {
 void MainWindow::on_actionReplace_Spaces_with_Tabs_triggered(){
 /*  -called to replace spaces with tabs */
     editors->current()->changeSpacesToTabs();
+}
+
+void MainWindow::on_action_Find_Replace_triggered(){
+/*  -called to show the Find/Replace dialog */
+    findReplace.show();
+}
+
+void MainWindow::findInCurrent(const FindReplaceDialog::DialogParameters& parameters) {
+/*  -called to perform a "find" on the current tab file using the data in `parameters` */
+    editors->current()->findFirst(parameters.findText, parameters.isRegex, parameters.caseSensitive,
+                                  parameters.matchWholeWord, parameters.wrap, parameters.forwardSearch);
+}
+
+void MainWindow::findNextInCurrent() {
+/*  -called to perform a "find next" on the current tab file (should be called after `findInCurrent()` ) */
+    editors->current()->findNext();
+}
+
+void MainWindow::replaceInCurrent(const FindReplaceDialog::DialogParameters& parameters) {
+/*  -called to perform a "replace" on the current tab file using the data in `parameters` */
+    editors->current()->replace(parameters.replaceText);
 }
 
 

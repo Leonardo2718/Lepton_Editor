@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: November 6, 2014
+Last Modified: December 20, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -45,6 +45,7 @@ Usage Agreement:
 #include "editortabbar.h"
 #include "projectmodel.h"
 #include "settingseditor.h"
+#include "findreplacedialog.h"
 
 namespace Ui {
     class MainWindow;
@@ -130,6 +131,18 @@ class MainWindow : public QMainWindow {
         void on_actionReplace_Spaces_with_Tabs_triggered();
         /*  -called to replace spaces with tabs */
 
+        void on_action_Find_Replace_triggered();
+        /*  -called to show the Find/Replace dialog */
+
+        void findInCurrent(const FindReplaceDialog::DialogParameters& parameters);
+        /*  -called to perform a "find" on the current tab file using the data in `parameters` */
+
+        void findNextInCurrent();
+        /*  -called to perform a "find next" on the current tab file (should be called after `findInCurrent()` ) */
+
+        void replaceInCurrent(const FindReplaceDialog::DialogParameters& parameters);
+        /*  -called to perform a "replace" on the current tab file using the data in `parameters` */
+
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object
@@ -137,6 +150,7 @@ class MainWindow : public QMainWindow {
         QTreeView* projectList;         //view in which projects will be displayed
         SettingsEditor configsEditor;   //a window to facilitate editing config files
         QActionGroup* selectorSpaceTab; //group of actions to select whether to use spaces or tabs
+        FindReplaceDialog  findReplace; //a dialog used to do find/replace tasks
 
         void openFile(const QString& filePath);
         /* -opens a specified file in an editor tab */
