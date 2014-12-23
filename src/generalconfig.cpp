@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: October 15, 2014
+Last Modified: December 22, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -216,12 +216,14 @@ QString GeneralConfig::getStylesDirPath() {
 
 QString GeneralConfig::getLangFilePath(const QString& fileName) {
 /* -returns absolute path to a language file */
-    return getLangsDirPath().append("/").append(fileName);
+    if ( fileName.isEmpty() ) return QString();
+    else return getLangsDirPath().append("/").append(fileName);
 }
 
 QString GeneralConfig::getStyleFilePath(const QString& fileName) {
 /* -returns absolute path to a styling file */
-    return getStylesDirPath().append("/").append(fileName);
+    if ( fileName.isEmpty() ) return QString();
+    else return getStylesDirPath().append("/").append(fileName);
 }
 
 QString GeneralConfig::getConfigData(const QString& filePath, const QString& item, const QString& field) {
