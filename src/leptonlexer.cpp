@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: December 22, 2014
+Last Modified: December 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,6 +43,7 @@ Usage Agreement:
 //include Qt classes
 #include <QFile>
 #include <QDomDocument>
+#include <QStack>
 
 #include <QDebug>
 
@@ -107,148 +108,218 @@ QString LeptonLexer::description(int style) const {
 
 void LeptonLexer::styleText(int start, int end) {
 /* -called whenever text must be (re-) highilighted */
-    //lists of all matches of each rule
-    /*applyStyleTo(start, end-start, 0); //apply default style to everything
-    QVector< QRegularExpressionMatchIterator > expressionRuleMatchList( expressionRules.length() );
-    QVector< QRegularExpressionMatchIterator > lineRuleMatchList( lineRules.length() );
-    QVector< QRegularExpressionMatchIterator > blockRuleMatchList( blockRules.length() );
 
-    //list of expressions to be ignored (assume none)
-    QVector< bool > ignorExpressionRule( expressionRules.length(), false );
-    QVector< bool > ignorLineRule( lineRules.length(), false );
-    QVector< bool > ignorBlockRule( blockRules.length(), false );
+    if ( ruleList.isEmpty() ) return;
+    const QString& editorText = editor()->text();
+    if ( editorText.isEmpty() ) return;
 
-    //go through all expressions and find which ones to ignore; all regex that are empty or invalid should be ignored
-    for (int i = 0, len = expressionRules.length(); i < len; i++) {
-        if ( (! expressionRules.at(i)->exp.isValid()) || expressionRules.at(i)->exp.pattern().isEmpty() ) ignorExpressionRule[i] = true;
-    }
-    for (int i = 0, len = lineRules.length(); i < len; i++) {
-        if ( (! lineRules.at(i)->exp.isValid()) || lineRules.at(i)->exp.pattern().isEmpty() ) ignorLineRule[i] = true;
-    }
-    for (int i = 0, len = blockRules.length(); i < len; i++) {
-        if ( (! blockRules.at(i)->start.isValid()) || blockRules.at(i)->start.pattern().isEmpty() ||
-             (! blockRules.at(i)->end.isValid()) || blockRules.at(i)->end.pattern().isEmpty() ) ignorBlockRule[i] = true;
-    }
+    QStack<TokenRuleList> ruleListStack;    //a stack to keep track of the current token rule list being checked
+    ruleListStack.push(ruleList);           //the first rule list to be used is the main rule list
 
-    //get the text being edited
-    QString text( this->editor()->text() );
+    QString buffer;         //buffer used to store the string being compared against rule expressions
+    int charPosition = 0;   //variable to store the position (in the editor text string) of the last character to be added to the buffer
 
-    //match all expressions
-    for (int i = expressionRules.length() - 1; i >= 0; i--) {
-        if ( ignorExpressionRule[i] )  continue;
-        expressionRuleMatchList[i] = expressionRules.at(i)->exp.globalMatch(text);
-    }
-    for (int i = lineRules.length() - 1; i >= 0; i--) {
-        if ( ignorLineRule[i] ) continue;
-         lineRuleMatchList[i] = lineRules.at(i)->exp.globalMatch(text);
-    }
-    for (int i = blockRules.length() - 1; i >= 0; i--) {
-        if ( ignorBlockRule[i] )  continue;
-        blockRuleMatchList[i] = blockRules.at(i)->start.globalMatch(text);
-    }
+    /*#######################################################################################################
+    ### As a rule, once the token matching process is complete for a given token, there will always be one ##
+    ### extra character in the buffer.  This character will aslo be loaded first on the next itteratino of ##
+    ### the matching process.                                                                              ##
+    #######################################################################################################*/
 
-    quint32 lastEndPosition = 0;  //position where last expression ended
-    while (true) {
-        //select the first expression matched by performing a linear search
-        quint32 firstPosition = -1;         //start position of first match
-        RuleType ruleType = UNDEF_RULE;     //rule type of match
-        quint8 ruleIndex = 0;               //index of the rule in rule type array
-        for (int i = expressionRuleMatchList.length() - 1; i >= 0; i--) {
-            //if the expression must be ignored (eg. if it's inside a block expressions), move to the next matched expression
-            if (expressionRuleMatchList[i].hasNext() && lastEndPosition != 0 && expressionRuleMatchList[i].peekNext().capturedStart() <= lastEndPosition) {
-                expressionRuleMatchList[i].next();
-                i++;
-                continue;
-            }
-            //if an expression matched is positioned before the previously checked match, consider it to be first and check the next match
-            if (expressionRuleMatchList[i].hasNext() && (quint32)(expressionRuleMatchList[i].peekNext().capturedStart()) < firstPosition) {
-                firstPosition = expressionRuleMatchList[i].peekNext().capturedStart();
-                ruleType = EXPRESSION_RULE;
-                ruleIndex = i;
-            }
-        }
-        for (int i = lineRuleMatchList.length() - 1; i >= 0; i--) {
-            if (lineRuleMatchList[i].hasNext() && lastEndPosition != 0 && lineRuleMatchList[i].peekNext().capturedStart() <= lastEndPosition) {
-                lineRuleMatchList[i].next();
-                i++;
-                continue;
-            }
-            if (lineRuleMatchList[i].hasNext() && (quint32)(lineRuleMatchList[i].peekNext().capturedStart()) < firstPosition) {
-                firstPosition = lineRuleMatchList[i].peekNext().capturedStart();
-                ruleType = LINE_RULE;
-                ruleIndex = i;
-            }
-        }
-        for (int i = blockRuleMatchList.length() - 1; i >= 0; i--) {
-            if (blockRuleMatchList[i].hasNext() && lastEndPosition != 0 && blockRuleMatchList[i].peekNext().capturedStart() <= lastEndPosition) {
-                blockRuleMatchList[i].next();
-                i++;
-                continue;
-            }
-            if (blockRuleMatchList[i].hasNext() && (quint32)(blockRuleMatchList[i].peekNext().capturedStart()) < firstPosition) {
-                firstPosition = blockRuleMatchList[i].peekNext().capturedStart();
-                ruleType = BLOCK_RULE;
-                ruleIndex = i;
-            }
-        }
+    //check every rule defined to tokenize the text being edited
+    while(1) {
+        const int ruleCount = ruleListStack.top().size();
+        QVector<int> matchState(ruleCount, 1);  //a list to keep track of which rules have partial or full matches (rules that don't match should not even be checked later)
 
-        //highlight the expression/rule match selected
-        if (ruleType == EXPRESSION_RULE) {
-            //if the rule is for an expression, get the corresponding style and highlight the text
-            if ( !(expressionRuleMatchList[ruleIndex].hasNext()) || firstPosition != expressionRuleMatchList[ruleIndex].peekNext().capturedStart()) break;//sanity check to make sure the correct expression/rule is selected
-            int style = convertRuleIndexToStyle(EXPRESSION_RULE, ruleIndex);
-            if (style < 0) break;
-            applyStyleTo(firstPosition, expressionRuleMatchList[ruleIndex].peekNext().capturedLength(), style);
-            lastEndPosition = expressionRuleMatchList[ruleIndex].next().capturedEnd() - 1;  //redefine the position at which to start checking for matches
-        }
-        else if (ruleType == LINE_RULE) {
-            //if the rule is for a line, get the corresponding style, find the end of the line, highlight everything up to the end of the line (%checks for escapes not implemented yet%)
-            if ( !(lineRuleMatchList[ruleIndex].hasNext()) || firstPosition != lineRuleMatchList[ruleIndex].peekNext().capturedStart()) break;
-            int style = convertRuleIndexToStyle(LINE_RULE, ruleIndex);
-            if (style < 0) break;
-            lineRuleMatchList[ruleIndex].next();
-            QRegularExpressionMatch endExp = QRegularExpression( QString("([^\\\\][\r\n]{1,2})|($)") ).match(text, firstPosition);
-            int endOfLine = endExp.capturedEnd();
-            if (endOfLine < 0) continue;
-            applyStyleTo(firstPosition, endOfLine - firstPosition, style);
-            lastEndPosition = endOfLine - 1;
-        }
-        else if (ruleType == BLOCK_RULE) {
-            //if the rule is for a block, get the corresponding style, find the end of the block, highlight everything withing the block (%checks for escapes not implemented yet%)
-            if ( !(blockRuleMatchList[ruleIndex].hasNext()) || firstPosition != blockRuleMatchList[ruleIndex].peekNext().capturedStart()) break;
-            int style = convertRuleIndexToStyle(BLOCK_RULE, ruleIndex);
-            if (style < 0) break;
-            QRegularExpressionMatch endExp = blockRules[ruleIndex]->end.match(text, firstPosition + 1);
-            if (endExp.capturedStart() < 0) continue;
-            applyStyleTo(firstPosition, endExp.capturedEnd() - firstPosition, style);
+            /*#################################################################################################
+            ### The `matchStateq` vector is used to keep track of whether and when a token rule was matched. ##
+            ### Each value in the vector corresponds to the "match state" of the token rule with the same    ##
+            ### index in the current rule list.  The following encoding is used to store the state:          ##
+            ###                                                                                              ##
+            ###     +----------+-----------------------------------------------+                             ##
+            ###     | value (n)| matche state                                  |                             ##
+            ###     +----------+-----------------------------------------------+                             ##
+            ###     |        0 | expression was not matched                    |                             ##
+            ###     +----------+-----------------------------------------------+                             ##
+            ###     |        1 | expression was partially matched              |                             ##
+            ###     +----------+-----------------------------------------------+                             ##
+            ###     |     >= 2 | expression was matched (n-2) itterations ago. |                             ##
+            ###     +----------+-----------------------------------------------+                             ##
+            ###                                                                                              ##
+            ### Note that for any values greater than 1 (one), the higher the value, the smaller the token   ##
+            ### matched must be.  Therefore, assuming that there is only one value of 2 in `matchState`, it  ##
+            ### must correspond to the larrgest expression matched.                                          ##
+            #################################################################################################*/
 
-            //highlight escapes
-            /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-            //$ This code does not currently work so it's commented out. At the moment, the color change does not work because $$$
-            //$ a new style is probably required.  I cannot simply temporarily change the color of a style.                    $$$
-            //$                                                                                                                $$$
-                if ( (! blockRules[ruleIndex]->escapes.pattern().isEmpty()) &&  blockRules[ruleIndex]->escapes.isValid() ) {
-                    QRegularExpressionMatchIterator escapeMatches =  blockRules[ruleIndex]->escapes.globalMatch(text, firstPosition+startExp.capturedLength() -1);
-                    while ( escapeMatches.hasNext() ) {
-                        if ( escapeMatches.peekNext().capturedStart() > endExp.capturedStart() ) break; //breack if escape is outside of block
-                        QColor nonEscapeColor = color(style);
-                        QColor escapeColor(255, 255, 255);
-                        setColor( escapeColor, style );
-                        //colorChanged(escapeColor, style);
-                        applyStyleTo( escapeMatches.peekNext().capturedStart(), escapeMatches.peekNext().capturedLength(), style);
-                        escapeMatches.next();
-                        setColor(nonEscapeColor, style);
+        int matchCount = 0;                 //assume that there are initially no matches
+        int partialMatchCount = ruleCount;  //assume that all rules initially provide a partial match
+        int lastPath = 0;                   //used to keep track of which path was taken before the previous itteration
+        int offset = 0;                     //offset to keep track of how many characters must be added to the buffer
+
+        buffer.clear();                         //clear the buffer before adding new characters to it
+
+        while(1) {
+
+            if ( charPosition < editorText.length() ) buffer.append( editorText.at(charPosition) ); //only append a character if there is one to be appended
+
+            //check every token matching rule and update its match state
+            for (int i = 0; i < ruleCount; i++) {
+                if(matchState[i] == 1) {
+                    const QRegularExpression& regex = ruleListStack.top().at(i).rule;
+                    QRegularExpressionMatch match = regex.match(buffer, 0, QRegularExpression::PartialPreferFirstMatch);
+
+                    if ( match.hasMatch() ) {
+                        matchState[i] = 2;
+                        matchCount++;
+                        partialMatchCount--;
+                        if (match.capturedLength() == buffer.length()) offset = 1;
+                    }
+                    else if ( match.hasPartialMatch() ) {
+                        matchState[i] = 1;
+                    }
+                    else {
+                        matchState[i] = 0;
+                        partialMatchCount--;
                     }
                 }
-            //$                                                                                                                $$$
-            //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*
+                else if (matchState[i] >= 2) {
+                    matchState[i] += 1; //increment the state encoding by one to keep track of how small
+                                        //  the current token must be compared to the ones more recently matched
+                }
+            }
 
-            lastEndPosition = endExp.capturedEnd() - 1;
+            //update the character position and buffer
+            if ( matchCount <= 0 && partialMatchCount > 0 && charPosition + 1 < editorText.size() ){
+                charPosition++;
+                lastPath = 1;
+            }
+            else if ( matchCount <= 0 && partialMatchCount > 0 && charPosition + 1 >= editorText.size() ) {
+                charPosition++;
+                buffer.append(" ");
+
+                //check every token matching rule and update its match state
+                for (int i = 0; i < ruleCount; i++) {
+                    if(matchState[i] == 1) {
+                        const QRegularExpression& regex = ruleListStack.top().at(i).rule;
+                        QRegularExpressionMatch match = regex.match(buffer, 0, QRegularExpression::PartialPreferFirstMatch);
+
+                        if ( match.hasMatch() ) {
+                            matchState[i] = 2;
+                            matchCount++;
+                            partialMatchCount--;
+                        }
+                        else if ( match.hasPartialMatch() ) {
+                            matchState[i] = 1;
+                        }
+                        else {
+                            matchState[i] = 0;
+                            partialMatchCount--;
+                        }
+                    }
+                    else if (matchState[i] >= 2) {
+                        matchState[i] += 1; //increment the state encoding by one to keep track of how small
+                                            //  the current token must be compared to the ones more recently matched
+                    }
+                }
+                break;
+            }
+            else if ( matchCount <= 0 && partialMatchCount <= 0 && charPosition + 1 < editorText.size() ) {
+                if (lastPath == 0) {
+                    charPosition++;
+                    buffer.append( editorText.at(charPosition) );
+                }
+                break;
+            }
+            else if ( matchCount <= 0 && partialMatchCount <= 0 && charPosition + 1 >= editorText.size() ) {
+                if (lastPath == 0) {
+                    charPosition++;
+                    buffer.append(" ");
+                }
+                break;
+            }
+            else if ( matchCount > 0 && partialMatchCount > 0 && charPosition + 1 < editorText.size() ) {
+                charPosition++;
+            }
+            else if ( matchCount > 0 && partialMatchCount > 0 && charPosition + 1 >= editorText.size() ) {
+                charPosition++;
+                buffer.append(" ");
+
+                //check every token matching rule and update its match state
+                for (int i = 0; i < ruleCount; i++) {
+                    if(matchState[i] == 1) {
+                        const QRegularExpression& regex = ruleListStack.top().at(i).rule;
+                        QRegularExpressionMatch match = regex.match(buffer, 0, QRegularExpression::PartialPreferFirstMatch);
+
+                        if ( match.hasMatch() ) {
+                            matchState[i] = 2;
+                            matchCount++;
+                            partialMatchCount--;
+                        }
+                        else if ( match.hasPartialMatch() ) {
+                            matchState[i] = 1;
+                        }
+                        else {
+                            matchState[i] = 0;
+                            partialMatchCount--;
+                        }
+                    }
+                    else if (matchState[i] >= 2) {
+                        matchState[i] += 1; //increment the state encoding by one to keep track of how small
+                                            //  the current token must be compared to the ones more recently matched
+                    }
+                }
+                break;
+            }
+            else if ( matchCount > 0 && partialMatchCount <= 0 && charPosition + 1 < editorText.size() ){
+                if (lastPath == 0 || offset == 1) {
+                    charPosition++;
+                    buffer.append( editorText.at(charPosition) );
+                }
+                break;
+            }
+            else if ( matchCount > 0 && partialMatchCount <= 0 && charPosition + 1 >= editorText.size() ){
+                if (lastPath == 0 || offset == 1) {
+                    charPosition++;
+                    buffer.append(" ");
+                }
+                break;
+            }
         }
-        else if (firstPosition == -1 || ruleType == UNDEF_RULE) break;
-        else break;
-    }*/
 
+        if (matchCount == 0) {
+            //reset the highlighting
+            applyStyleTo(charPosition - buffer.length() + 1, buffer.length() - 1, 0);
+        }
+        else if (matchCount >= 1) {
+
+            //get the index of the matching rule
+            int i;
+            bool tokenIndexFound = false;
+            int mState = 1;
+
+            while(!tokenIndexFound) {
+                mState++;
+                for (i = 0; i < matchState.count(); i++) {
+                    if (matchState.at(i) == mState) {
+                        tokenIndexFound = true;
+                        break;
+                    }
+                }
+            }
+
+            if ( i < matchState.count() ) {
+
+                //get the rule
+                const TokenRule& matchedRule = ruleListStack.top().at(i);
+
+                QRegularExpressionMatch m = matchedRule.rule.match(buffer);
+
+                //highlight the matched expression
+                applyStyleTo(charPosition - buffer.length() + 1, buffer.length() + 1 - mState, matchedRule.id);
+            }
+        }
+
+        if ( charPosition >= editorText.length() ) break;
+    }
 }
 
 void LeptonLexer::applyStyleTo(int start, int length, int style) {
@@ -303,7 +374,7 @@ bool LeptonLexer::loadLanguage(const QString& filePath) {
         TokenRule newRule;
         newRule.name = "KEYWORD";
         newRule.id = ruleID;
-        QString exp = rule.firstChild().nodeValue().simplified().replace( QRegularExpression("\\s"), "|").prepend("^");
+        QString exp = rule.firstChild().nodeValue().simplified().replace( QRegularExpression("\\s"), "|").prepend("^\\b(").append(")\\b");
         newRule.rule.setPattern(exp);
         if ( ! newRule.rule.isValid() ) continue;
         ruleList.append(newRule);
@@ -316,7 +387,7 @@ bool LeptonLexer::loadLanguage(const QString& filePath) {
             TokenRule newRule;
             newRule.name = "NUMBER";
             newRule.id = ruleID;
-            QString exp = "^\\b\\d+\\b";
+            QString exp = "^(\\b\\d+\\b)";
             newRule.rule.setPattern(exp);
             if ( newRule.rule.isValid() ) ruleList.append(newRule);
         }
@@ -396,7 +467,7 @@ bool LeptonLexer::extractRulesFrom(const QDomElement& tokenizationRules, TokenRu
 -extracts all tokenization rules from `rule` and `spanrule` elements in `tokenizationRules`
  and adds them to rList
 */
-    QDomNodeList ruleElements = tokenizationRules.elementsByTagName("rule");
+    /*QDomNodeList ruleElements = tokenizationRules.elementsByTagName("rule");
     for (int i = 0, count = ruleElements.count(); i < count; i++) {
         QDomElement rule = ruleElements.at(i).toElement();
         int ruleID = rule.attribute("id").toInt();
@@ -425,6 +496,38 @@ bool LeptonLexer::extractRulesFrom(const QDomElement& tokenizationRules, TokenRu
         if ( ! newRule.rule.isValid() || ! newRule.closeRule.isValid() ) continue;
         rList.append(newRule);
         extractRulesFrom(rule, newRule.subRules);
+    }*/
+
+    QDomNodeList nodes = tokenizationRules.childNodes();
+    for (int i = 0, count = nodes.count(); i < count; i++) {
+        if ( nodes.at(i).isElement() ) {
+            QDomElement ruleElement = nodes.at(i).toElement();
+            if (ruleElement.tagName() == "rule") {
+                int ruleID = ruleElement.attribute("id").toInt();
+                if (ruleID < 0 || ruleID > 31 ) continue;
+                TokenRule newRule;
+                newRule.name = ruleElement.attribute("name");
+                newRule.id = ruleID;
+                QString exp = ruleElement.firstChild().nodeValue().prepend("^(").append(")");
+                newRule.rule.setPattern(exp);
+                if ( ! newRule.rule.isValid() ) continue;
+                rList.append(newRule);
+            }
+            else if (ruleElement.tagName() == "spanrule") {
+                int ruleID = ruleElement.attribute("id").toInt();
+                if (ruleID < 0 || ruleID > 31 ) continue;
+                TokenRule newRule;
+                newRule.name = ruleElement.attribute("name");
+                newRule.id = ruleID;
+                QString exp = ruleElement.lastChildElement("open").firstChild().nodeValue().prepend("^(").append(")");
+                newRule.rule.setPattern(exp);
+                exp = ruleElement.lastChildElement("close").firstChild().nodeValue().prepend("^(").append(")");
+                newRule.closeRule.setPattern(exp);
+                if ( ! newRule.rule.isValid() || ! newRule.closeRule.isValid() ) continue;
+                extractRulesFrom(ruleElement, newRule.subRules);
+                rList.append(newRule);
+            }
+        }
     }
 
     return true;

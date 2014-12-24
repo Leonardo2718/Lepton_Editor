@@ -68,6 +68,18 @@ class TokenRule {
 };
 
 
+//declare types used for the token list created by the lexer
+class Token {
+    public:
+        QString name;
+        QString lexeme;
+        int id;
+        unsigned int position;
+};
+
+typedef QList<Token> TokenList;
+
+
 //lexer class declaration
 class LeptonLexer : public QsciLexerCustom {
     Q_OBJECT
