@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.h
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: December 22, 2014
+Last Modified: December 24, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -115,7 +115,7 @@ class LeptonLexer : public QsciLexerCustom {
 
     private:
         QByteArray languageName;    //name of language used for syntax highlighting
-        TokenRuleList ruleList;     //list of rules used to identify tokens
+        TokenRule rootRule;         //a root node to hold the main tokenization rules
 
         bool setDefaultStyleValues();
         /* -gets the default style values */
