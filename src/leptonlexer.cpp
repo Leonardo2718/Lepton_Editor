@@ -45,7 +45,7 @@ Usage Agreement:
 #include <QDomDocument>
 #include <QStack>
 
-#include <QDebug>
+
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -69,41 +69,7 @@ const char* LeptonLexer::language() const {
 
 QString LeptonLexer::description(int style) const {
 /* -returnes description of a style */
-
-    //check for extreme cases first
-    /*if (style == DEFAULT_STYLE) return QString("Style #%1 is the default style.").arg(style);
-    if (style < 0 || style > TOTAL_TYPES) return QString("Style #%1 is not defined.").arg(style);
-
-    QString returnStr;          //dummy string to store return value
-    returnStr = QString("Style #%1 is the style for ").arg(style);
-
-    //append value
-    if (style == NUMBER_STYLE) {
-        returnStr += tr("numbers.");
-    }
-    else if (style == QUOTE_STYLE) {
-        returnStr += tr("quotes.");
-    }
-    else if (style >= KEYWORD_STYLE_MIN && style <= KEYWORD_STYLE_MAX) {
-        returnStr += tr("keywords of type %1.").arg(style - KEYWORD_STYLE_MIN);
-    }
-    else if (style >= EXPRESSION_STYLE_MIN && style <= EXPRESSION_STYLE_MAX) {
-        returnStr += tr("expressions of type %1.").arg(style - EXPRESSION_STYLE_MIN);
-    }
-    else if (style == LINECOMMENT_STYLE) {
-        returnStr += tr("line comments.");
-    }
-    else if (style >= LINEEXP_STYLE_MIN && style <= LINEEXP_STYLE_MAX) {
-        returnStr += tr("line expressions of type %1.").arg(style - LINEEXP_STYLE_MIN);
-    }
-    else if (style == BLOCKCOMMENT_STYLE) {
-        returnStr += tr("block comments.");
-    }
-    else if (style >= BLOCKEXP_STYLE_MIN && style <= BLOCKEXP_STYLE_MAX) {
-        returnStr += tr("block expressions of type %1.").arg(style - BLOCKEXP_STYLE_MIN);
-    }
-
-    return returnStr;*/
+    return "See the documentation files.";
 }
 
 void LeptonLexer::styleText(int start, int end) {
