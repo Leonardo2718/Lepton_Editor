@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<format>
+<!--<format>
     <keywords type="0" > <color> #ffff55 </color> </keywords>
     <keywords type="1" > <color> #55ff55 </color> </keywords>
     <keywords type="2" > <color> #15D80F </color> </keywords>
@@ -23,4 +23,78 @@
     <blockexpression type="1"> <color> #6C6FFF </color> </blockexpression>
     <blockexpression type="2"> <color> #0094B1 </color> </blockexpression>
     <blockexpression type="3"> <color> #24F3FF </color> </blockexpression>
-</format>
+</format>-->
+<stylelist>
+	<style class="1">
+		<color value="#ffff55" />
+	</style>
+	<style class="2">
+		<color value="#55ff55" />
+	</style>
+	<style class="3">
+		<color value="#15D80F" />
+	</style>
+	<style class="4">
+		<color value="#24F3FF" />
+	</style>
+	<style class="5">
+		<color value="#0094B1" />
+	</style>
+	<style class="6">
+		<color value="#ff55ff" />
+	</style>
+	<style class="7">
+		<color value="#A300A3" />
+	</style>
+	<style class="8">
+		<color value="#EB3939" />
+	</style>
+	<style class="9">
+		<color value="#2957ff" />
+	</style>
+	<style class="10">
+		<color value="#6C6FFF" />
+	</style>
+	<style class="11">
+	</style>
+	<style class="12">
+	</style>
+	<style class="13">
+	</style>
+	<style class="14">
+	</style>
+	<style class="15">
+	</style>
+	<style class="16">
+	</style>
+	<style class="17">
+	</style>
+	<style class="18">
+	</style>
+	<style class="19">
+	</style>
+	<style class="20">
+	</style>
+	<style class="21">
+	</style>
+	<style class="22">
+	</style>
+	<style class="23">
+	</style>
+	<style class="24">
+	</style>
+	<style class="25">
+	</style>
+	<style class="26">
+	</style>
+	<style class="27">
+	</style>
+	<style class="28">
+	</style>
+	<style class="29">
+	</style>
+	<style class="30">
+	</style>
+	<style class="31">
+	</style>
+</stylelist>

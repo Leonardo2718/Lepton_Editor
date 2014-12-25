@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: December 24, 2014
+Last Modified: December 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -109,29 +109,48 @@ QString LeptonLexer::description(int style) const {
 void LeptonLexer::styleText(int start, int end) {
 /* -called whenever text must be (re-) highilighted */
 
+    /*##############################################################################
+    ### The general algorythm for tokenizing the text is roughly like this:       ##
+    ###     (1) put a character form the text in the editor to the buffer         ##
+    ###     (2) check which rules match or partially match the text in the buffer ##
+    ###     (3) remove the rules that were neither matched nor partially matched  ##
+    ###     (4) if there are rules that were partially matched, go back to (1)    ##
+    ###     (5) if there are no more partial matches, highlight the text that     ##
+    ###         was matched, move on to the next character in the editor text     ##
+    ###         and go back to (1)                                                ##
+    ##############################################################################*/
+
     if ( rootRule.subRules.isEmpty() ) return;
     const QString& editorText = editor()->text();
     if ( editorText.isEmpty() ) return;
 
     QStack<TokenRule> ruleListStack;    //a stack to keep track of the current token rule list being checked
-    ruleListStack.push(rootRule);           //the first rule list to be used is the main rule list
+    ruleListStack.push(rootRule);       //the first rule list to be used is the main rule list
 
     QString buffer;         //buffer used to store the string being compared against rule expressions
     int charPosition = 0;   //variable to store the position (in the editor text string) of the last character to be added to the buffer
 
-    //tokenize the text
+    //tokenize the text by iteratively traversing it
     while (1) {
-        TokenRule currentRoot = ruleListStack.top();
+        TokenRule currentRoot = ruleListStack.top();    //get the current rule list
+
+        //create a list of rules
         QList<const QRegularExpression* > expList;
         for (int i = 0, c = currentRoot.subRules.length(); i < c; i++) {
-            //qDebug() << i << currentRoot.subRules.at(i).name << currentRoot.subRules.at(i).rule.pattern();
             expList.append( &currentRoot.subRules.at(i).rule );
         }
         if (ruleListStack.size() > 1) expList.append(&currentRoot.closeRule);
 
-        int extraCharCount = 0;
+        int extraCharCount = 0; //variable to store the number of character appended to the buffer that are not part of the text
 
         buffer.clear();
+
+        /*#######################################################################################
+        ### Iteratively check every rule for a token match.  If a match is found, highlight it ##
+        ### and break out of the loop.  If a partial match is found, add one character to the  ##
+        ### buffer and check again.  If neither a partial nor full match is found, apply       ##
+        ### default highlighting and break.  If the end of the text is reached, break.         ##
+        #######################################################################################*/
 
         while (1) {
             int matchCount = 0;
@@ -142,6 +161,7 @@ void LeptonLexer::styleText(int start, int end) {
                 extraCharCount++;
             }
 
+            //check every rule in the list for a token match
             for (int i = expList.length() - 1; i >= 0; i--) {
                 QRegularExpressionMatch match = expList.at(i)->match(buffer, 0, QRegularExpression::PartialPreferFirstMatch);
                 if ( match.hasMatch() )
@@ -150,10 +170,20 @@ void LeptonLexer::styleText(int start, int end) {
                     continue;
                 else {
                     expList.removeAt(i);
+
+                    /*#####################################################################
+                    ### If the current rule generates neither match nor a partial match, ##
+                    ### then the rule can be safely removed from the list.               ##
+                    #####################################################################*/
                 }
             }
 
             if ( matchCount >= expList.length() ) {
+
+                /*################################################################################
+                ### When the match count is equal the number of rules in the list, there are no ##
+                ### more partial matches so there is no need to continue checking the rule      ##
+                ################################################################################*/
 
                 if(matchCount == 0) {
                     applyStyleTo(charPosition - buffer.length() + 1, buffer.length() - extraCharCount, 0);
@@ -162,6 +192,14 @@ void LeptonLexer::styleText(int start, int end) {
 
                 else if (matchCount >= 1) {
                     QRegularExpressionMatch match = currentRoot.closeRule.match(buffer);
+
+                    /*#####################################################################################
+                    ### If one or more rules were matched, start by checking if the rule is the closing  ##
+                    ### expression for the current token.  If it is, highlight the text and remove the   ##
+                    ### current token from the stack.  If it's not, assume that the first rule matched   ##
+                    ### is correct and highlight the text.  If the match was from the opening expression ##
+                    ### of token, highlight the matched text and put the token's sub rules on the stack  ##
+                    #####################################################################################*/
 
                     if ( ruleListStack.size() > 1 && match.hasMatch() ) {
                         applyStyleTo(charPosition - buffer.length() + 1, match.capturedLength(), currentRoot.id);
@@ -248,11 +286,11 @@ bool LeptonLexer::loadLanguage(const QString& filePath) {
     QDomNodeList ruleElements = tokenizationRules.elementsByTagName("keywords");
     for (int i = 0, count = ruleElements.count(); i < count; i++) {
         QDomElement rule = ruleElements.at(i).toElement();
-        int ruleID = rule.attribute("id").toInt();
-        if (ruleID < 0 || ruleID > 31 ) continue;
+        int ruleClass = rule.attribute("class").toInt();
+        if (ruleClass < 0 || ruleClass > 31 ) continue;
         TokenRule newRule;
         newRule.name = "KEYWORD";
-        newRule.id = ruleID;
+        newRule.id = ruleClass;
         QString exp = rule.firstChild().nodeValue().simplified().replace( QRegularExpression("\\s"), "|").prepend("^\\b(").append(")\\b");
         newRule.rule.setPattern(exp);
         if ( ! newRule.rule.isValid() ) continue;
@@ -261,11 +299,11 @@ bool LeptonLexer::loadLanguage(const QString& filePath) {
 
     //check if numbers are used and, if so, implement them
     if (! tokenizationRules.lastChildElement("numbers").isNull() ) {
-        int ruleID = tokenizationRules.lastChildElement("numbers").attribute("id").toInt();
-        if ( ruleID >= 0 && ruleID <= 31) {
+        int ruleClass = tokenizationRules.lastChildElement("numbers").attribute("class").toInt();
+        if ( ruleClass >= 0 && ruleClass <= 31) {
             TokenRule newRule;
             newRule.name = "NUMBER";
-            newRule.id = ruleID;
+            newRule.id = ruleClass;
             QString exp = "^(\\b\\d+\\b)";
             newRule.rule.setPattern(exp);
             if ( newRule.rule.isValid() ) rootRule.subRules.append(newRule);
@@ -301,8 +339,8 @@ bool LeptonLexer::loadStyle(const QString& filePath) {
     for (int i = 0, count = styleElements.count(); i < count; i++) {
         QDomElement style = styleElements.at(i).toElement();
 
-        if (! style.hasAttribute("id") ) continue;
-        int styleID = style.attribute("id").toInt();
+        if (! style.hasAttribute("class") ) continue;
+        int styleID = style.attribute("class").toInt();
         if (styleID < 0 || styleID > 31) continue;
 
         QDomElement styleItem;  //variable in which to store a styling item from the current style
@@ -352,22 +390,22 @@ bool LeptonLexer::extractRulesFrom(const QDomElement& tokenizationRules, TokenRu
         if ( nodes.at(i).isElement() ) {
             QDomElement ruleElement = nodes.at(i).toElement();
             if (ruleElement.tagName() == "rule") {
-                int ruleID = ruleElement.attribute("id").toInt();
-                if (ruleID < 0 || ruleID > 31 ) continue;
+                int ruleClass = ruleElement.attribute("class").toInt();
+                if (ruleClass < 0 || ruleClass > 31 ) continue;
                 TokenRule newRule;
                 newRule.name = ruleElement.attribute("name");
-                newRule.id = ruleID;
+                newRule.id = ruleClass;
                 QString exp = ruleElement.firstChild().nodeValue().prepend("^(").append(")");
                 newRule.rule.setPattern(exp);
                 if ( ! newRule.rule.isValid() ) continue;
                 rList.append(newRule);
             }
             else if (ruleElement.tagName() == "spanrule") {
-                int ruleID = ruleElement.attribute("id").toInt();
-                if (ruleID < 0 || ruleID > 31 ) continue;
+                int ruleClass = ruleElement.attribute("class").toInt();
+                if (ruleClass < 0 || ruleClass > 31 ) continue;
                 TokenRule newRule;
                 newRule.name = ruleElement.attribute("name");
-                newRule.id = ruleID;
+                newRule.id = ruleClass;
                 QString exp = ruleElement.lastChildElement("open").firstChild().nodeValue().prepend("^(").append(")");
                 newRule.rule.setPattern(exp);
                 exp = ruleElement.lastChildElement("close").firstChild().nodeValue().prepend("^(").append(")");

@@ -1,15 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="C++" use="c.xml" style="default.xml" ext="h hpp cpp cxx cc">
-    <keywords type="0">
-        alignof and and_eq bitand bitor break case catch compl const_cast continue default
-        delete do dynamic_cast else false for goto if namespace new not not_eq nullptr operator
-        or or_eq reinterpret_cast return sizeof static_assert static_cast switch this throw true
-        try typedef typeid using while xor xor_eq NULL
-    </keywords>
-    <keywords type="1">
-        alignas asm auto bool char char16_t char32_t class const constexpr decltype double enum
-        explicit export extern final float friend inline int long mutable noexcept override private
-        protected public register short signed static struct template thread_local typename union
-        unsigned virtual void volatile wchar_t
-    </keywords>
+<language name="C++" ext="h hpp cpp cxx cc">
+    <tokenization>
+        <keywords class="1">
+            alignof and and_eq bitand bitor break case catch compl const_cast continue default
+            delete do dynamic_cast else false for goto if namespace new not not_eq nullptr operator
+            or or_eq reinterpret_cast return sizeof static_assert static_cast switch this throw true
+            try typedef typeid using while xor xor_eq NULL
+        </keywords>
+        <keywords class="2">
+            alignas asm auto bool char char16_t char32_t class const constexpr decltype double enum
+            explicit export extern final float friend inline int long mutable noexcept override private
+            protected public register short signed static struct template thread_local typename union
+            unsigned virtual void volatile wchar_t
+        </keywords>
+        <rule class="8" name="NUMBER">\b\d[A-Za-z]*</rule>
+        <rule class="6" name="CHARACTER_LITERAL">'\\?.'</rule>
+        <spanrule class="4" name="LINE_COMMENT">
+            <open>//</open>
+            <close>(\n)(?&lt;!\\)</close>
+            <rule class="4" name="">.</rule>
+        </spanrule>
+        <spanrule class="4" name="BLOCK_COMMENT">
+            <open>/\*</open>
+            <close>\*/</close>
+            <rule class="4" name="">.</rule>
+        </spanrule>
+        <spanrule class="6" name="STRING_LITERAL">
+            <open>"</open>
+            <close>"</close>
+            <rule class="7" name="ESCAPED_CHARACTER">\\.</rule>
+            <rule class="6" name="CHARACTER">[^"]</rule>
+        </spanrule>
+        <spanrule class="9" name="PRE_PROCESSOR">
+            <open>#(include|define|undef|if|ifdef|ifndef|elif|else|endif|error|line|pragma)</open>
+            <close>(\n)(?&lt;!\\)</close>
+            <rule class="9" name="">.</rule>
+        </spanrule>
+        <rule class="0" name="IDENTIFIER">\b[A-Za-z_][A-Za-z_0-9]*\b</rule>
+    </tokenization>
 </language>
