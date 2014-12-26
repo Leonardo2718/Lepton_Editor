@@ -3,18 +3,20 @@ Project: Lepton Editor
 File: leptonlexer.h
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: December 24, 2014
+Last Modified: December 25, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
     flexible and extensible code editor which developers can easily customize to their
     liking.
 
-    This file contains the declaration of the `LeptonLexer` class.  It is the lexical
-    analyzer used by Lepton, primarily as prettyprinter.  It also generates a list of
-    tokens representing the file parsed which could be used to perform additionl tasks
-    such as syntax completion.  This file also declares addition classes and other types
-    used by the lexer.
+    This file contains the declaration of the `LeptonLexer` class.  It also declares
+    additional classes and types used by the lexer.  This lexer is the lexical
+    analyzer used by Lepton, primarily as prettyprinter.
+    Note that while I have done by best to optimize this lexer for speed and
+    memory efficiency, it is not (and probably never will be) as efficient as other
+    lexers used in other applications, such as compilers.  Instead, it is meant to
+    be highly flexible by allowing the user to change the lexical grammer at run-time.
 
 Copyright (C) 2014 Leonardo Banderali
 
@@ -48,12 +50,17 @@ Usage Agreement:
 #include <QList>
 #include <QByteArray>
 #include <QDomElement>
+#include <QStack>
+#include <QVector>
+
+
 
 
 //declare types used for token identification rules
 class TokenRule;
 
 typedef QList<TokenRule> TokenRuleList;
+typedef QStack<const TokenRule*> TokenRuleStack;
 
 class TokenRule {
     public:
@@ -68,16 +75,24 @@ class TokenRule {
 };
 
 
-//declare types used for the token list created by the lexer
-class Token {
-    public:
-        QString name;
-        QString lexeme;
-        int id;
-        unsigned int position;
-};
+/*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+//$ In the future, I want this lexer to also generate a list of tokens to represent the     $$
+//$ parsed data.  This could be used to perform additional tasks, such as syntax completion $$
+//$ and linting, by implementing a parser (and maybe even a semantic analyzer).             $$
 
-typedef QList<Token> TokenList;
+    //declare the types used for the token list
+    class Token {
+        public:
+            QString name;
+            QString lexeme;
+            int id;
+            unsigned int position;
+    };
+
+    typedef QList<Token> TokenList;
+
+//$                                                                                         $$
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/
 
 
 //lexer class declaration
@@ -116,6 +131,7 @@ class LeptonLexer : public QsciLexerCustom {
     private:
         QByteArray languageName;    //name of language used for syntax highlighting
         TokenRule rootRule;         //a root node to hold the main tokenization rules
+        QVector<TokenRuleStack> stackAtPosition;  //a list to look up the token rule stack at any given position
 
         bool setDefaultStyleValues();
         /* -gets the default style values */

@@ -43,7 +43,6 @@ Usage Agreement:
 //include Qt classes
 #include <QFile>
 #include <QDomDocument>
-#include <QStack>
 
 
 
@@ -55,6 +54,11 @@ LeptonLexer::LeptonLexer(QObject *parent) : QsciLexerCustom(parent) {
     loadStyle( LeptonConfig::mainSettings.getStyleFilePath("default.xml") );
 
     rootRule.subRules.clear();
+
+    TokenRuleStack ruleListStack;
+    ruleListStack.push(&rootRule);
+    stackAtPosition.append(ruleListStack);
+
     loadLanguage();
     setAutoIndentStyle(QsciScintilla::AiMaintain);
 }
@@ -90,22 +94,34 @@ void LeptonLexer::styleText(int start, int end) {
     const QString& editorText = editor()->text();
     if ( editorText.isEmpty() ) return;
 
-    QStack<TokenRule> ruleListStack;    //a stack to keep track of the current token rule list being checked
-    ruleListStack.push(rootRule);       //the first rule list to be used is the main rule list
+    TokenRuleStack ruleListStack;   //a stack to keep track of the current token rule list being checked
 
-    QString buffer;         //buffer used to store the string being compared against rule expressions
-    int charPosition = 0;   //variable to store the position (in the editor text string) of the last character to be added to the buffer
+    /*##############################################################################################
+    ### The first rule list to be used should be whichever one was last used at position `start`. ##
+    ### However, if `start` is part of new the text, which was not previously highlighted, then   ##
+    ### the first rule should be the one used at the end of the previous text.                    ##
+    ##############################################################################################*/
+
+    if (stackAtPosition.size() <= start)
+        ruleListStack = stackAtPosition.last();
+    else
+        ruleListStack = stackAtPosition.at(start);
+
+    if (editorText.size() > 1) stackAtPosition.resize( editorText.size() ); //resize the stack list to fit all characters in the text
+
+    QString buffer;             //buffer used to store the string being compared against rule expressions
+    int charPosition = start;   //variable to store the position (in the editor text string) of the last character to be added to the buffer
 
     //tokenize the text by iteratively traversing it
     while (1) {
-        TokenRule currentRoot = ruleListStack.top();    //get the current rule list
+        TokenRule currentRoot = *(ruleListStack.top()); //get the current rule list
 
         //create a list of rules
         QList<const QRegularExpression* > expList;
         for (int i = 0, c = currentRoot.subRules.length(); i < c; i++) {
-            expList.append( &currentRoot.subRules.at(i).rule );
+            expList.append( &(currentRoot.subRules.at(i).rule) );
         }
-        if (ruleListStack.size() > 1) expList.append(&currentRoot.closeRule);
+        if (ruleListStack.size() > 1) expList.append(&(currentRoot.closeRule));
 
         int extraCharCount = 0; //variable to store the number of character appended to the buffer that are not part of the text
 
@@ -121,7 +137,10 @@ void LeptonLexer::styleText(int start, int end) {
         while (1) {
             int matchCount = 0;
 
-            if ( charPosition < editorText.length() ) buffer.append( editorText.at(charPosition) );
+            if ( charPosition < editorText.length() ) {
+                buffer.append( editorText.at(charPosition) );
+                stackAtPosition[charPosition] = ruleListStack;  //save the current stack to the list for reference on latter calls to this method
+            }
             else {
                 buffer.append(" ");
                 extraCharCount++;
@@ -170,38 +189,61 @@ void LeptonLexer::styleText(int start, int end) {
                     if ( ruleListStack.size() > 1 && match.hasMatch() ) {
                         applyStyleTo(charPosition - buffer.length() + 1, match.capturedLength(), currentRoot.id);
                         ruleListStack.pop();
-                        currentRoot = ruleListStack.top();
+                        currentRoot = *(ruleListStack.top());
                     }
                     else {
                         match = expList.at(0)->match(buffer);
-                        TokenRule r;
+                        const TokenRule* r;
 
                         for (int i = 0, l = currentRoot.subRules.length(); i < l; i++) {
-                            if ( expList.at(0) == &(currentRoot.subRules.at(i).rule ) ) r = currentRoot.subRules.at(i);
+                            if ( expList.at(0) == &(currentRoot.subRules.at(i).rule ) ) r = &(currentRoot.subRules.at(i));
                         }
 
-                        applyStyleTo(charPosition - buffer.length() + 1, match.capturedLength(), r.id);
+                        applyStyleTo(charPosition - buffer.length() + 1, match.capturedLength(), r->id);
 
-                        if ( ! r.subRules.isEmpty() ) {
+                        if ( ! r->subRules.isEmpty() ) {
                             ruleListStack.push(r);
-                            currentRoot = r;
+                            currentRoot = *r;
                         }
                     }
 
+                    /*###########################################################################################
+                    ### As a rule (to prevent some serious bugs), after having matched a token, `charPosition` ##
+                    ### should always reference the character IMMEDIATLY after the last character of the text  ##
+                    ### matched (a.k.a. the character after the last character of the lexeme).                 ##
+                    ###########################################################################################*/
+
                     if (match.capturedLength() >= buffer.length()){
-                        charPosition++;
+                        charPosition += match.capturedLength() - buffer.length() + 1;
+                    }
+                    else if ( match.capturedLength() + 1 < buffer.length() ) {
+                        charPosition -= buffer.length() - match.capturedLength() - 1;
                     }
                 }
 
                 break;
             }
-            else if ( charPosition >= editorText.length() ) break;
+            else if ( charPosition > end ) {
+                //%%% this is messy but it works %%%%
+                if ( charPosition + 1 < editorText.length() ) {
+                    if (stackAtPosition.at(charPosition + 1) != ruleListStack) charPosition++;
+                    else break;
+                }
+                else break;
+            }
             else if ( matchCount < expList.length() ) {
                 charPosition++;
             }
         }
 
-        if ( charPosition >= editorText.length() ) break;
+        if ( charPosition >= end ) {
+            //%%% this is even messier but still works %%%%
+            if ( charPosition + 1 < editorText.length() ) {
+                if (stackAtPosition.at(charPosition + 1) != ruleListStack) /*do nothing*/;
+                else break;
+            }
+            else break;
+        }
     }
 }
 
