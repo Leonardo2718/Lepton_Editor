@@ -44,7 +44,8 @@
             <open>"</open>
             <close>"|(\n)</close>
             <rule class="7" name="ESCAPED_CHARACTER">\\.</rule>
-            <rule class="6" name="">[^"]</rule>
+            <rule class="6" name="">.</rule>
         </spanrule>
+        <rule class="0" name="IDENTIFIER">\b[A-Za-z_][A-Za-z_0-9]*\b</rule>
     </tokenization>
 </language>
