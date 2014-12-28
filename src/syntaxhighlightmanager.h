@@ -46,6 +46,7 @@ Usage Agreement:
 #include <QList>
 #include <QStringList>
 #include <QHash>
+#include <QDir>
 
 //include QScintilla classes
 #include <Qsci/qsciscintilla.h>
@@ -138,8 +139,11 @@ class SyntaxHighlightManager {
         QHash<QAction*, QsciLexer*> specialLanguages;   //a list of specialized languages/lexers which do not require user definition
         LeptonLexer* langFileLexer;                     //the lexer used for languages defined in files
 
-        void addSpecialLanguage(const QString& name, QsciLexer* lexer, const QString& extList);
+        void addSpecialLanguage(QList<QAction*>& aList, const QString& name, QsciLexer* lexer, const QString& extList);
         /*  -add a special language lexer to the list using its name, lexer, and file extension (suffix) list */
+
+        void getLanguages(const QDir& langDir, QMenu* langMenu);
+        /*  -adds a language selection action to `langMenu` for each language defined by a file in `langDir` */
 };
 
 #endif // SYNTAXHIGHLIGHTMANAGER_H

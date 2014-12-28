@@ -58,7 +58,7 @@ Usage Agreement:
 //include Lepton files used for this class implementation
 #include "leptonconfig.h"
 
-
+#include <QDebug>
 
 //~private methodes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -75,59 +75,37 @@ SyntaxHighlightManager::SyntaxHighlightManager(QsciScintilla* _parent) {
     QString languagesDirPath = LeptonConfig::mainSettings.getLangsDirPath();//get path to the directory where the language files are
     QDir languagesDir(languagesDirPath);                                    //create a directory object for it
 
+    QList<QAction*> specialActionList;
+
+    //define plain text action
+    plainTextAction = languageActions->addAction("Plain Text");
+    plainTextAction->setCheckable(true);
+    plainTextAction->setChecked(true);
+    parent->setLexer(langFileLexer);
+    langFileLexer->loadLanguage();
+    specialActionList.append(plainTextAction);
+
+    languageMenu->addActions(specialActionList);
+
     //define the normal language actions based on the data from language files
     if ( languagesDir.exists() ) {      //only proceed if the languages directory actually exists (which it should)
-        QFileInfoList languageFiles = languagesDir.entryInfoList( QStringList("*.xml"), QDir::Files ); //get a list of all the XML files (language files)
+        getLanguages(languagesDir, languageMenu);
 
-        foreach(const QFileInfo& languageFile, languageFiles) { //for every language file found
-            QFile langFileObject( languageFile.absoluteFilePath() );    //create an object to read the contents of the file
+        specialActionList.clear();
 
-            QDomDocument languageData("languageXmlData");               //create an XML DOM object to store the language data
-            if (! languageData.setContent(&langFileObject) ) continue;  //get the XML data from the language file
-            QDomElement languageElement = languageData.documentElement();//get root element of the XML document
-
-            /*##############################################################
-            ### I have chosen to use the following code instead of using  ##
-            ###  `if (languageElement.tagName() == "language") continue;` ##
-            ### because I may later decide later on to do something       ##
-            ### different when a  different root element is defined.      ##
-            ##############################################################*/
-            if (languageElement.tagName() == "language") {              //if the file defines a programming language
-                QString languageName = languageElement.attribute("name");   //get the name of the language that will be dipslayed in the language menu
-                if ( languageName.isEmpty() ) continue;                     //if no 'name' attribute is defined, consider the DOM data as invalid and continue
-
-                QAction* languageAction = new QAction(languageName, languageActions);//create a menu action for the language
-                languageAction->setCheckable(true);                         //set the action to be checkable when it is clickec/selected in the language menu
-                languageAction->setChecked(false);                          //explicitly set the action as being unchecked by default (note strictly required)
-                languageAction->setData( languageFile.absoluteFilePath() ); //set the data of the action as the path to the language file
-
-                if ( languageElement.hasAttribute("ext") ) {                //if a list of extensions is given, add it to the extension table for lookup
-                    QStringList extList = languageElement.attribute("ext").split( QRegularExpression("\\s") );  //split the extension list at white spaces
-                    ExtensionActionPair pair(extList, languageAction);      //associate the extensions with the language action
-                    fileExtensionTable.append(pair);                        //add the pair to the table
-                }
-
-                languageActions->addAction(languageAction);                 //add language action to the action group
-            }
-        }
-
-        //define the plain text lexer
-        languageActions->addAction(new QAction(languageActions))->setSeparator(true); //%% may need to be removed (not sure what this does) %%
-        plainTextAction = languageActions->addAction("Plain Text");
-        plainTextAction->setCheckable(true);
-        plainTextAction->setChecked(true);
-        parent->setLexer(langFileLexer);
-        langFileLexer->loadLanguage();
+        QAction* separator = languageActions->addAction(new QAction(languageActions));
+        separator->setSeparator(true);
+        specialActionList.append(separator);
 
         //define list of specialized lexers
-        addSpecialLanguage("CSS", new QsciLexerCSS(), "css");
-        addSpecialLanguage("HTML", new QsciLexerHTML(), "html htm");
-        addSpecialLanguage("Javascript", new QsciLexerJavaScript(), "js json");
-        addSpecialLanguage("PHP", new QsciLexerHTML(), "php");  //the HTML lexer also serves for PHP
-        addSpecialLanguage("YAML", new QsciLexerYAML(), "yaml");
+        addSpecialLanguage(specialActionList, "CSS", new QsciLexerCSS(), "css");
+        addSpecialLanguage(specialActionList, "HTML", new QsciLexerHTML(), "html htm");
+        addSpecialLanguage(specialActionList, "Javascript", new QsciLexerJavaScript(), "js json");
+        addSpecialLanguage(specialActionList, "PHP", new QsciLexerHTML(), "php");  //the HTML lexer also serves for PHP
+        addSpecialLanguage(specialActionList, "YAML", new QsciLexerYAML(), "yaml");
 
-        //add all language actions to the language menu
-        languageMenu->addActions(languageActions->actions());
+        //add other special language actions to the language menu
+        languageMenu->addActions(specialActionList);
     }
 }
 
@@ -286,11 +264,61 @@ QAction* SyntaxHighlightManager::getLangActionFromSuffix(const QString& ext) {
 
 //~private methodes~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void SyntaxHighlightManager::addSpecialLanguage(const QString& name, QsciLexer* lexer, const QString& extList) {
+void SyntaxHighlightManager::addSpecialLanguage(QList<QAction*>& aList, const QString& name, QsciLexer* lexer, const QString& extList) {
 /*  -add a special language lexer to the list using its name, lexer, and file extension (suffix) list */
     QAction* langAction = languageActions->addAction(name);
+    aList.append(langAction);
     langAction->setCheckable(true);
     langAction->setChecked(false);
     specialLanguages[langAction] = lexer;
     fileExtensionTable.append( ExtensionActionPair( extList.split( QRegularExpression("\\s") ), langAction) );
+}
+
+void SyntaxHighlightManager::getLanguages(const QDir& langDir, QMenu* langMenu) {
+/*  -adds a language selection action to `langMenu` for each language defined by a file in `langDir` */
+    if ( ! langDir.exists() || ! langDir.isReadable() ) return;
+
+    QFileInfoList dirEntries = langDir.entryInfoList( QStringList("*.xml"), QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable, QDir::Name | QDir::LocaleAware);
+    QList< QAction* > actionList;   //list of actions to be added to `langMenu`
+
+    foreach (const QFileInfo& entry, dirEntries) {
+        if ( entry.isDir() ) {
+            //if the entry is a subdirectory, create a new menu and put into it
+            //  the actions for each language defined in that directory
+            QMenu* newSubMenu = langMenu->addMenu( entry.fileName() );
+            QDir subDir = entry.absoluteDir();
+            subDir.cd( entry.fileName() );
+            getLanguages(subDir, newSubMenu);
+        }
+        else {
+            QFile langFile( entry.absoluteFilePath() );
+
+            QDomDocument langData("languageData");                  //an XML DOM object to store the language data
+            if (! langData.setContent(&langFile) ) continue;
+            QDomElement docElement = langData.documentElement();
+
+            if (docElement.tagName() == "language") {           //if the file defines a programming language
+                QString langName = docElement.attribute("name");    //get the name of the language that will be dipslayed in the language menu
+                if ( langName.isEmpty() ) continue;                 //if no 'name' attribute is defined, then the data is not valid
+
+                //create a menu action for the language
+                QAction* langAction = languageActions->addAction(langName);
+                actionList.append(langAction);
+
+                //setup the new action
+                langAction->setCheckable(true);
+                langAction->setChecked(false);
+                langAction->setData( entry.absoluteFilePath() );    //set the data of the action as the path to the current language file
+
+                if ( docElement.hasAttribute("ext") ) {             //if a list of extensions is given, add it to the extension table for lookup
+                    QStringList extList = docElement.attribute("ext").split( QRegularExpression("\\s") );  //split the extension list at white spaces
+                    ExtensionActionPair pair(extList, langAction);      //associate the extensions with the language action
+                    fileExtensionTable.append(pair);                    //add the pair to the table
+                }
+
+            }
+        }
+    }
+
+    langMenu->addActions(actionList);
 }
