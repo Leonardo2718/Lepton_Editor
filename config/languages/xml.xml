@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<language name="XML" ext="xml">
+    <tokenization>
+        <spanrule class="5" name="XML_ENCODING">
+            <open>(&lt;)(\?)(xml)</open>
+            <close>(\?)(&gt;)</close>
+            <rule class="11" name="ATTRIBUTE">[A-Za-z0-9_]+</rule>
+            <rule class="6" name="ATTRIBUTE_VALUE">"[^"]*"</rule>
+            <rule class="5" name="">=</rule>
+        </spanrule>
+        <spanrule class="10" name="OPEN_TAG">
+            <open>(&lt;)([A-Za-z]+)</open>
+            <close>(/?)(&gt;)</close>
+            <rule class="11" name="ATTRIBUTE">[A-Za-z0-9_]+</rule>
+            <rule class="6" name="ATTRIBUTE_VALUE">"[^"]*"</rule>
+            <rule class="10" name="">=</rule>
+        </spanrule>
+        <spanrule class="10" name="CLOSE_TAG">
+            <open>(&lt;)(/)([A-Za-z]+)</open>
+            <close>(&gt;)</close>
+            <rule class="10" name="">(&gt;)</rule>
+        </spanrule>
+        <spanrule class="4" name="COMMENT">
+            <open>(&lt;)(!--)</open>
+            <close>(--)(&gt;)</close>
+            <rule class="4" name="">.</rule>
+        </spanrule>
+        <rule class="2" name="ENTITY_REFERENCE">&amp;(lt|gt|amp|apos|quot);</rule>
+    </tokenization>
+</language>

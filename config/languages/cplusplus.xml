@@ -27,13 +27,14 @@
         </spanrule>
         <spanrule class="6" name="STRING_LITERAL">
             <open>"</open>
-            <close>"</close>
-            <rule class="7" name="ESCAPED_CHARACTER">\\.</rule>
+            <close>"|\n</close>
+            <rule class="7" name="ESCAPED_CHARACTER">\\(.|\n)</rule>
             <rule class="6" name="CHARACTER">[^"]</rule>
         </spanrule>
         <spanrule class="9" name="PRE_PROCESSOR">
             <open>#(include|define|undef|if|ifdef|ifndef|elif|else|endif|error|line|pragma)</open>
             <close>(\n)(?&lt;!\\)</close>
+            <rule class="9" name="">\\\n</rule>
             <rule class="9" name="">.</rule>
         </spanrule>
         <rule class="0" name="IDENTIFIER">\b[A-Za-z_][A-Za-z_0-9]*\b</rule>

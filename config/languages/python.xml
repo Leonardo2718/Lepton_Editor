@@ -32,7 +32,7 @@
         <rule class="8" name="NUMBER">\b\d[A-Za-z]*</rule>
         <spanrule class="4" name="LINE_COMMENT">
             <open>#</open>
-            <close>(\n)(?&lt;!\\)</close>
+            <close>(\n)</close>
             <rule class="4" name="">.</rule>
         </spanrule>
         <spanrule class="10" name="DOCSTRING">
@@ -43,7 +43,7 @@
         <spanrule class="6" name="STRING_LITERAL">
             <open>"</open>
             <close>"|(\n)</close>
-            <rule class="7" name="ESCAPED_CHARACTER">\\.</rule>
+            <rule class="7" name="ESCAPED_CHARACTER">\\(.|\n)</rule>
             <rule class="6" name="">.</rule>
         </spanrule>
         <rule class="0" name="IDENTIFIER">\b[A-Za-z_][A-Za-z_0-9]*\b</rule>
