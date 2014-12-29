@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: November 6, 2014
+Last Modified: December 28, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,7 +44,7 @@ Usage Agreement:
 #include "scintillaeditor.h"
 #include "leptonconfig.h"
 
-#include <QDebug>
+
 
 //~public method implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -56,16 +56,6 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
 
     //create the lexer manager
     lexerManager = new SyntaxHighlightManager(this);
-    lexerManager->setLexerFromAction();
-
-    //language menu to select the language for syntax highlighting
-    languageMenu = new QMenu("Language", this);
-    languageGroup = new QActionGroup(languageMenu);
-    langFileFromAction = new QHash<QAction*, QString>;
-
-    //connect signals to slots
-    //connect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
-    connect(lexerManager->getLanguageMenu(), SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
 
     //set editor properties/settings
     setAutoIndent(true);
@@ -76,7 +66,6 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     setWhitespaceVisibility( LeptonConfig::mainSettings.getWhiteSpaceVisibility() );
     setWhitespaceForegroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "whitespace_color") );
     setIndentationsUseTabs(false);  //use spaces instead of tabs for indentation
-    //lexer->getLanguageData();       //set the default highlighting to be for plain text
 
     //*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     //$ Stub code used to test Scintilla features                          $$
@@ -88,28 +77,8 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
 
 ScintillaEditor::~ScintillaEditor() {
 /* clean up and delete allocated memory */
-    setLexer(); //clear lexer use before deleting instance
-    disconnect(languageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLanguage(QAction*)) );
-    lexer = 0;
-
-    //get all lagnuage actions
-    QList< QAction* > actionList = langFileFromAction->keys();
-
-    //remove each action from 'languageGroup' and delete the action
-    for ( int i = 0, len = actionList.length(); i < len; i++ ) {
-        languageGroup->removeAction( actionList[i] );
-        delete actionList[i];
-    }
-
-    //clear the action lists
-    langFileFromAction->clear();
-    languageMenu->clear();
-
     //delete allocated memory
-    delete langFileFromAction;
-    delete languageGroup;
-    delete languageMenu;
-    delete lexer;
+    delete lexerManager;
 }
 
 void ScintillaEditor::writeToFile(const QString& filePath, bool changeModify) {
@@ -156,9 +125,8 @@ void ScintillaEditor::loadFile(const QString& filePath) {
     //do not consider the file as having been modified (it was just opened)
     setModified(false);
 
-    //try setting a lexer based on the file extension (suffix) of the file's name (if this fails, the default lexer is used)
-    QAction* a = lexerManager->getLangActionFromSuffix( openFile.suffix() );
-    if (a != 0) setLanguage(a);
+    //set a lexer for the new file
+    lexerManager->setLexerForFile( file.fileName() );
 }
 
 bool ScintillaEditor::isFileOpen() {
@@ -188,25 +156,12 @@ bool ScintillaEditor::wasFileSaved() {
 
 QMenu* ScintillaEditor::getLanguageMenu() {
 /* -returns the language selection menu */
-    //return languageMenu;
     return lexerManager->getLanguageMenu();
 }
 
 
 
 //~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ScintillaEditor::setLanguage(QAction* langAction) {
-/* -sets highlighting language based on 'langAction' */
-    //lexer->getLanguageData( langFileFromAction->value(langAction) );
-    lexer = lexerManager->getLexerFromAction(langAction);
-    setLexer(lexer);
-    this->recolor();
-    setMarginsBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_background") );
-    setMarginsForegroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_foreground") );
-    setUnmatchedBraceBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "paper_color") );
-    setMatchedBraceBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "paper_color") );
-    if ( ! langAction->isChecked() ) langAction->setChecked(true);
-}
 
 void ScintillaEditor::changeTabsToSpaces() {
 /*  -changes indentation tabs into spaces */

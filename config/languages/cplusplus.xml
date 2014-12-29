@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="C++" ext="h hpp cpp cxx cc">
+<language name="C++" filemask=".*\.(h|hpp|cpp|cxx|cc)">
     <tokenization>
         <keywords class="1">
             alignof and and_eq bitand bitor break case catch compl const_cast continue default

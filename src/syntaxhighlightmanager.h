@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.h
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: September 5, 2014
+Last Modified: December 28, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,12 +40,12 @@ Usage Agreement:
 #define SYNTAXHIGHLIGHTMANAGER_H
 
 //include Qt classes
+#include <QObject>
 #include <QAction>
 #include <QActionGroup>
 #include <QMenu>
 #include <QList>
 #include <QStringList>
-#include <QHash>
 #include <QDir>
 
 //include QScintilla classes
@@ -57,8 +57,10 @@ Usage Agreement:
 
 
 
-class SyntaxHighlightManager {
+class SyntaxHighlightManager : public QObject{
 /* -A class that provides an interface for managing the language lexers used in the ScintillaEditor class. */
+
+    Q_OBJECT
 
     public:
         explicit SyntaxHighlightManager(QsciScintilla *_parent);
@@ -73,77 +75,42 @@ class SyntaxHighlightManager {
             -perform garbage collections (free allocated memory and null all pointers)
         */
 
-        class ExtensionActionPair {
-        /* -A class that stores a list of file extensions and associates it to a language action */
-            public:
-                explicit ExtensionActionPair(QStringList _extensionList, QAction* _action) {
-                /* -the class constructor initializes the data members */
-                    extensionList = _extensionList;
-                    action = _action;
-                }
-
-                bool hasExtension(const QString& extension) const {
-                /* -return true if the extension is in the list, false otherwise */
-                    if ( extensionList.contains(extension) ) return true;
-                    else return false;
-                }
-
-                QAction* getLanguageAction() const {
-                /* -return the language action */
-                    return action;
-                }
-
-                QAction* getActionIfHasExt(const QString& extension) const {
-                /* -return the language action if the extension passed is in the list, else return a 0 pointer */
-                    if ( extensionList.contains(extension) ) return action;
-                    else return 0;
-                }
-
-                void nullActionPointer() {
-                /*  -nulls the pointer to the language action*/
-                    action = 0;
-                }
-
-            private:
-                QStringList extensionList;
-                QAction* action;
-        };
-
         QMenu* getLanguageMenu();
         /*  -access function to get the language menu created from the language actions */
 
-        QsciLexer* getLexerFromAction(QAction* langAction = 0);
+        QString setLexerForFile(const QString& fileName);
         /*
-            -return a language's syntax highlighting lexer based on the associated action
-            -return a 0 pointer if an error occures
+            -sets an appropriate lexer for `fileName` based on filemasks
+            -returns the name of the language selected
         */
 
-        void setLexerFromAction(QAction* langAction = 0);
-        /*  -a convenience method to set the language lexer of the parent editor based on the associated action */
-
-        QsciLexer* getLexerFromSuffix(const QString& ext);
-        /*  -return a language's syntax highlighting lexer based on the extension of a file */
-
-        void setLexerFromSuffix(const QString& ext);
-        /*  -a convenience method to set the language lexer of the parent editor based on the extension of a file */
-
-        QAction* getLangActionFromSuffix(const QString& ext);
-        /*  -return the language action for a suffix (file extensions) */
+    signals:
+        void changedLexerLanguage(const QString& langName);
+        /*  -a signal emited when the language grammer of the lexer is changed */
 
     private:
-        QsciScintilla* parent;                          //pointer the editing class which uses this manager
-        QActionGroup* languageActions;                  //a group of actions to use for selecting a syntax highlighting language
-        QMenu* languageMenu;                            //a menu to select a language
-        QAction* plainTextAction;                       //action to set highlighting for plain text document
-        QList<ExtensionActionPair> fileExtensionTable;  //a table to match file extensions with an action to select a language
-        QHash<QAction*, QsciLexer*> specialLanguages;   //a list of specialized languages/lexers which do not require user definition
-        LeptonLexer* langFileLexer;                     //the lexer used for languages defined in files
+
+        struct FilemaskActionPair {
+                QRegularExpression filemask;
+                QAction* langAction;
+        };
+
+        QsciScintilla* parent;                  //pointer the editing class which uses this manager
+        QActionGroup* languageActions;          //a group of actions to use for selecting a syntax highlighting language
+        QMenu* languageMenu;                    //a menu to select a language
+        QAction* plainTextAction;               //action to set highlighting for plain text document
+        LeptonLexer* lexer;                     //the lexer used for languages defined in files
+        QList<FilemaskActionPair> filemaskList; //a table to match file names to a language action
 
         void addSpecialLanguage(QList<QAction*>& aList, const QString& name, QsciLexer* lexer, const QString& extList);
         /*  -add a special language lexer to the list using its name, lexer, and file extension (suffix) list */
 
         void getLanguages(const QDir& langDir, QMenu* langMenu);
         /*  -adds a language selection action to `langMenu` for each language defined by a file in `langDir` */
+
+    private slots:
+        void languageSelected(QAction* langAction);
+        /*  -responds to 'langAction' being clicked in the language menu and emits a signal to change the lexer language */
 };
 
 #endif // SYNTAXHIGHLIGHTMANAGER_H

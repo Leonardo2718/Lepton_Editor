@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.h
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: December 25, 2014
+Last Modified: December 28, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,6 +43,7 @@ Usage Agreement:
 
 //include classes that are part of QScintilla
 #include <Qsci/qscilexercustom.h>
+#include <Qsci/qsciscintilla.h>
 
 //include Qt classes
 #include <QString>
@@ -100,7 +101,7 @@ class LeptonLexer : public QsciLexerCustom {
     Q_OBJECT
 
     public:
-        explicit LeptonLexer(QObject *parent = 0);
+        explicit LeptonLexer(QsciScintilla* parent = 0);
 
         const char* language() const;
         /*
@@ -116,6 +117,8 @@ class LeptonLexer : public QsciLexerCustom {
 
         void applyStyleTo(int start, int length, int style);
         /* -applies 'style' between positions 'start' and 'end' inclusively */
+
+    public slots:
 
         bool loadLanguage(const QString& filePath = 0);
         /*

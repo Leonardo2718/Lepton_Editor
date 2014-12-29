@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: December 25, 2014
+Last Modified: December 28, 2014
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -48,8 +48,10 @@ Usage Agreement:
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonLexer::LeptonLexer(QObject *parent) : QsciLexerCustom(parent) {
-    languageName = NULL;
+LeptonLexer::LeptonLexer(QsciScintilla* parent) : QsciLexerCustom( (QObject*)parent ) {
+    setEditor(parent);
+
+    languageName.clear();
 
     loadStyle( LeptonConfig::mainSettings.getStyleFilePath("default.xml") );
 
@@ -90,9 +92,13 @@ void LeptonLexer::styleText(int start, int end) {
     ###         and go back to (1)                                                ##
     ##############################################################################*/
 
-    if ( rootRule.subRules.isEmpty() ) return;
     const QString& editorText = editor()->text();
     if ( editorText.isEmpty() ) return;
+
+    if ( rootRule.subRules.isEmpty() ) {
+        applyStyleTo(0, editorText.length() ,0);
+        return;
+    }
 
     TokenRuleStack ruleListStack;   //a stack to keep track of the current token rule list being checked
 
@@ -252,6 +258,10 @@ void LeptonLexer::applyStyleTo(int start, int length, int style) {
     startStyling(start, 0);
     setStyling(length, style);
 }
+
+
+
+//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 bool LeptonLexer::loadLanguage(const QString& filePath) {
 /*

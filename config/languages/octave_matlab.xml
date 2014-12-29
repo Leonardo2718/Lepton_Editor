@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="Octave/Matlab" ext="m">
+<language name="Octave/Matlab" filemask=".*\.m">
     <tokenization>
         <keywords class="1">
             break case catch continue else elseif end for function global if otherwise persistent return switch try while endif endfor endfunction

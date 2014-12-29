@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="Python" ext="py pyw">
+<language name="Python" filemask=".*\.(py|pyw)">
     <tokenization>
         <keywords class="1">
             and as assert break class continue def del elif
