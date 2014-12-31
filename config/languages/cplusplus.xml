@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="C++" filemask=".*\.(h|hpp|cpp|cxx|cc)">
+<language name="C++" filemask=".*\.(h|hpp|cpp|cxx|cc)$">
     <tokenization>
         <keywords class="1">
             alignof and and_eq bitand bitor break case catch compl const_cast continue default
@@ -13,7 +13,7 @@
             protected public register short signed static struct template thread_local typename union
             unsigned virtual void volatile wchar_t
         </keywords>
-        <rule class="8" name="NUMBER">\b\d[A-Za-z]*</rule>
+        <rule class="8" name="NUMBER">\b\d([A-Za-z0-9]*)</rule>
         <rule class="6" name="CHARACTER_LITERAL">'\\?.'</rule>
         <spanrule class="4" name="LINE_COMMENT">
             <open>//</open>

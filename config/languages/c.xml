@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="C" filemask=".*\.c">
+<language name="C" filemask=".*\.c$">
     <tokenization>
         <keywords class="1">if else switch case default break goto return for while do continue typedef sizeof NULL</keywords>
         <keywords class="2">void struct union enum char short int long double float signed unsigned const static extern auto register volatile</keywords>
-        <rule class="8" name="NUMBER">\b\d[A-Za-z]*</rule>
+        <rule class="8" name="NUMBER">\b\d([A-Za-z0-9]*)</rule>
         <rule class="6" name="CHARACTER_LITERAL">'\\?.'</rule>
         <spanrule class="4" name="LINE_COMMENT">
             <open>//</open>

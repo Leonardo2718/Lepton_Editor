@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<language name="XML" filemask=".*\.xml">
+<language name="XML" filemask=".*\.xml$">
     <tokenization>
         <spanrule class="5" name="XML_ENCODING">
             <open>(&lt;)(\?)(xml)</open>
@@ -25,6 +25,6 @@
             <close>(--)(&gt;)</close>
             <rule class="4" name="">.</rule>
         </spanrule>
-        <rule class="2" name="ENTITY_REFERENCE">&amp;(lt|gt|amp|apos|quot);</rule>
+        <rule class="2" name="ENTITY">&amp;(lt|gt|amp|apos|quot);</rule>
     </tokenization>
 </language>
