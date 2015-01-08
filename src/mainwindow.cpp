@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: December 20, 2014
+Last Modified: January 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -12,7 +12,7 @@ Description:
 
     This file contains the implementation of the main window object.
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -186,6 +186,7 @@ void MainWindow::editTabChanged() {
 /* -called when visible tab is changed to update main window */
     setLanguageSelectorMenu();
     setSpaceTabSelector();
+    editors->current()->setFocus(Qt::TabFocusReason);
 }
 
 void MainWindow::on_actionOpen_Project_triggered() {

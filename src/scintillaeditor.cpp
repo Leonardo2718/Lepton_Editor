@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: December 28, 2014
+Last Modified: January 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -13,7 +13,7 @@ Description:
     This file contains the implementation of a subclass of QsciScintilla.  This class will be used as
     editing environment instead of the default QPlainTextEdit class.
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -32,6 +32,7 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//include Qt classes
 #include <QApplication>
 #include <QFile>
 #include <QFont>
@@ -41,6 +42,7 @@ Usage Agreement:
 #include <QMessageBox>
 #include <Qsci/qscilexercpp.h>
 
+//include other Lepton classes and objects
 #include "scintillaeditor.h"
 #include "leptonconfig.h"
 
@@ -60,7 +62,6 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //set editor properties/settings
     setAutoIndent(true);
     setTabWidth(4);
-    setBraceMatching(QsciScintilla::StrictBraceMatch);
     setMarginsBackgroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_background") );
     setMarginsForegroundColor( LeptonConfig::mainSettings.getValueAsColor("theme_data", "margins_foreground") );
     setWhitespaceVisibility( LeptonConfig::mainSettings.getWhiteSpaceVisibility() );

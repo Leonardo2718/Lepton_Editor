@@ -2,7 +2,7 @@
 <language name="Haskell" filemask=".*\.hs$">
     <tokenization>
         <keywords class="2">as case of class data default deriving do forall foreign hiding if then else import infix infixl infixr instance let in mdo module newtype proc qualified rec type where</keywords>
-        <rule class="1" name="TYPE">[A-Z](\w*)</rule>
+        <rule class="1" name="TYPE">[A-Z]([A-Za-z_0-9]*)</rule>
         <rule class="8" name="NUMBER">\b\d([A-Za-z0-9]*)</rule>
         <rule class="6" name="CHARACTER_LITERAL">'\\?.'</rule>
         <spanrule class="6" name="STRING_LITERAL">
@@ -12,7 +12,7 @@
             <rule class="6" name="CHARACTER">[^"]</rule>
         </spanrule>
         <spanrule class="4" name="LINE_COMMENT">
-            <open>--</open>
+            <open>--[^!#$%&amp;*+\./&lt;=&gt;?@\\^|\-~]</open>
             <close>\n</close>
             <rule class="4" name="">.</rule>
         </spanrule>
@@ -21,8 +21,9 @@
             <close>-}</close>
             <rule class="4" name="">.</rule>
         </spanrule>
-        <rule class="11" name="SPECIAL_OPERATOR">(:|::|@|&lt;-|-&gt;|-&lt;{1,2}|!|=&gt;|\?|#|\.\.|~|\\|\|)</rule>
-        <!--<rule class="10" name="OTHER_OPERATOR">[!#$%&amp;*+\./&lt;=&gt;?@\\^|\-~]+</rule>-->
+        <rule class="10" name="SPECIAL_OPERATOR">(::|@|&lt;-|-&gt;|-&lt;|-&lt;&lt;|=&gt;|\.\.|\?|\$|#|~)</rule>
+        <rule class="0" name="OTHER_OPERATOR">[!#$%&amp;*+\./&lt;=&gt;?@\\^|\-~]{2,}</rule>
+        <rule class="0" name="BASIC_OPERATOR">(\.|-|\+|\*|=|/)</rule>
         <rule class="0" name="IDENTIFIER">\b[a-z][A-Za-z_0-9]*\b</rule>
     </tokenization>
 </language>
