@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.h
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: September 6, 2014
+Last Modified: January 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -13,7 +13,7 @@ Description:
     This file contains a class definition with static members used to get and manipulate
     general information about the program (eg. path to local config files etc.).
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -47,8 +47,8 @@ Usage Agreement:
 
 class GeneralConfig {
     public:
-        GeneralConfig(const QString& mainConfigFilePath);
-        /* -get main config data from file */
+        static GeneralConfig* getObject(const QString& mainConfigFilePath);
+        /*  -returns an sinstance of this class */
 
         QVariant getValue(const QString& key, const QString& subKey_1 = 0, const QString& subKey_2 = 0) const;
         /*  -get the value that corresponds to `key` from the JSON config data object */
@@ -120,6 +120,12 @@ class GeneralConfig {
 
 
     private:
+        //hide constructors to prevent direct instantiation
+        explicit GeneralConfig(const QString& mainConfigFilePath);
+        /* -get main config data from file */
+
+        GeneralConfig();
+        GeneralConfig(const GeneralConfig& other);
 
         QJsonDocument configData;   //a JSON object to store the config data
         QDir configsDir;            //the directory containing all config files

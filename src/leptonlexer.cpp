@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: December 28, 2014
+Last Modified: January 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -14,7 +14,7 @@ Description:
     instead of the QSyntaxHighlighter class.  It is subclassed fromt the QsciLexerCustom class which
     is part of QScintilla.
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -53,7 +53,7 @@ LeptonLexer::LeptonLexer(QsciScintilla* parent) : QsciLexerCustom( (QObject*)par
 
     languageName.clear();
 
-    loadStyle( LeptonConfig::mainSettings.getStyleFilePath("default.xml") );
+    loadStyle( LeptonConfig::mainSettings->getStyleFilePath("default.xml") );
 
     rootRule.subRules.clear();
 
@@ -289,7 +289,7 @@ bool LeptonLexer::loadLanguage(const QString& filePath) {
     ### is exactly what we want.  However, if language files link to eachother in a loop       ##
     ### (which doesn't make any practical sense), a stack overflow will occure.                ##
     ###########################################################################################*/
-    bool r = loadLanguage( LeptonConfig::mainSettings.getLangFilePath( rootElement.attribute("use", QString() ) ) );
+    bool r = loadLanguage( LeptonConfig::mainSettings->getLangFilePath( rootElement.attribute("use", QString() ) ) );
     if (r == false) return false;
 
     //get the name of the language (displayed in menu)
@@ -365,12 +365,12 @@ bool LeptonLexer::loadStyle(const QString& filePath) {
 
         if (! style.lastChildElement("color").isNull() ) {
             styleItem = style.lastChildElement("color");
-            setColor(LeptonConfig::mainSettings.getColorFromString(styleItem.attribute("value")), styleID);
+            setColor(LeptonConfig::mainSettings->getColorFromString(styleItem.attribute("value")), styleID);
         }
 
         if (! style.lastChildElement("background").isNull() ) {
             styleItem = style.lastChildElement("background");
-            setPaper(LeptonConfig::mainSettings.getColorFromString(styleItem.attribute("value")), styleID);
+            setPaper(LeptonConfig::mainSettings->getColorFromString(styleItem.attribute("value")), styleID);
         }
 
         if (! style.lastChildElement("font").isNull() ) {
@@ -388,12 +388,12 @@ bool LeptonLexer::loadStyle(const QString& filePath) {
 
 bool LeptonLexer::setDefaultStyleValues() {
 /* -gets the default style values */
-    setDefaultPaper( LeptonConfig::mainSettings.getDefaultPaper() );
-    setPaper( LeptonConfig::mainSettings.getDefaultPaper(), 0);
-    setDefaultColor( LeptonConfig::mainSettings.getDefaultTextColor() );
-    setColor( LeptonConfig::mainSettings.getDefaultTextColor(), 0);
-    setDefaultFont( LeptonConfig::mainSettings.getDefaultEditorFont() );
-    setFont( LeptonConfig::mainSettings.getDefaultEditorFont(), 0);
+    setDefaultPaper( LeptonConfig::mainSettings->getDefaultPaper() );
+    setPaper( LeptonConfig::mainSettings->getDefaultPaper(), 0);
+    setDefaultColor( LeptonConfig::mainSettings->getDefaultTextColor() );
+    setColor( LeptonConfig::mainSettings->getDefaultTextColor(), 0);
+    setDefaultFont( LeptonConfig::mainSettings->getDefaultEditorFont() );
+    setFont( LeptonConfig::mainSettings->getDefaultEditorFont(), 0);
     return true;
 }
 

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: December 22, 2014
+Last Modified: January 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -13,7 +13,7 @@ Description:
     This file contains a class implementaion with static members used to get and manipulate
     general information about the program (eg. path to local config files etc.).
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -47,24 +47,11 @@ Usage Agreement:
 
 #include <QDebug>
 
-//QDir GeneralConfig::configsDir = QDir(QString());
+//~public members~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
-/* -get main config data from file */
-
-    QFile configFile(mainConfigFilePath);               //get the config file
-    configsDir.setPath( QFileInfo(mainConfigFilePath).absolutePath() );
-
-    if ( configFile.exists() ) {                        //if the file actually exists
-
-        configFile.open(QFile::ReadOnly);                           //open the file
-        configData = configData.fromJson( configFile.readAll() );   //store the config data
-        configFile.close();                                         //close the file
-
-        if ( ! configData.isObject() ) {                            //if document is not value
-            configData = configData.fromRawData("{\"NO_VALUE\": null}", 20);//set a default value
-        }
-    }
+GeneralConfig* GeneralConfig::getObject(const QString& mainConfigFilePath) {
+/*  -returns an sinstance of this class */
+    return new GeneralConfig(mainConfigFilePath);
 }
 
 
@@ -376,4 +363,26 @@ void GeneralConfig::getStyleSheetInto(QString& styleSheet) {
     file.open(QIODevice::ReadOnly | QIODevice::ReadWrite);
     styleSheet = file.readAll().simplified();
     file.close();
+}
+
+
+
+//~private members~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
+/* -get main config data from file */
+
+    QFile configFile(mainConfigFilePath);               //get the config file
+    configsDir.setPath( QFileInfo(mainConfigFilePath).absolutePath() );
+
+    if ( configFile.exists() ) {                        //if the file actually exists
+
+        configFile.open(QFile::ReadOnly);                           //open the file
+        configData = configData.fromJson( configFile.readAll() );   //store the config data
+        configFile.close();                                         //close the file
+
+        if ( ! configData.isObject() ) {                            //if document is not value
+            configData = configData.fromRawData("{\"NO_VALUE\": null}", 20);//set a default value
+        }
+    }
 }

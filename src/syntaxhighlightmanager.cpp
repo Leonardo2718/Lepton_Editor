@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: syntaxhighlightmanager.cpp
 Author: Leonardo Banderali
 Created: August 26, 2014
-Last Modified: December 28, 2014
+Last Modified: January 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -15,7 +15,7 @@ Description:
     or changing the language used for highlighting.  This class is intended to provide
     an interface for managing the language lexers used in the ScintillaEditor class.
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -74,7 +74,7 @@ SyntaxHighlightManager::SyntaxHighlightManager(QsciScintilla* _parent) : QObject
     lexer->loadLanguage();
 
     //get the language files' directory
-    QString languagesDirPath = LeptonConfig::mainSettings.getLangsDirPath();//get path to the directory where the language files are
+    QString languagesDirPath = LeptonConfig::mainSettings->getLangsDirPath();//get path to the directory where the language files are
     QDir languagesDir(languagesDirPath);                                    //create a directory object for it
 
     QList<QAction*> specialActionList;

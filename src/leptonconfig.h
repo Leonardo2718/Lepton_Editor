@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonconfig.h
 Author: Leonardo Banderali
 Created: September 4, 2014
-Last Modified: October 14, 2014
+Last Modified: January 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -13,7 +13,7 @@ Description:
     This file defines a namespace for objects which hold configuration data and settings.
     This includes data read from config files.
 
-Copyright (C) 2014 Leonardo Banderali
+Copyright (C) 2015 Leonardo Banderali
 
 Usage Agreement:
     This file is part of Lepton Editor
@@ -49,12 +49,13 @@ namespace LeptonConfig {
 //get data from the main config file
 #ifdef QT_DEBUG
 
-static GeneralConfig mainSettings("./config/config.json");
+GeneralConfig* const mainSettings = GeneralConfig::getObject("./config/config.json");
 
 #else
 
 #ifdef Q_OS_UNIX
-static GeneralConfig mainSettings(QDir::homePath().append("/.config/LeptonEditor/config.json"));
+//static GeneralConfig mainSettings(QDir::homePath().append("/.config/LeptonEditor/config.json"));
+GeneralConfig* const mainSettings = GeneralConfig::getObject(QDir::homePath().append("/.config/LeptonEditor/config.json"));
 #endif
 
 #endif

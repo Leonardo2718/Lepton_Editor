@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: January 8, 2015
+Last Modified: January 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     //set session object information
     QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
-    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings.getConfigDirPath("sessions"));
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
 
     //setup main window
     setWindowTitle("Lepton Editor");
@@ -103,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(&findReplace, SIGNAL(replaceClicked(FindReplaceDialog::DialogParameters)), this, SLOT(replaceInCurrent(FindReplaceDialog::DialogParameters)) );
 
     QString styleSheet;
-    LeptonConfig::mainSettings.getStyleSheetInto(styleSheet);
+    LeptonConfig::mainSettings->getStyleSheetInto(styleSheet);
     qApp->setStyleSheet(styleSheet);
 
     //load previous session
