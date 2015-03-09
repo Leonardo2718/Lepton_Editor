@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: January 20, 2015
+Last Modified: March 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -184,9 +184,11 @@ void MainWindow::on_actionSave_All_triggered() {
 
 void MainWindow::editTabChanged() {
 /* -called when visible tab is changed to update main window */
-    setLanguageSelectorMenu();
-    setSpaceTabSelector();
-    editors->current()->setFocus(Qt::TabFocusReason);
+    if (editors->count() > 0) {
+        setLanguageSelectorMenu();
+        setSpaceTabSelector();
+        editors->current()->setFocus(Qt::TabFocusReason);
+    }
 }
 
 void MainWindow::on_actionOpen_Project_triggered() {
