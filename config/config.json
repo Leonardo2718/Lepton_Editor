@@ -1,8 +1,13 @@
 {
-    "theme_data": {
-        "stylesheet_file": "themes/defaultTheme.css",
+    "application_theme": {
+      "stylesheet": "themes/defaultTheme.css"
+    },
+    "editor_theme": {
         "text_color": "#A1A1A1",
         "paper_color": "#312525",
+        "caret_color": "#A1A1A1",
+        "selection_background": "#44FFFFFF",
+        "selection_foreground": "#CCCCCC",
         "font": {
             "font_family": "Monospace",
             "font_point_size": 10,

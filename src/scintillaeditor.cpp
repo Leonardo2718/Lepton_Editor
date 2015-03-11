@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: January 20, 2015
+Last Modified: March 10, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -62,10 +62,14 @@ ScintillaEditor::ScintillaEditor(QWidget* parent) : QsciScintilla(parent) {
     //set editor properties/settings
     setAutoIndent(true);
     setTabWidth(4);
-    setMarginsBackgroundColor( LeptonConfig::mainSettings->getValueAsColor("theme_data", "margins_background") );
-    setMarginsForegroundColor( LeptonConfig::mainSettings->getValueAsColor("theme_data", "margins_foreground") );
+    setMarginsBackgroundColor( LeptonConfig::mainSettings->getValueAsColor("editor_theme", "margins_background") );
+    setMarginsForegroundColor( LeptonConfig::mainSettings->getValueAsColor("editor_theme", "margins_foreground") );
     setWhitespaceVisibility( LeptonConfig::mainSettings->getWhiteSpaceVisibility() );
-    setWhitespaceForegroundColor( LeptonConfig::mainSettings->getValueAsColor("theme_data", "whitespace_color") );
+    setWhitespaceForegroundColor( LeptonConfig::mainSettings->getValueAsColor("editor_theme", "whitespace_color") );
+    setCaretForegroundColor( LeptonConfig::mainSettings->getValueAsColor("editor_theme", "caret_color") );
+    setCallTipsHighlightColor( LeptonConfig::mainSettings->getValueAsColor("editor_theme", "highlight_color") );
+    setSelectionBackgroundColor( LeptonConfig::mainSettings->getValueAsColor("editor_theme", "selection_background") );
+    setSelectionForegroundColor( LeptonConfig::mainSettings->getValueAsColor("editor_theme", "selection_foreground") );
     setIndentationsUseTabs(false);  //use spaces instead of tabs for indentation
 
     //*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: generalconfig.cpp
 Author: Leonardo Banderali
 Created: May 18, 2014
-Last Modified: January 20, 2015
+Last Modified: March 10, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -281,7 +281,7 @@ QColor GeneralConfig::getDefaultPaper() {
 /* -returns default 'QColor' for editor paper/background */
 
     //get data from config file, process it, and return value
-    QColor c = getValueAsColor("theme_data", "paper_color");
+    QColor c = getValueAsColor("editor_theme", "paper_color");
     if ( c.isValid() ) return c;
     else return QColor(255,255,255);
 
@@ -293,14 +293,14 @@ QColor GeneralConfig::getDefaultTextColor() {
 
     //process and return value
     //QColor c = getColorFromString(colorString);
-    QColor c = getValueAsColor("theme_data", "text_color");
+    QColor c = getValueAsColor("editor_theme", "text_color");
     if ( c.isValid() ) return c;
     else return QColor(0,0,0);
 }
 
 QFont GeneralConfig::getDefaultEditorFont() {
 /* -returns default 'QFont' for editor text */
-    QFont font = getValueAsFont("theme_data", "font");  //get values from config file
+    QFont font = getValueAsFont("editor_theme", "font");  //get values from config file
     return font;
 }
 
@@ -308,7 +308,7 @@ QsciScintilla::WhitespaceVisibility GeneralConfig::getWhiteSpaceVisibility() {
 /* -returns the visibility of white spaces in editor */
 
     //get data from config file
-    QString s = getValue("theme_data", "whitespace_visibility").toString();
+    QString s = getValue("editor_theme", "whitespace_visibility").toString();
 
     //process and return value
     if (s == "visible") return QsciScintilla::WsVisible;
@@ -345,7 +345,7 @@ QColor GeneralConfig::getMarginsForeground() {
 
     //process and return value
     QColor c = getColorFromString(colorString);
-    //QColor c = getValueAsColor("theme_data", "paper_color");
+    //QColor c = getValueAsColor("editor_theme", "paper_color");
     if ( c.isValid() ) return c;
     else return QColor(0,0,0);
 }
@@ -353,7 +353,7 @@ QColor GeneralConfig::getMarginsForeground() {
 void GeneralConfig::getStyleSheetInto(QString& styleSheet) {
 /* -returns style sheet read from file */
     //QString path = getConfigData( getConfigFilePath("config/theme.conf"), "MainWindow", "theme").prepend("config/themes/");
-    QString path = getValue("theme_data", "stylesheet_file").toString();
+    QString path = getValue("application_theme", "stylesheet").toString();
     path = configsDir.absolutePath().append("/").append(path);
     QFile file(path);
     if ( ! file.exists() ) {
@@ -378,7 +378,7 @@ GeneralConfig::GeneralConfig(const QString& mainConfigFilePath) {
     if ( configFile.exists() ) {                        //if the file actually exists
 
         configFile.open(QFile::ReadOnly);                           //open the file
-        configData = configData.fromJson( configFile.readAll() );   //store the config data
+        configData = configData.fromJson( configFile.readAll());   //store the config data
         configFile.close();                                         //close the file
 
         if ( ! configData.isObject() ) {                            //if document is not value
