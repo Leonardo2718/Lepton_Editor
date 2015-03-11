@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonlexer.cpp
 Author: Leonardo Banderali
 Created: May 8, 2014
-Last Modified: January 20, 2015
+Last Modified: March 10, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -120,6 +120,7 @@ void LeptonLexer::styleText(int start, int end) {
 
     //tokenize the text by iteratively traversing it
     while (1) {
+        if (ruleListStack.isEmpty()) break;             //%%%% this is required to prevent seg-faults when scrolling through a file %%%%
         TokenRule currentRoot = *(ruleListStack.top()); //get the current rule list
 
         //create a list of rules
