@@ -3,41 +3,50 @@
     "working_directory": {
         "directory": {
             "name": "src",
-            "global_file_type": {
+            "file_type": {
                 "name_regex": ".+\\.(h|hpp|hxx)",
-                "type": "header_file"
+                "type": "header_file",
+                "local_directory_only": false
             },
-            "global_file_type": {
+            "file_type": {
                 "name_regex": ".+\\.(cpp|cxx|cc)",
-                "type": "source_file"
+                "type": "source_file",
+                "local_directory_only": false
             },
-            "global_file_type": {
+            "file_type": {
                 "name_regex": ".+\\.c",
-                "type": "c_source_file"
+                "type": "c_source_file",
+                "local_directory_only": false
             },
             "unknown_file_types": {
-                "are_visible": true
+                "are_visible": true,
+                "local_directory_only": false
             },
             "unknown_directories": {
-                "are_visible": true
+                "are_visible": true,
+                "local_directory_only": false
             }
         },
         "template_file": {
             "name": "Makefile",
-            "type": "makefile"
+            "type": "makefile",
+            "local_directory_only": true
         },
         "template_file": {
             "name": "README.md",
-            "type": "readme_doc"
+            "type": "readme_doc",
+            "local_directory_only": false
         },
         "unknown_file_types": {
             "are_visible": true,
-            "ignore_hidden": true
+            "ignore_hidden": true,
+            "local_directory_only": false
         },
         "unknown_directories": {
             "are_visible": true,
             "ignore_hidden": true,
-            "ignore": [".git", "bin", "lib"]
+            "ignore": [".git", "bin", "lib"],
+            "local_directory_only": false
         }
     }
 }
