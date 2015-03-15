@@ -76,7 +76,7 @@ Qt::ItemFlags ProjectTree::flags(const QModelIndex &index) const {
         return QAbstractItemModel::flags(index);
 }
 
-QVariant ProjectTree::headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const {
+QVariant ProjectTree::headerData(int section, Qt::Orientation orientation, int role) const {
     return QVariant();
 }
 
