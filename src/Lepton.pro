@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     syntaxhighlightmanager.cpp \
     settingseditor.cpp \
     findreplacedialog.cpp \
-    projecttree.cpp
+    projecttree.cpp \
+    leptonproject.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -31,7 +32,8 @@ HEADERS  += mainwindow.h \
     leptonconfig.h \
     settingseditor.h \
     findreplacedialog.h \
-    projecttree.h
+    projecttree.h \
+    leptonproject.h
 
 FORMS    += mainwindow.ui \
     settingseditor.ui \
