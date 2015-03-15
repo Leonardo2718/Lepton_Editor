@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.h
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: March 14, 2015
+Last Modified: March 15, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -45,13 +45,16 @@ class ProjectTree : public QAbstractItemModel {
         explicit ProjectTree(QObject* parent = 0);
         ~ProjectTree();
 
-        // reimplemented virtual methods (see QAbstractItemModel documentation)
-
+        // reimplemented pure virtual methods (see QAbstractItemModel documentation)
         QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
         QModelIndex parent(const QModelIndex & index) const;
         int rowCount(const QModelIndex & parent = QModelIndex()) const;
         int columnCount(const QModelIndex & parent = QModelIndex()) const;
         QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+
+        // reimplemented virtual methods (see QAbstractItemModel documentation)
+        Qt::ItemFlags flags(const QModelIndex &index) const;
+        QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 };
 
 #endif // PROJECTTREE_H

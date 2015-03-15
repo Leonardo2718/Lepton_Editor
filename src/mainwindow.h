@@ -44,6 +44,7 @@ Usage Agreement:
 
 #include "editortabbar.h"
 #include "projectmodel.h"
+#include "projecttree.h"
 #include "settingseditor.h"
 #include "findreplacedialog.h"
 
@@ -147,6 +148,7 @@ class MainWindow : public QMainWindow {
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          //pointer to editor tab bar object
         ProjectModel* projectListModel; //model which will display project list
+        ProjectTree* projectTree;
         QTreeView* projectList;         //view in which projects will be displayed
         SettingsEditor configsEditor;   //a window to facilitate editing config files
         QActionGroup* selectorSpaceTab; //group of actions to select whether to use spaces or tabs

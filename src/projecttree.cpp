@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: March 14, 2015
+Last Modified: March 15, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -49,18 +49,34 @@ ProjectTree::~ProjectTree() {
 
 //~reimplemented virtual methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-QModelIndex QAbstractItemModel::index(int row, int column, const QModelIndex & parent = QModelIndex()) const {
+QModelIndex ProjectTree::index(int row, int column, const QModelIndex & parent) const {
+    return QModelIndex();
 }
 
-QModelIndex QAbstractItemModel::parent(const QModelIndex & index) const {
+QModelIndex ProjectTree::parent(const QModelIndex & index) const {
+    return QModelIndex();
 }
 
-int QAbstractItemModel::rowCount(const QModelIndex & parent = QModelIndex()) const {
+int ProjectTree::rowCount(const QModelIndex & parent) const {
+    return 0;
 }
 
-int QAbstractItemModel::columnCount(const QModelIndex & parent = QModelIndex()) const {
+int ProjectTree::columnCount(const QModelIndex & parent) const {
+    return 0;
 }
 
-QVariant QAbstractItemModel::data(const QModelIndex & index, int role = Qt::DisplayRole) const {
+QVariant ProjectTree::data(const QModelIndex & index, int role) const {
+    return QVariant();
+}
+
+Qt::ItemFlags ProjectTree::flags(const QModelIndex &index) const {
+    if (!index.isValid())
+        return 0;
+    else
+        return QAbstractItemModel::flags(index);
+}
+
+QVariant ProjectTree::headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const {
+    return QVariant();
 }
 

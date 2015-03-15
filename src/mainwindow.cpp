@@ -88,7 +88,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     projectList = new QTreeView(this);
     ui->projectManagerArea->layout()->addWidget(projectList);
     projectListModel = new ProjectModel();
-    projectList->setModel(projectListModel);
+    projectTree = new ProjectTree();
+    //projectList->setModel(projectListModel);
+    projectList->setModel(projectTree);
     projectList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     //connect signals to appropriate slots
