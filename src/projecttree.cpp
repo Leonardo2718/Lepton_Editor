@@ -40,6 +40,7 @@ Usage Agreement:
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTree::ProjectTree(QObject* parent) : QAbstractItemModel(parent) {
+    projects.append(new LeptonProject("test_project"));
 }
 
 ProjectTree::~ProjectTree() {

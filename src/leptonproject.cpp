@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 15, 2015
+Last Modified: March 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -33,13 +33,217 @@ Usage Agreement:
 
 #include "leptonproject.h"
 
+// include Qt classes
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
+#include <QRegularExpressionValidator>
+
+// include other project classes
+#include "leptonconfig.h"
 
 
-//~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonProject::LeptonProject(QObject *parent) : QObject(parent) {
+LeptonProject::LeptonProject(const QString& projectDir, const QString& specFilePath) : QObject(0), workingDirectory(projectDir) {
+    // if the project directory does not exist, create it
+    if (!workingDirectory.exists())
+        workingDirectory.mkdir(workingDirectory.absolutePath());
+
+    // if a project spec file was specified load it, other wise load the default one
+    if (specFilePath.isEmpty())
+        loadSpec(LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json"));
+    else
+        loadSpec(specFilePath);
+
+    // create project item
+    project = new ProjectItem(workingDirectory.dirName(), projectSpec.value("project_type").toString());
+
+    // load the new project
+    loadProject();
+}
+
+LeptonProject::LeptonProject(const QDir& projectDir, const QString& specFilePath) : QObject(0), workingDirectory(projectDir) {
+    // if the project directory does not exist, create it
+    if (!workingDirectory.exists())
+        workingDirectory.mkdir(workingDirectory.absolutePath());
+
+    // if a project spec file was specified load it, other wise load the default one
+    if (specFilePath.isEmpty())
+        loadSpec(LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json"));
+    else
+        loadSpec(specFilePath);
+
+    // create project item
+    project = new ProjectItem(workingDirectory.dirName(), projectSpec.value("project_type").toString());
+
+    // load the new project
+    loadProject();
 }
 
 LeptonProject::~LeptonProject() {
+    delete project;
+}
+
+
+
+//~getters and setters~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+QString LeptonProject::getName() const {
+    return workingDirectory.dirName();
+}
+
+void LeptonProject::setName(const QString& newName) {
+
+    /*########################################################################################
+    ### In order to rename the project, the QDir object muse `cd` to the parent directory,  ##
+    ### change the name of the project directory, and `cd` back into the renamed directory. ##
+    ########################################################################################*/
+
+    QString oldName = getName();    // temporarily save the old project name
+
+    if(workingDirectory.cdUp()) {   // cd into the parent directory
+        workingDirectory.rename(oldName, newName);  // rename the project directory
+        workingDirectory.cd(newName);               // cd back into the renamed directory
+    }
+}
+
+
+
+//~other public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+-loads the project specification from a file
+*/
+void LeptonProject::loadSpec(const QString& filePath) {
+    QJsonParseError err;
+    QFile f(filePath);
+    f.open(QFile::ReadOnly);
+    QJsonDocument specDoc = QJsonDocument::fromJson(f.readAll(), &err);
+    f.close();
+
+    if (err.error == QJsonParseError::NoError && specDoc.isObject())
+        projectSpec = specDoc.object().toVariantMap();
+}
+
+
+
+//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+-load the contents of the project
+*/
+void LeptonProject::loadProject() {
+    loadDir(workingDirectory, projectSpec.value("working_directory").toMap());
+}
+
+
+
+//~private methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+-loads the contents of a directory that is part of the project
+*/
+void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> parentDirTypeSpecs, QList<QVariant> parentFileTypeSpecs ) {
+
+    QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden  | QDir::System | QDir::NoDotAndDotDot, QDir::DirsFirst | QDir::Name);
+
+    QList<QVariant> templateDirSpecs = dirSpec.values("template_directory");
+    QList<QVariant> directoryTypeSpecs = dirSpec.values("directory_type");
+    directoryTypeSpecs.append(parentDirTypeSpecs);
+
+    QList<QVariant> templateFileSpecs = dirSpec.values("template_file");
+    QList<QVariant> fileTypeSpecs = dirSpec.values("file_type");
+    fileTypeSpecs.append(parentFileTypeSpecs);
+
+    foreach (const QFileInfo& entry, entries) {
+        if (entry.isDir()) {
+            bool dirMatched = false;
+
+            foreach (const QVariant& specV, templateDirSpecs) {
+                QVariantMap spec = specV.toMap();
+                if (addItemIfMatched(entry, project,
+                                     spec.value("name").toString(),
+                                     spec.value("type").toString())) {
+                    dirMatched = true;
+                    loadDir(entry.dir(), spec, directoryTypeSpecs, fileTypeSpecs);
+                    break;
+                }
+            }
+
+            if (!dirMatched) {
+                foreach (const QVariant& specV, templateDirSpecs) {
+                    QVariantMap spec = specV.toMap();
+                    if (addItemIfMatched(entry, project,
+                                         projectSpec.value("directory_types").toMap().value(spec.value("type").toString()).toString(),
+                                         spec.value("type").toString())) {
+                        dirMatched = true;
+                        loadDir(entry.dir(), spec, directoryTypeSpecs, fileTypeSpecs);
+                        break;
+                    }
+                }
+            }
+
+            if (!dirMatched && dirSpec.value("unknown_directories").toMap().value("are_visible").toBool())
+                project->addChild(entry.fileName(), "UNKNOWN_TYPE");
+
+        } else if (entry.isFile()) {
+            bool fileMatched = false;
+
+            foreach (const QVariant& specV, templateFileSpecs) {
+                QVariantMap spec = specV.toMap();
+                if (addItemIfMatched(entry, project,
+                                     spec.value("name").toString(),
+                                     spec.value("type").toString())) {
+                    fileMatched = true;
+                    break;
+                }
+            }
+
+            if (!fileMatched) {
+                foreach (const QVariant& specV, templateFileSpecs) {
+                    QVariantMap spec = specV.toMap();
+                    if (addItemIfMatched(entry, project,
+                                         projectSpec.value("file_types").toMap().value(spec.value("type").toString()).toString(),
+                                         spec.value("type").toString())) {
+                        fileMatched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!fileMached && dirSpec.value("unknown_file_types").toMap().value("are_visible").toBool())
+                project->addChild(entry.fileName(), "UNKNOWN_TYPE");
+        }
+    }
+}
+
+/*
+    -if the file system item `fsItem`s name matches `pattern`, it is added to the project item `item`
+    -returns true if the file was added, false if not
+*/
+bool LeptonProject::addItemIfMatched(const QFileInfo& fsItem, ProjectItem* item, const QString& pattern, const QString& type) {
+    QRegularExpression regex(pattern);
+    if (!regex.isValid()) return false;
+    bool rval = false;
+
+    QRegularExpressionValidator validator(regex);
+    QString name;
+    if (fsItem.isFile())
+        name = fsItem.fileName();
+    else if (fsItem.isDir())
+        name = fsItem.dir().dirName();
+
+    int offset = 0;
+    if (validator.validate(name, offset) == QValidator::Acceptable) {
+        if (fsItem.isFile())
+            item->addChild(fsItem.fileName(), type);
+        else if (fsItem.isDir())
+            item->addChild(fsItem.dir().dirName(), type);
+        rval = true;
+    } else
+        rval = false;
+
+    return rval;
 }
 

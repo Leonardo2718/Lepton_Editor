@@ -36,12 +36,18 @@ Usage Agreement:
 #ifndef PROJECTTREE_H
 #define PROJECTTREE_H
 
+// include Qt classes
 #include <QAbstractItemModel>
+#include <QList>
+
+// include other project classes
+#include "leptonproject.h"
 
 class ProjectTree : public QAbstractItemModel {
     Q_OBJECT
 
     public:
+        // constructors and destructor
         explicit ProjectTree(QObject* parent = 0);
         ~ProjectTree();
 
@@ -55,6 +61,9 @@ class ProjectTree : public QAbstractItemModel {
         // reimplemented virtual methods (see QAbstractItemModel documentation)
         Qt::ItemFlags flags(const QModelIndex &index) const;
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
+    private:
+        QList<LeptonProject*> projects;
 };
 
 #endif // PROJECTTREE_H
