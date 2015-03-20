@@ -45,7 +45,7 @@ Usage Agreement:
 
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonProject::LeptonProject(const QString& projectDir, const QString& specFilePath) : QObject(0), workingDirectory(projectDir) {
+LeptonProject::LeptonProject(const QString& projectDir, const QString& specFilePath) : QObject(0), LeptonProjectItem(), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
@@ -56,8 +56,10 @@ LeptonProject::LeptonProject(const QString& projectDir, const QString& specFileP
     else
         loadSpec(specFilePath);
 
-    // create project item
-    project = new ProjectItem(workingDirectory.dirName(), projectSpec.value("project_type").toString());
+    // initialize project data
+    name = workingDirectory.dirName();
+    type = projectSpec.value("project_type").toString();
+    projectParent = 0;
 
     // load the new project
     loadProject();
@@ -74,24 +76,21 @@ LeptonProject::LeptonProject(const QDir& projectDir, const QString& specFilePath
     else
         loadSpec(specFilePath);
 
-    // create project item
-    project = new ProjectItem(workingDirectory.dirName(), projectSpec.value("project_type").toString());
+    // initialize project data
+    name = workingDirectory.dirName();
+    type = projectSpec.value("project_type").toString();
+    projectParent = 0;
 
     // load the new project
     loadProject();
 }
 
 LeptonProject::~LeptonProject() {
-    delete project;
 }
 
 
 
 //~getters and setters~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-QString LeptonProject::getName() const {
-    return workingDirectory.dirName();
-}
 
 void LeptonProject::setName(const QString& newName) {
 
@@ -100,11 +99,10 @@ void LeptonProject::setName(const QString& newName) {
     ### change the name of the project directory, and `cd` back into the renamed directory. ##
     ########################################################################################*/
 
-    QString oldName = getName();    // temporarily save the old project name
-
     if(workingDirectory.cdUp()) {   // cd into the parent directory
-        workingDirectory.rename(oldName, newName);  // rename the project directory
-        workingDirectory.cd(newName);               // cd back into the renamed directory
+        workingDirectory.rename(name, newName); // rename the project directory
+        workingDirectory.cd(newName);           // cd back into the renamed directory
+        name = newName;
     }
 }
 
@@ -162,7 +160,7 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
 
             foreach (const QVariant& specV, templateDirSpecs) {
                 QVariantMap spec = specV.toMap();
-                if (addItemIfMatched(entry, project,
+                if (addItemIfMatched(entry, this,
                                      spec.value("name").toString(),
                                      spec.value("type").toString())) {
                     dirMatched = true;
@@ -174,7 +172,7 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             if (!dirMatched) {
                 foreach (const QVariant& specV, templateDirSpecs) {
                     QVariantMap spec = specV.toMap();
-                    if (addItemIfMatched(entry, project,
+                    if (addItemIfMatched(entry, this,
                                          projectSpec.value("directory_types").toMap().value(spec.value("type").toString()).toString(),
                                          spec.value("type").toString())) {
                         dirMatched = true;
@@ -185,14 +183,14 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             }
 
             if (!dirMatched && dirSpec.value("unknown_directories").toMap().value("are_visible").toBool())
-                project->addChild(entry.fileName(), "UNKNOWN_TYPE");
+                this->addChild(entry.fileName(), "UNKNOWN_TYPE");
 
         } else if (entry.isFile()) {
             bool fileMatched = false;
 
             foreach (const QVariant& specV, templateFileSpecs) {
                 QVariantMap spec = specV.toMap();
-                if (addItemIfMatched(entry, project,
+                if (addItemIfMatched(entry, this,
                                      spec.value("name").toString(),
                                      spec.value("type").toString())) {
                     fileMatched = true;
@@ -203,7 +201,7 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             if (!fileMatched) {
                 foreach (const QVariant& specV, templateFileSpecs) {
                     QVariantMap spec = specV.toMap();
-                    if (addItemIfMatched(entry, project,
+                    if (addItemIfMatched(entry, this,
                                          projectSpec.value("file_types").toMap().value(spec.value("type").toString()).toString(),
                                          spec.value("type").toString())) {
                         fileMatched = true;
@@ -212,8 +210,8 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
                 }
             }
 
-            if (!fileMached && dirSpec.value("unknown_file_types").toMap().value("are_visible").toBool())
-                project->addChild(entry.fileName(), "UNKNOWN_TYPE");
+            if (!fileMatched && dirSpec.value("unknown_file_types").toMap().value("are_visible").toBool())
+                this->addChild(entry.fileName(), "UNKNOWN_TYPE");
         }
     }
 }
@@ -222,7 +220,7 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
     -if the file system item `fsItem`s name matches `pattern`, it is added to the project item `item`
     -returns true if the file was added, false if not
 */
-bool LeptonProject::addItemIfMatched(const QFileInfo& fsItem, ProjectItem* item, const QString& pattern, const QString& type) {
+bool LeptonProject::addItemIfMatched(const QFileInfo& fsItem, LeptonProjectItem* item, const QString& pattern, const QString& type) {
     QRegularExpression regex(pattern);
     if (!regex.isValid()) return false;
     bool rval = false;

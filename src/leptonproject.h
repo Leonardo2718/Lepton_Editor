@@ -42,7 +42,84 @@ Usage Agreement:
 
 
 
-class LeptonProject : public QObject {
+/*
+A general class to represent a single item in a Lepton project.
+*/
+class LeptonProjectItem {
+    public:
+        //constructors and destructor
+
+        LeptonProjectItem(const QString& _name, const QString& _type, LeptonProjectItem* _parent = 0) {
+            name = _name;
+            type = _type;
+            projectParent = _parent;
+            children.clear();
+        }
+
+        virtual ~LeptonProjectItem() {
+            for (int i = 0, l = children.length(); i < l; i++) {
+                delete children.at(i);
+                children[i] = 0;
+            }
+            children.clear();
+            projectParent = 0;
+        }
+
+        // getters and setters
+
+        virtual QString getName() const {
+            return name;
+        }
+
+        virtual QString getType() const {
+            return type;
+        }
+
+        // other public functions
+
+        bool hasChildren() const {
+            return !children.isEmpty();
+        }
+
+        int childCount() const {
+            return children.length();
+        }
+
+        int getChildIndex(LeptonProjectItem* const child) const {
+            return children.indexOf(child);
+        }
+
+        void addChild(const QString& _name, const QString& _type) {
+            LeptonProjectItem* i = new LeptonProjectItem(_name, _type, this);
+            children.append(i);
+        }
+
+        const LeptonProjectItem* getChild(int index) const {
+            if (index < 0 || index >= children.length())
+                return 0;
+            else
+                return children[index];
+        }
+
+        const LeptonProjectItem* getParent() const {
+            return projectParent;
+        }
+
+    protected:
+        QString name;                       // stores the name of the project item
+        QString type;                       // stores the type of the project item
+        LeptonProjectItem* projectParent;   // points to the parent item
+        QList<LeptonProjectItem*> children; // points to all child items
+
+        LeptonProjectItem() {   // hide default constructor from outside classes but let subclasses use it
+            children.clear();
+        }
+};
+
+/*
+The main Lepton project class
+*/
+class LeptonProject : public QObject, public LeptonProjectItem {
         Q_OBJECT
 
     public:
@@ -52,7 +129,6 @@ class LeptonProject : public QObject {
         ~LeptonProject();
 
         // getters and setters
-        QString getName() const;
         void setName(const QString& newName);
 
         // other public methods
@@ -68,67 +144,14 @@ class LeptonProject : public QObject {
 
     private:
 
-        /*
-        A general class to represent a single item in a Lepton project.
-        */
-        class ProjectItem {
-            public:
-                ProjectItem(const QString& _name, const QString& _type, ProjectItem* _parent = 0) {
-                    name = _name;
-                    type = _type;
-                    parent = _parent;
-                    children.clear();
-                }
-
-                ~ProjectItem() {
-                    for (int i = 0, l = children.length(); i < l; i++) {
-                        delete children.at(i);
-                        children[i] = 0;
-                    }
-                    children.clear();
-                    parent = 0;
-                }
-
-                bool hasChildren() {
-                    return !children.isEmpty();
-                }
-
-                int childCount() {
-                    return children.length();
-                }
-
-                void addChild(const QString& _name, const QString& _type) {
-                    ProjectItem* i = new ProjectItem(_name, _type, this);
-                    children.append(i);
-                }
-
-                ProjectItem* getChild(int index) {
-                    if (index < 0 || index >= children.length())
-                        return 0;
-                    else
-                        return children[index];
-                }
-
-                ProjectItem* getParent() {
-                    return parent;
-                }
-
-            private:
-                QString name;
-                QString type;
-                ProjectItem* parent;
-                QList<ProjectItem*> children;
-        };
-
         QDir workingDirectory;      // stores the project's working directory
         QVariantMap projectSpec;    // stores the project specification
-        ProjectItem* project;       // stores a list of all files and directories in the project
 
         void loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> parentDirTypeSpecs = QList<QVariant>(),
                      QList<QVariant> parentFileTypeSpecs = QList<QVariant>());
         /* -loads the contents of a directory that is part of the project */
 
-        bool addItemIfMatched(const QFileInfo& fsItem, ProjectItem* item, const QString& pattern, const QString& type);
+        bool addItemIfMatched(const QFileInfo& fsItem, LeptonProjectItem* item, const QString& pattern, const QString& type);
         /*
             -if the file system item `fsItem`s name matches `pattern`, it is added to the project item `item`
             -returns true if the file was added, false if not

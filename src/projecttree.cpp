@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: March 15, 2015
+Last Modified: March 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -51,15 +51,41 @@ ProjectTree::~ProjectTree() {
 //~reimplemented virtual methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 QModelIndex ProjectTree::index(int row, int column, const QModelIndex & parent) const {
-    return QModelIndex();
+    QModelIndex m;
+    const LeptonProjectItem* p = static_cast<const LeptonProjectItem*>(parent.internalPointer());
+    if (column != 0 || row < 0)
+        return m;
+    else if (p == 0 && row < projects.count()) {
+        m = createIndex(row, column, projects[row]);
+    } else if (p->hasChildren() && row < p->childCount()) {
+        m = createIndex(row, column, (void*)p->getChild(row));
+    }
+    return m;
 }
 
 QModelIndex ProjectTree::parent(const QModelIndex & index) const {
-    return QModelIndex();
+    QModelIndex m;
+    const LeptonProjectItem* item = static_cast<const LeptonProjectItem*>(index.internalPointer());
+
+    if (item == 0)
+        return m;
+
+    const LeptonProject::LeptonProjectItem* itemParent = item->getParent();
+
+    if (itemParent == 0)
+        m = createIndex(0, 0, (void*)0);
+    else if (itemParent->getParent() == 0)
+        m = createIndex(projects.indexOf((LeptonProject*)itemParent), 0, (void*)0);
+    else
+        m = createIndex(itemParent->getParent()->getChildIndex((LeptonProjectItem*)itemParent), 0 , (void*)itemParent);
+    return m;
 }
 
 int ProjectTree::rowCount(const QModelIndex & parent) const {
-    return 0;
+    if (parent.internalPointer() == 0)
+        return projects.count();
+    else
+        return static_cast<const LeptonProjectItem*>(parent.internalPointer())->childCount();
 }
 
 int ProjectTree::columnCount(const QModelIndex & parent) const {
@@ -67,7 +93,14 @@ int ProjectTree::columnCount(const QModelIndex & parent) const {
 }
 
 QVariant ProjectTree::data(const QModelIndex & index, int role) const {
-    return QVariant();
+    QVariant r;
+    if (index.internalPointer() == 0)
+        return QVariant();
+    else {
+        if (role == Qt::DisplayRole)
+            r = QVariant(static_cast<const LeptonProjectItem*>(index.internalPointer())->getName());
+    }
+    return r;
 }
 
 Qt::ItemFlags ProjectTree::flags(const QModelIndex &index) const {
