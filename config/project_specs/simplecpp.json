@@ -1,37 +1,27 @@
 {
     "project_type": "Simple C++ Project",
     "working_directory": {
-        "template_directory": {
-            "name": "src",
-            "file_type": {
-                "type": "header_file",
-                "local_directory_only": false
-            },
-            "file_type": {
-                "type": "source_file",
-                "local_directory_only": false
-            },
-            "file_type": {
-                "type": "c_source_file",
-                "local_directory_only": false
-            },
-            "unknown_file_types": {
-                "are_visible": true,
-                "local_directory_only": false
-            },
-            "unknown_directories": {
-                "are_visible": true,
-                "local_directory_only": false
+        "template_directories": [
+            {   "name": "src",
+                "file_types": [
+                    {"type": "header_file", "local_directory_only": false},
+                    {"type": "source_file", "local_directory_only": false},
+                    {"type": "c_source_file", "local_directory_only": false}
+                ],
+                "unknown_file_types": {
+                    "are_visible": true,
+                    "local_directory_only": false
+                },
+                "unknown_directories": {
+                    "are_visible": true,
+                    "local_directory_only": false
+                }
             }
-        },
-        "template_file": {
-            "name": "Makefile",
-            "type": "makefile"
-        },
-        "template_file": {
-            "name": "README.md",
-            "type": "readme_doc"
-        },
+        ],
+        "template_files": [
+            {"name": "Makefile", "type": "makefile"},
+            {"name": "README.md", "type": "readme_doc"}
+        ],
         "unknown_file_types": {
             "are_visible": true,
             "ignore_hidden": true,

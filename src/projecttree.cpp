@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: March 19, 2015
+Last Modified: March 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -55,10 +55,12 @@ QModelIndex ProjectTree::index(int row, int column, const QModelIndex & parent) 
     const LeptonProjectItem* p = static_cast<const LeptonProjectItem*>(parent.internalPointer());
     if (column != 0 || row < 0)
         return m;
-    else if (p == 0 && row < projects.count()) {
-        m = createIndex(row, column, projects[row]);
-    } else if (p->hasChildren() && row < p->childCount()) {
-        m = createIndex(row, column, (void*)p->getChild(row));
+    else if (p == 0) {
+        if (row < projects.count())
+            m = createIndex(row, column, projects[row]);
+    } else if (p->hasChildren()) {
+        if (row < p->childCount())
+            m = createIndex(row, column, (void*)p->getChild(row));
     }
     return m;
 }
@@ -67,17 +69,23 @@ QModelIndex ProjectTree::parent(const QModelIndex & index) const {
     QModelIndex m;
     const LeptonProjectItem* item = static_cast<const LeptonProjectItem*>(index.internalPointer());
 
-    if (item == 0)
+    if (item == 0)  // if the current item is null (its the root) it can't have a parent
         return m;
 
-    const LeptonProject::LeptonProjectItem* itemParent = item->getParent();
+    const LeptonProjectItem* itemParent = dynamic_cast<const LeptonProjectItem*>(item->getParent());
 
     if (itemParent == 0)
+        // if the parent is null then the parent is the root
         m = createIndex(0, 0, (void*)0);
     else if (itemParent->getParent() == 0)
-        m = createIndex(projects.indexOf((LeptonProject*)itemParent), 0, (void*)0);
-    else
-        m = createIndex(itemParent->getParent()->getChildIndex((LeptonProjectItem*)itemParent), 0 , (void*)itemParent);
+        // if the parents parent (current items grand parent) is null then the parent must be a project (stored in the list)
+        m = createIndex(projects.indexOf((LeptonProject*)itemParent), 0, (void*)itemParent);
+    else {
+        // if both the parent and grand parent of the current item are not null then just use the position of the parent in
+        // inside the grand parent
+        const LeptonProjectItem* grandParent = static_cast<const LeptonProjectItem*>(itemParent->getParent());
+        m = createIndex(grandParent->getChildIndex((LeptonProjectItem*)itemParent), 0 , (void*)itemParent);
+    }
     return m;
 }
 
@@ -89,7 +97,7 @@ int ProjectTree::rowCount(const QModelIndex & parent) const {
 }
 
 int ProjectTree::columnCount(const QModelIndex & parent) const {
-    return 0;
+    return 1;
 }
 
 QVariant ProjectTree::data(const QModelIndex & index, int role) const {

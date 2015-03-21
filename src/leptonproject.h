@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.h
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 19, 2015
+Last Modified: March 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -57,11 +57,7 @@ class LeptonProjectItem {
         }
 
         virtual ~LeptonProjectItem() {
-            for (int i = 0, l = children.length(); i < l; i++) {
-                delete children.at(i);
-                children[i] = 0;
-            }
-            children.clear();
+            clear();
             projectParent = 0;
         }
 
@@ -85,8 +81,11 @@ class LeptonProjectItem {
             return children.length();
         }
 
-        int getChildIndex(LeptonProjectItem* const child) const {
-            return children.indexOf(child);
+        int getChildIndex(LeptonProjectItem* child) const {
+            if (children.isEmpty())
+                return -1;
+            else
+                return children.indexOf(child);
         }
 
         void addChild(const QString& _name, const QString& _type) {
@@ -114,14 +113,24 @@ class LeptonProjectItem {
         LeptonProjectItem() {   // hide default constructor from outside classes but let subclasses use it
             children.clear();
         }
+
+        LeptonProjectItem(const LeptonProjectItem& other){}             //hide default copy constructor
+        LeptonProjectItem& operator= (const LeptonProjectItem& rhs){}   //hide default assignment operator
+
+        /* -removes all childrent from the item */
+        virtual void clear() {
+            for (int i = 0, l = children.length(); i < l; i++) {
+                delete children.at(i);
+                children[i] = 0;
+            }
+            children.clear();
+        }
 };
 
 /*
-The main Lepton project class
+The main Lepton project class.
 */
-class LeptonProject : public QObject, public LeptonProjectItem {
-        Q_OBJECT
-
+class LeptonProject : public LeptonProjectItem {
     public:
         // constructors and destructor
         explicit LeptonProject(const QString& projectDir, const QString& specFilePath = 0);
@@ -136,9 +145,6 @@ class LeptonProject : public QObject, public LeptonProjectItem {
         void loadSpec(const QString& filePath);
         /* -loads the project specification from a file */
 
-    signals:
-
-    public slots:
         void loadProject();
         /* -load the contents of the project */
 

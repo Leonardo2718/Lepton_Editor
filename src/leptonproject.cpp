@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 19, 2015
+Last Modified: March 20, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -45,7 +45,7 @@ Usage Agreement:
 
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonProject::LeptonProject(const QString& projectDir, const QString& specFilePath) : QObject(0), LeptonProjectItem(), workingDirectory(projectDir) {
+LeptonProject::LeptonProject(const QString& projectDir, const QString& specFilePath) : LeptonProjectItem(), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
@@ -65,7 +65,7 @@ LeptonProject::LeptonProject(const QString& projectDir, const QString& specFileP
     loadProject();
 }
 
-LeptonProject::LeptonProject(const QDir& projectDir, const QString& specFilePath) : QObject(0), workingDirectory(projectDir) {
+LeptonProject::LeptonProject(const QDir& projectDir, const QString& specFilePath) : LeptonProjectItem(), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
@@ -132,6 +132,7 @@ void LeptonProject::loadSpec(const QString& filePath) {
 -load the contents of the project
 */
 void LeptonProject::loadProject() {
+    clear();
     loadDir(workingDirectory, projectSpec.value("working_directory").toMap());
 }
 
@@ -146,12 +147,12 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
 
     QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden  | QDir::System | QDir::NoDotAndDotDot, QDir::DirsFirst | QDir::Name);
 
-    QList<QVariant> templateDirSpecs = dirSpec.values("template_directory");
-    QList<QVariant> directoryTypeSpecs = dirSpec.values("directory_type");
+    QList<QVariant> templateDirSpecs = dirSpec.value("template_directories").toList();
+    QList<QVariant> directoryTypeSpecs = dirSpec.value("directory_types").toList();
     directoryTypeSpecs.append(parentDirTypeSpecs);
 
-    QList<QVariant> templateFileSpecs = dirSpec.values("template_file");
-    QList<QVariant> fileTypeSpecs = dirSpec.values("file_type");
+    QList<QVariant> templateFileSpecs = dirSpec.value("template_files").toList();
+    QList<QVariant> fileTypeSpecs = dirSpec.value("file_types").toList();
     fileTypeSpecs.append(parentFileTypeSpecs);
 
     foreach (const QFileInfo& entry, entries) {
@@ -161,8 +162,7 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             foreach (const QVariant& specV, templateDirSpecs) {
                 QVariantMap spec = specV.toMap();
                 if (addItemIfMatched(entry, this,
-                                     spec.value("name").toString(),
-                                     spec.value("type").toString())) {
+                                     spec.value("name").toString(), "directory")) {
                     dirMatched = true;
                     loadDir(entry.dir(), spec, directoryTypeSpecs, fileTypeSpecs);
                     break;
@@ -170,11 +170,11 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             }
 
             if (!dirMatched) {
-                foreach (const QVariant& specV, templateDirSpecs) {
+                foreach (const QVariant& specV, directoryTypeSpecs) {
                     QVariantMap spec = specV.toMap();
                     if (addItemIfMatched(entry, this,
                                          projectSpec.value("directory_types").toMap().value(spec.value("type").toString()).toString(),
-                                         spec.value("type").toString())) {
+                                         "directory")) {
                         dirMatched = true;
                         loadDir(entry.dir(), spec, directoryTypeSpecs, fileTypeSpecs);
                         break;
@@ -183,7 +183,7 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             }
 
             if (!dirMatched && dirSpec.value("unknown_directories").toMap().value("are_visible").toBool())
-                this->addChild(entry.fileName(), "UNKNOWN_TYPE");
+                this->addChild(entry.fileName(), "UNKNOWN_DIRECTORY_TYPE");
 
         } else if (entry.isFile()) {
             bool fileMatched = false;
@@ -199,7 +199,7 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             }
 
             if (!fileMatched) {
-                foreach (const QVariant& specV, templateFileSpecs) {
+                foreach (const QVariant& specV, fileTypeSpecs) {
                     QVariantMap spec = specV.toMap();
                     if (addItemIfMatched(entry, this,
                                          projectSpec.value("file_types").toMap().value(spec.value("type").toString()).toString(),
@@ -211,14 +211,14 @@ void LeptonProject::loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> paren
             }
 
             if (!fileMatched && dirSpec.value("unknown_file_types").toMap().value("are_visible").toBool())
-                this->addChild(entry.fileName(), "UNKNOWN_TYPE");
+                this->addChild(entry.fileName(), "UNKNOWN_FILE_TYPE");
         }
     }
 }
 
 /*
-    -if the file system item `fsItem`s name matches `pattern`, it is added to the project item `item`
-    -returns true if the file was added, false if not
+-if the file system item `fsItem`s name matches `pattern`, it is added to the project item `item`
+-returns true if the file was added, false if not
 */
 bool LeptonProject::addItemIfMatched(const QFileInfo& fsItem, LeptonProjectItem* item, const QString& pattern, const QString& type) {
     QRegularExpression regex(pattern);
