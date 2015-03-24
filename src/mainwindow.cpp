@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: March 20, 2015
+Last Modified: March 23, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -209,12 +209,12 @@ void MainWindow::on_actionNew_Project_triggered() {
 
 void MainWindow::projectItemContextMenuRequested(const QPoint& position) {
 /* -called when project item is right-clicked */
-    /*QModelIndex itemIndex = projectList->indexAt(position);                 //get index of clicked item
+    QModelIndex itemIndex = projectList->indexAt(position);             //get index of clicked item
     if ( ! itemIndex.isValid() ) return;
-    QMenu* menu = new QMenu(projectList);                                   //create menu to be displayed
-    //QList< QAction* > actions = projectListModel->getActionsFor(itemIndex); //get context menu actions for item
+    QMenu* menu = new QMenu(projectList);                               //create menu to be displayed
+    QList< QAction* > actions = projectTree->getActionsFor(itemIndex);  //get context menu actions for item
     menu->addActions(actions);
-    menu->move( projectList->viewport()->mapToGlobal(position) );*/           //move the menu to an appropriat location
+    menu->move( projectList->viewport()->mapToGlobal(position) );       //move the menu to an appropriat location
 }
 
 void MainWindow::openFileRequested(const QString& filePath) {

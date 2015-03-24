@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.h
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: March 15, 2015
+Last Modified: March 23, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,8 +39,9 @@ Usage Agreement:
 // include Qt classes
 #include <QAbstractItemModel>
 #include <QList>
+#include <QAction>
 
-// include other project classes
+// include other project headers
 #include "leptonproject.h"
 
 class ProjectTree : public QAbstractItemModel {
@@ -61,6 +62,11 @@ class ProjectTree : public QAbstractItemModel {
         // reimplemented virtual methods (see QAbstractItemModel documentation)
         Qt::ItemFlags flags(const QModelIndex &index) const;
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
+        // other public methods
+
+        QList<QAction*> getActionsFor(const QModelIndex& index);
+        /* -returns the context menu actions for a particular project item specified by `index` */
 
     private:
         QList<LeptonProject*> projects;

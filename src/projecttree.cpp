@@ -136,3 +136,15 @@ QVariant ProjectTree::headerData(int section, Qt::Orientation orientation, int r
         return QVariant();
 }
 
+
+
+//~other public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+-returns the context menu actions for a particular project item specified by `index`
+*/
+QList<QAction*> ProjectTree::getActionsFor(const QModelIndex& index) {
+    LeptonProjectItem* item = static_cast<LeptonProjectItem*>(index.internalPointer());
+    return item->getActions();
+}
+
