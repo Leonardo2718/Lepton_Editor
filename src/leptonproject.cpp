@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 23, 2015
+Last Modified: March 24, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -139,6 +139,7 @@ void LeptonProject::loadSpec(const QString& filePath) {
 void LeptonProject::loadProject() {
     clear();
     loadDir(this, workingDirectory, projectSpec.value("working_directory").toMap());
+    addContextActionsFor(this, projectSpec.value("project_context_menu").toMap());
 }
 
 
@@ -162,6 +163,7 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
     fileTypeSpecs.append(parentFileTypeSpecs);
 
     foreach (const QFileInfo& entry, entries) {
+        // define variables for later reference
         QString entryName;
         QList<QVariant> templateSpecs;
         QList<QVariant> typeSpecs;
@@ -170,6 +172,7 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
         QVariantMap itemSpec;
         bool itemMatched = false;
 
+        // initiallize reference variables, depending on the type of the filesystem entry
         if (entry.isDir()) {
             entryName = QDir(entry.absoluteFilePath()).dirName();
             templateSpecs = templateDirSpecs;
@@ -186,6 +189,7 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
             continue;
         }
 
+        // check if the entry matches a project item
         foreach (const QVariant& specV, templateSpecs) {
             QVariantMap spec = specV.toMap();
             if (itemNameMatches(entryName, spec.value("name").toString())) {
@@ -195,10 +199,11 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
             }
         }
 
+        // if the entry has not yet been matched, continue checking if the entry matches a project item
         if (!itemMatched) {
             foreach (const QVariant& specV, typeSpecs) {
                 QVariantMap spec = specV.toMap();
-                if (itemNameMatches(entryName, projectSpec.value(itemTypeKey).toMap().value(spec.value("type").toString()).toString())) {
+                if (itemNameMatches(entryName, projectSpec.value(itemTypeKey).toMap().value(spec.value("type").toString()).toMap().value("name_filter").toString())) {
                     itemSpec = spec;
                     itemMatched = true;
                     break;
@@ -206,11 +211,30 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
             }
         }
 
+        QString itemType = itemSpec.value("type").toString();   // store the type of the item
+
         if (itemMatched) {
-            LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, itemSpec.value("type").toString());
-            if (entry.isDir())
-                loadDir(newItem, QDir(entry.absoluteFilePath()), itemSpec, directoryTypeSpecs, fileTypeSpecs);
+            // if the item was matched, add it to the project normally
+            LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, itemType);
+            QVariantMap contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
+
+            if (entry.isDir()) {
+                loadDir(newItem, QDir(entry.absoluteFilePath()), itemSpec, directoryTypeSpecs, fileTypeSpecs);  // load project items in the sub directory
+                if (contextMenuSpecs.value("use_default").toBool()) {
+                    // add default context menu actions for the item if specified in the spec file
+                    addContextActionsFor(newItem, projectSpec.value("default_dir_context_menu").toMap());
+                }
+            } else if (entry.isFile()) {
+                if (contextMenuSpecs.value("use_default").toBool()) {
+                    addContextActionsFor(newItem, projectSpec.value("default_file_context_menu").toMap());
+                }
+            }
+
+            // add context menu actions for the item
+            addContextActionsFor(newItem, contextMenuSpecs.value("actions").toMap());
+
         } else if (dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
+            // if the item was not matched, add it as an unknown item if these are visible
             rootItem->addChild(entryName, "UNKNOWN_ITEM_TYPE");
         }
     }
@@ -227,5 +251,16 @@ bool LeptonProject::itemNameMatches(const QString& itemName, const QString& patt
 
     int offset = 0;
     return validator.validate((QString&)itemName, offset) == QValidator::Acceptable;
+}
+
+/*
+-sets the context menu actions for `item` based on it's type
+*/
+void LeptonProject::addContextActionsFor(LeptonProjectItem* item, const QVariantMap contextSpec) {
+    foreach (const QString actionLabel, contextSpec.keys()) {
+        QAction* a = new QAction(actionLabel, 0);
+        a->setData(contextSpec.value(actionLabel));
+        item->addAction(a);
+    }
 }
 

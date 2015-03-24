@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonprojectitem.cpp
 Author: Leonardo Banderali
 Created: March 23, 2015
-Last Modified: March 23, 2015
+Last Modified: March 24, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,6 +44,11 @@ LeptonProjectItem::LeptonProjectItem(const QString& _name, const QString& _type,
     children.clear();
     contextMenuActions = new QActionGroup(0);
     connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
+}
+
+LeptonProjectItem::LeptonProjectItem() {   // hide default constructor from outside classes but let subclasses use it
+    children.clear();
+    contextMenuActions = new QActionGroup(0);
 }
 
 LeptonProjectItem::~LeptonProjectItem(){
@@ -103,9 +108,9 @@ const LeptonProjectItem* LeptonProjectItem::getChild(int index) const {
         return children[index];
 }
 
-/*void LeptonProjectItem::addAction(QAction* a) {
+void LeptonProjectItem::addAction(QAction* a) {
     contextMenuActions->addAction(a);
-}*/
+}
 
 
 

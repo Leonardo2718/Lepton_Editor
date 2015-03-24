@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonprojectitem.h
 Author: Leonardo Banderali
 Created: March 23, 2015
-Last Modified: March 23, 2015
+Last Modified: March 24, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -71,7 +71,7 @@ class LeptonProjectItem : QObject {
 
         const LeptonProjectItem* getChild(int index) const;
 
-        //void addAction(QAction* a);
+        void addAction(QAction* a);
 
     public slots:
         void contextMenuActionTriggered(QAction *);
@@ -83,9 +83,7 @@ class LeptonProjectItem : QObject {
         QList<LeptonProjectItem*> children; // points to all child items
         QActionGroup* contextMenuActions;   // stores the menu actions that can be used on the project item
 
-        LeptonProjectItem() {   // hide default constructor from outside classes but let subclasses use it
-            children.clear();
-        }
+        LeptonProjectItem();    // hide default constructor from outside classes but let subclasses use it
 
         LeptonProjectItem(const LeptonProjectItem& other){}             //hide default copy constructor
         LeptonProjectItem& operator= (const LeptonProjectItem& rhs){}   //hide default assignment operator

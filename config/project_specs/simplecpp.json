@@ -37,20 +37,61 @@
     },
     "file_types": {
         "header_file": {
-            "name_filter": ".+\\.(h|hpp|hxx)"
+            "name_filter": ".+\\.(h|hpp|hxx)",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
         },
         "source_file": {
-            "name_filter": ".+\\.(cpp|cxx|cc)"
+            "name_filter": ".+\\.(cpp|cxx|cc)",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
         },
         "c_source_file": {
-            "name_filter": ".+\\.c"
+            "name_filter": ".+\\.c",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
         }, 
         "makefile": {
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
         },
         "readme_doc": {
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
         }
     },
     "directory_types": {
-        "source_dir": {}
+        "source_dir": {
+            "context_menu": {
+                "use_default": true
+            }
+        }
+    },
+    "default_file_context_menu": {
+        "Open": "%OPEN_FILE",
+        "Rename": "%RENAME_FILE",
+        "Remove": "%DELETE_FILE"
+    },
+    "default_dir_context_menu": {
+        "Add file": "%ADD_FILE",
+        "Add directory": "%ADD_DIRECTORY",
+        "Rename": "%RENAME_DIR",
+        "Remove": "%REMOVE_DIR"
+    },
+    "project_context_menu": {
+        "Add file": "%ADD_FILE",
+        "Add directory": "%ADD_DIRECTORY",
+        "Refresh": "%REFRESH_PROJECT",
+        "Close": "%CLOSE_PROJECT"
     }
 }
