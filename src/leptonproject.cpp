@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 20, 2015
+Last Modified: March 21, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -45,16 +45,17 @@ Usage Agreement:
 
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonProject::LeptonProject(const QString& projectDir, const QString& specFilePath) : LeptonProjectItem(), workingDirectory(projectDir) {
+LeptonProject::LeptonProject(const QString& projectDir, const QString& specPath) : LeptonProjectItem(), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
 
     // if a project spec file was specified load it, other wise load the default one
-    if (specFilePath.isEmpty())
-        loadSpec(LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json"));
+    if (specPath.isEmpty())
+        specFilePath = LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json");
     else
-        loadSpec(specFilePath);
+        specFilePath = specPath;
+    loadSpec(specFilePath);
 
     // initialize project data
     name = workingDirectory.dirName();
@@ -65,16 +66,17 @@ LeptonProject::LeptonProject(const QString& projectDir, const QString& specFileP
     loadProject();
 }
 
-LeptonProject::LeptonProject(const QDir& projectDir, const QString& specFilePath) : LeptonProjectItem(), workingDirectory(projectDir) {
+LeptonProject::LeptonProject(const QDir& projectDir, const QString& specPath) : LeptonProjectItem(), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
 
     // if a project spec file was specified load it, other wise load the default one
-    if (specFilePath.isEmpty())
-        loadSpec(LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json"));
+    if (specPath.isEmpty())
+        specFilePath = LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json");
     else
-        loadSpec(specFilePath);
+        specFilePath = specPath;
+    loadSpec(specFilePath);
 
     // initialize project data
     name = workingDirectory.dirName();
@@ -106,6 +108,11 @@ void LeptonProject::setName(const QString& newName) {
     }
 }
 
+/* -returns path to the project's spec file */
+const QString& LeptonProject::getSpecFilePath() {
+    return specFilePath;
+}
+
 
 
 //~other public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -120,13 +127,11 @@ void LeptonProject::loadSpec(const QString& filePath) {
     QJsonDocument specDoc = QJsonDocument::fromJson(f.readAll(), &err);
     f.close();
 
-    if (err.error == QJsonParseError::NoError && specDoc.isObject())
+    if (err.error == QJsonParseError::NoError && specDoc.isObject()) {
         projectSpec = specDoc.object().toVariantMap();
+        specFilePath = filePath;
+    }
 }
-
-
-
-//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /*
 -load the contents of the project

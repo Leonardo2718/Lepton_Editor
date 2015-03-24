@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.h
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 20, 2015
+Last Modified: March 21, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,13 +39,16 @@ Usage Agreement:
 #include <QString>
 #include <QDir>
 #include <QVariant>
+#include <QActionGroup>
 
 
 
 /*
 A general class to represent a single item in a Lepton project.
 */
-class LeptonProjectItem {
+class LeptonProjectItem : QObject {
+        Q_OBJECT
+
     public:
         //constructors and destructor
 
@@ -69,6 +72,10 @@ class LeptonProjectItem {
 
         virtual QString getType() const {
             return type;
+        }
+
+        QList<QAction*> getActions() {
+            return contextMenuActions->actions();
         }
 
         // other public functions
@@ -109,6 +116,7 @@ class LeptonProjectItem {
         QString type;                       // stores the type of the project item
         LeptonProjectItem* projectParent;   // points to the parent item
         QList<LeptonProjectItem*> children; // points to all child items
+        QActionGroup* contextMenuActions;   // stores the menu actions that can be used on the project item
 
         LeptonProjectItem() {   // hide default constructor from outside classes but let subclasses use it
             children.clear();
@@ -133,12 +141,13 @@ The main Lepton project class.
 class LeptonProject : public LeptonProjectItem {
     public:
         // constructors and destructor
-        explicit LeptonProject(const QString& projectDir, const QString& specFilePath = 0);
-        explicit LeptonProject(const QDir& projectDir, const QString& specFilePath = 0);
+        explicit LeptonProject(const QString& projectDir, const QString& specPath = 0);
+        explicit LeptonProject(const QDir& projectDir, const QString& specPath = 0);
         ~LeptonProject();
 
         // getters and setters
         void setName(const QString& newName);
+        const QString& getSpecFilePath();   // returns path to the project's spec file
 
         // other public methods
 
@@ -152,6 +161,7 @@ class LeptonProject : public LeptonProjectItem {
 
         QDir workingDirectory;      // stores the project's working directory
         QVariantMap projectSpec;    // stores the project specification
+        QString specFilePath;       // stores path to the project's spec file
 
         void loadDir(QDir dir, QVariantMap dirSpec, QList<QVariant> parentDirTypeSpecs = QList<QVariant>(),
                      QList<QVariant> parentFileTypeSpecs = QList<QVariant>());

@@ -99,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //connect(projectTree, SIGNAL(openFileRequested(QString)), this, SLOT(openFileRequested(QString)) );
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
-    connect(projectList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openFileFromProjecManager(QModelIndex)) );
+    //connect(projectList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openFileFromProjecManager(QModelIndex)) );
     connect(selectorSpaceTab, SIGNAL(triggered(QAction*)), this, SLOT(changeSpaceTabUse(QAction*)) );
     connect(&findReplace, SIGNAL(findClicked(FindReplaceDialog::DialogParameters)), this, SLOT(findInCurrent(FindReplaceDialog::DialogParameters)) );
     connect(&findReplace, SIGNAL(findNextClicked(FindReplaceDialog::DialogParameters)), this, SLOT(findNextInCurrent()) );
@@ -212,10 +212,9 @@ void MainWindow::projectItemContextMenuRequested(const QPoint& position) {
     /*QModelIndex itemIndex = projectList->indexAt(position);                 //get index of clicked item
     if ( ! itemIndex.isValid() ) return;
     QMenu* menu = new QMenu(projectList);                                   //create menu to be displayed
-    QList< QAction* > actions = projectListModel->getActionsFor(itemIndex); //get context menu actions for item
+    //QList< QAction* > actions = projectListModel->getActionsFor(itemIndex); //get context menu actions for item
     menu->addActions(actions);
-    menu->move( projectList->viewport()->mapToGlobal(position) );           //move the menu to an appropriat location
-    menu->show();*/
+    menu->move( projectList->viewport()->mapToGlobal(position) );*/           //move the menu to an appropriat location
 }
 
 void MainWindow::openFileRequested(const QString& filePath) {

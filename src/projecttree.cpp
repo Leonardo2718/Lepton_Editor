@@ -35,6 +35,9 @@ Usage Agreement:
 
 #include "projecttree.h"
 
+// include Qt classes
+#include <QFileIconProvider>
+
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,23 +105,34 @@ int ProjectTree::columnCount(const QModelIndex & parent) const {
 
 QVariant ProjectTree::data(const QModelIndex & index, int role) const {
     QVariant r;
-    if (index.internalPointer() == 0)
+    if (index.internalPointer() == 0 || index.column() != 0)
         return QVariant();
     else {
+        const LeptonProjectItem* item = static_cast<const LeptonProjectItem*>(index.internalPointer());
         if (role == Qt::DisplayRole)
-            r = QVariant(static_cast<const LeptonProjectItem*>(index.internalPointer())->getName());
+            r = QVariant(item->getName());
+        else if (role == Qt::DecorationRole) {
+            QFileIconProvider iconProvider;
+            if (item->hasChildren())
+                r = QVariant(iconProvider.icon(QFileIconProvider::Folder));
+            else
+                r = QVariant(iconProvider.icon(QFileIconProvider::File));
+        }
     }
     return r;
 }
 
 Qt::ItemFlags ProjectTree::flags(const QModelIndex &index) const {
-    if (!index.isValid())
-        return 0;
+    if (!index.isValid() || index.column() != 0)
+        return Qt::NoItemFlags;
     else
-        return QAbstractItemModel::flags(index);
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
 QVariant ProjectTree::headerData(int section, Qt::Orientation orientation, int role) const {
-    return QVariant();
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole && section == 0)
+        return QVariant("Projects");
+    else
+        return QVariant();
 }
 
