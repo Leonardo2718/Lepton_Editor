@@ -43,6 +43,7 @@ Usage Agreement:
 #include <QRegularExpressionValidator>
 
 
+
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 LeptonProject::LeptonProject(const QString& projectDir, const QString& specPath) : LeptonProjectItem(), workingDirectory(projectDir) {
@@ -64,6 +65,9 @@ LeptonProject::LeptonProject(const QString& projectDir, const QString& specPath)
 
     // load the new project
     loadProject();
+
+    // connect signals to slots
+    connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
 }
 
 LeptonProject::LeptonProject(const QDir& projectDir, const QString& specPath) : LeptonProjectItem(), workingDirectory(projectDir) {
@@ -85,6 +89,9 @@ LeptonProject::LeptonProject(const QDir& projectDir, const QString& specPath) : 
 
     // load the new project
     loadProject();
+
+    // connect signals to slots
+    connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
 }
 
 LeptonProject::~LeptonProject() {
@@ -113,6 +120,10 @@ const QString& LeptonProject::getSpecFilePath() {
     return specFilePath;
 }
 
+QList<QAction*> LeptonProject::getActions() {
+    return contextMenuActions->actions();
+}
+
 
 
 //~other public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -139,7 +150,13 @@ void LeptonProject::loadSpec(const QString& filePath) {
 void LeptonProject::loadProject() {
     clear();
     loadDir(this, workingDirectory, projectSpec.value("working_directory").toMap());
-    addContextActionsFor(this, projectSpec.value("project_context_menu").toMap());
+    //addContextActionsFor(this, projectSpec.value("project_context_menu").toMap());
+    QVariantMap contextSpec = projectSpec.value("project_context_menu").toMap();
+    foreach (const QString actionLabel, contextSpec.keys()) {
+        QAction* a = new QAction(actionLabel, 0);
+        a->setData(contextSpec.value(actionLabel));
+        contextMenuActions->addAction(a);
+    }
 }
 
 
@@ -261,6 +278,21 @@ void LeptonProject::addContextActionsFor(LeptonProjectItem* item, const QVariant
         QAction* a = new QAction(actionLabel, 0);
         a->setData(contextSpec.value(actionLabel));
         item->addAction(a);
+    }
+}
+
+
+
+//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
+    QString data = actionTriggered->data().toString();
+    if (data == "%ADD_FILE"){
+    } else if (data == "%ADD_DIRECTORY") {
+    } else if (data == "%REFRESH_PROJECT") {
+    } else if (data == "%RENAME_PROJECT") {
+    } else if (data == "%CLOSE_PROJECT") {
+    } else {
     }
 }
 

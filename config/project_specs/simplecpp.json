@@ -92,6 +92,7 @@
         "Add file": "%ADD_FILE",
         "Add directory": "%ADD_DIRECTORY",
         "Refresh": "%REFRESH_PROJECT",
+        "Rename": "%RENAME_PROJECT",
         "Close": "%CLOSE_PROJECT"
     }
 }

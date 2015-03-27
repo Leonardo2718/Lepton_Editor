@@ -43,7 +43,7 @@ Usage Agreement:
 /*
 A general class to represent a single item in a Lepton project.
 */
-class LeptonProjectItem : QObject {
+class LeptonProjectItem : public QObject {
         Q_OBJECT
 
     public:
@@ -57,7 +57,7 @@ class LeptonProjectItem : QObject {
         virtual QString getName() const;
         virtual QString getType() const;
         const LeptonProjectItem* getParent() const;
-        QList<QAction*> getActions();
+        virtual QList<QAction*> getActions();
 
         // other public functions
 
@@ -74,7 +74,7 @@ class LeptonProjectItem : QObject {
         void addAction(QAction* a);
 
     public slots:
-        void contextMenuActionTriggered(QAction *);
+        virtual void contextMenuActionTriggered(QAction* actionTriggered);
 
     protected:
         QString name;                       // stores the name of the project item

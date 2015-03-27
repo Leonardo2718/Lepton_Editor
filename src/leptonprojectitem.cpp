@@ -46,7 +46,7 @@ LeptonProjectItem::LeptonProjectItem(const QString& _name, const QString& _type,
     connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
 }
 
-LeptonProjectItem::LeptonProjectItem() {   // hide default constructor from outside classes but let subclasses use it
+LeptonProjectItem::LeptonProjectItem() : QObject(0) {   // hide default constructor from outside classes but let subclasses use it
     children.clear();
     contextMenuActions = new QActionGroup(0);
 }
@@ -116,6 +116,17 @@ void LeptonProjectItem::addAction(QAction* a) {
 
 //~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void LeptonProjectItem::contextMenuActionTriggered(QAction*) {
+void LeptonProjectItem::contextMenuActionTriggered(QAction* actionTriggered) {
+    QString data = actionTriggered->data().toString();
+    if (data == "%ADD_FILE"){
+    } else if (data == "%ADD_DIRECTORY") {
+    } else if (data == "%REFRESH_PROJECT") {
+    } else if (data == "%RENAME_DIR") {
+    } else if (data == "%REMOVE_DIR") {
+    } else if (data == "%OPEN_FILE") {
+    } else if (data == "%RENAME_FILE") {
+    } else if (data == "%DELETE_FILE") {
+    } else {
+    }
 }
 

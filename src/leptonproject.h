@@ -45,6 +45,7 @@ Usage Agreement:
 The main Lepton project class.
 */
 class LeptonProject : public LeptonProjectItem {
+
     public:
         // constructors and destructor
         explicit LeptonProject(const QString& projectDir, const QString& specPath = 0);
@@ -54,6 +55,7 @@ class LeptonProject : public LeptonProjectItem {
         // getters and setters
         void setName(const QString& newName);
         const QString& getSpecFilePath();   // returns path to the project's spec file
+        virtual QList<QAction*> getActions();
 
         // other public methods
 
@@ -62,6 +64,9 @@ class LeptonProject : public LeptonProjectItem {
 
         void loadProject();
         /* -load the contents of the project */
+
+    public slots:
+        virtual void contextMenuActionTriggered(QAction* actionTriggered);
 
     private:
 
