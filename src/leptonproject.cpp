@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 24, 2015
+Last Modified: March 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,12 +41,15 @@ Usage Agreement:
 #include <QJsonObject>
 #include <QFile>
 #include <QRegularExpressionValidator>
+#include <QFileDialog>
+#include <QInputDialog>
 
 
-
+#include <QDebug>
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonProject::LeptonProject(const QString& projectDir, const QString& specPath) : LeptonProjectItem(), workingDirectory(projectDir) {
+LeptonProject::LeptonProject(QAbstractItemModel* _qModel, const QString& projectDir, const QString& specPath)
+: LeptonProjectItem(this), qModel(_qModel), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
@@ -61,16 +64,18 @@ LeptonProject::LeptonProject(const QString& projectDir, const QString& specPath)
     // initialize project data
     name = workingDirectory.dirName();
     type = projectSpec.value("project_type").toString();
-    projectParent = 0;
+    parentItem = 0;
 
     // load the new project
-    loadProject();
+    loadItem();
 
     // connect signals to slots
     connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
+    connect(this, SIGNAL(refreshProject()), this, SLOT(loadItem()));
 }
 
-LeptonProject::LeptonProject(const QDir& projectDir, const QString& specPath) : LeptonProjectItem(), workingDirectory(projectDir) {
+/*LeptonProject::LeptonProject(QAbstractItemModel* _qModel, const QDir& projectDir, const QString& specPath)
+: LeptonProjectItem(this), qModel(_qModel), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
@@ -85,14 +90,15 @@ LeptonProject::LeptonProject(const QDir& projectDir, const QString& specPath) : 
     // initialize project data
     name = workingDirectory.dirName();
     type = projectSpec.value("project_type").toString();
-    projectParent = 0;
+    parentItem = 0;
 
     // load the new project
-    loadProject();
+    loadItem();
 
     // connect signals to slots
     connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
-}
+    connect(this, SIGNAL(refreshProject()), this, SLOT(loadProject()));
+}*/
 
 LeptonProject::~LeptonProject() {
 }
@@ -144,10 +150,13 @@ void LeptonProject::loadSpec(const QString& filePath) {
     }
 }
 
+//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 /*
 -load the contents of the project
 */
-void LeptonProject::loadProject() {
+void LeptonProject::loadItem() {
+    emit qModel->layoutAboutToBeChanged();
     clear();
     loadDir(this, workingDirectory, projectSpec.value("working_directory").toMap());
     //addContextActionsFor(this, projectSpec.value("project_context_menu").toMap());
@@ -156,6 +165,36 @@ void LeptonProject::loadProject() {
         QAction* a = new QAction(actionLabel, 0);
         a->setData(contextSpec.value(actionLabel));
         contextMenuActions->addAction(a);
+    }
+    emit qModel->layoutChanged();
+}
+
+void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
+    QString data = actionTriggered->data().toString();
+    if (data == "%ADD_FILE"){
+        QString fileName = QFileDialog::getSaveFileName(0, "New File", workingDirectory.absolutePath());
+        if (!fileName.isEmpty()) {
+            QFile newFile(fileName);
+            newFile.open(QFile::ReadWrite);
+            newFile.close();
+            emit refreshProject();
+        }
+    } else if (data == "%ADD_DIRECTORY") {
+        QString dirName = QFileDialog::getSaveFileName(0, "New Directory", workingDirectory.absolutePath(), QString(),0,QFileDialog::ShowDirsOnly);
+        if (!dirName.isEmpty()) {
+            workingDirectory.mkpath(dirName);
+            emit refreshProject();
+        }
+    } else if (data == "%REFRESH_PROJECT") {
+        emit refreshProject();
+    } else if (data == "%RENAME_PROJECT") {
+        QString newName = QInputDialog::getText(0, "Rename Project", tr("Change project name from \"%0\" to:").arg(getName()));
+        if (!newName.isEmpty()) {
+            setName(newName);
+            emit refreshProject();
+        }
+    } else if (data == "%CLOSE_PROJECT") {
+    } else {
     }
 }
 
@@ -252,7 +291,18 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
 
         } else if (dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
             // if the item was not matched, add it as an unknown item if these are visible
-            rootItem->addChild(entryName, "UNKNOWN_ITEM_TYPE");
+            LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, "UNKNOWN_ITEM_TYPE");
+
+            if (entry.isDir()) {
+                loadDir(newItem, QDir(entry.absoluteFilePath()), itemSpec, directoryTypeSpecs, fileTypeSpecs);
+                if (dirSpec.value(unknownTypes).toMap().value("context_menu").toMap().value("use_default").toBool()) {
+                    addContextActionsFor(newItem, projectSpec.value("default_dir_context_menu").toMap());
+                }
+            } else if (entry.isFile()) {
+                if (dirSpec.value(unknownTypes).toMap().value("context_menu").toMap().value("use_default").toBool()) {
+                    addContextActionsFor(newItem, projectSpec.value("default_file_context_menu").toMap());
+                }
+            }
         }
     }
 }
@@ -278,21 +328,6 @@ void LeptonProject::addContextActionsFor(LeptonProjectItem* item, const QVariant
         QAction* a = new QAction(actionLabel, 0);
         a->setData(contextSpec.value(actionLabel));
         item->addAction(a);
-    }
-}
-
-
-
-//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
-    QString data = actionTriggered->data().toString();
-    if (data == "%ADD_FILE"){
-    } else if (data == "%ADD_DIRECTORY") {
-    } else if (data == "%REFRESH_PROJECT") {
-    } else if (data == "%RENAME_PROJECT") {
-    } else if (data == "%CLOSE_PROJECT") {
-    } else {
     }
 }
 

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonprojectitem.cpp
 Author: Leonardo Banderali
 Created: March 23, 2015
-Last Modified: March 24, 2015
+Last Modified: March 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -37,23 +37,27 @@ Usage Agreement:
 
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonProjectItem::LeptonProjectItem(const QString& _name, const QString& _type, LeptonProjectItem* _parent) : QObject(0) {
+LeptonProjectItem::LeptonProjectItem(const QString& _name, const QString& _type,
+                                     LeptonProjectItem* _project, LeptonProjectItem* _parent) : QObject(0), project(_project) {
     name = _name;
     type = _type;
-    projectParent = _parent;
+    parentItem = _parent;
     children.clear();
     contextMenuActions = new QActionGroup(0);
     connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
 }
 
-LeptonProjectItem::LeptonProjectItem() : QObject(0) {   // hide default constructor from outside classes but let subclasses use it
+/*
+A special constructor only for derived classes.
+*/
+LeptonProjectItem::LeptonProjectItem(LeptonProjectItem* _project) : QObject(0), project(_project) {
     children.clear();
     contextMenuActions = new QActionGroup(0);
 }
 
 LeptonProjectItem::~LeptonProjectItem(){
     clear();
-    projectParent = 0;
+    parentItem = 0;
 }
 
 
@@ -73,7 +77,7 @@ QList<QAction*> LeptonProjectItem::getActions() {
 }
 
 const LeptonProjectItem* LeptonProjectItem::getParent() const {
-    return projectParent;
+    return parentItem;
 }
 
 
@@ -96,7 +100,7 @@ int LeptonProjectItem::getChildIndex(LeptonProjectItem* child) const {
 }
 
 const LeptonProjectItem* LeptonProjectItem::addChild(const QString& _name, const QString& _type) {
-    LeptonProjectItem* i = new LeptonProjectItem(_name, _type, this);
+    LeptonProjectItem* i = new LeptonProjectItem(_name, _type, project, this);
     children.append(i);
     return i;
 }
@@ -115,6 +119,9 @@ void LeptonProjectItem::addAction(QAction* a) {
 
 
 //~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void LeptonProjectItem::loadItem() {
+}
 
 void LeptonProjectItem::contextMenuActionTriggered(QAction* actionTriggered) {
     QString data = actionTriggered->data().toString();

@@ -11,10 +11,18 @@
                 ],
                 "unknown_file_types": {
                     "are_visible": true,
+                    "context_menu": {
+                        "use_default": true,
+                        "actions": {}
+                    },
                     "local_directory_only": false
                 },
                 "unknown_directories": {
                     "are_visible": true,
+                    "context_menu": {
+                        "use_default": true,
+                        "actions": {}
+                    },
                     "local_directory_only": false
                 }
             }
@@ -26,12 +34,20 @@
         "unknown_file_types": {
             "are_visible": true,
             "ignore_hidden": true,
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            },
             "local_directory_only": false
         },
         "unknown_directories": {
             "are_visible": true,
             "ignore_hidden": true,
             "ignore": [".git", "bin", "lib"],
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            },
             "local_directory_only": false
         }
     },

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonprojectitem.h
 Author: Leonardo Banderali
 Created: March 23, 2015
-Last Modified: March 24, 2015
+Last Modified: March 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -38,6 +38,7 @@ Usage Agreement:
 #include <QObject>
 #include <QAction>
 #include <QActionGroup>
+//#include <QAbstractItemModel>
 
 
 /*
@@ -49,7 +50,7 @@ class LeptonProjectItem : public QObject {
     public:
         //constructors and destructor
 
-        LeptonProjectItem(const QString& _name, const QString& _type, LeptonProjectItem* _parent = 0);
+        LeptonProjectItem(const QString& _name, const QString& _type, LeptonProjectItem* _project, LeptonProjectItem* _parent = 0);
 
         virtual ~LeptonProjectItem();
 
@@ -73,20 +74,26 @@ class LeptonProjectItem : public QObject {
 
         void addAction(QAction* a);
 
+    signals:
+        void refreshProject();  // emited when an item has changed and the project needs to be refreshed
+
     public slots:
+        virtual void loadItem();    // loads this item and its children
         virtual void contextMenuActionTriggered(QAction* actionTriggered);
 
     protected:
         QString name;                       // stores the name of the project item
         QString type;                       // stores the type of the project item
-        LeptonProjectItem* projectParent;   // points to the parent item
+        LeptonProjectItem* const project;   // points to the project this item belongs to
+        LeptonProjectItem* parentItem;      // points to the parent item
         QList<LeptonProjectItem*> children; // points to all child items
         QActionGroup* contextMenuActions;   // stores the menu actions that can be used on the project item
 
-        LeptonProjectItem();    // hide default constructor from outside classes but let subclasses use it
+        LeptonProjectItem(LeptonProjectItem* _project);
+        /*  A special constructor only for derived classes. */
 
-        LeptonProjectItem(const LeptonProjectItem& other){}             //hide default copy constructor
-        LeptonProjectItem& operator= (const LeptonProjectItem& rhs){}   //hide default assignment operator
+        LeptonProjectItem(const LeptonProjectItem& other):project(other.project){}  //hide default copy constructor
+        LeptonProjectItem& operator= (const LeptonProjectItem& rhs){}               //hide default assignment operator
 
         /* -removes all childrent from the item */
         virtual void clear() {
@@ -95,6 +102,10 @@ class LeptonProjectItem : public QObject {
                 children[i] = 0;
             }
             children.clear();
+            foreach(QAction* a, contextMenuActions->actions()) {
+                contextMenuActions->removeAction(a);
+                delete a;
+            }
         }
 };
 

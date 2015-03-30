@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: March 20, 2015
+Last Modified: March 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,7 +43,7 @@ Usage Agreement:
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTree::ProjectTree(QObject* parent) : QAbstractItemModel(parent) {
-    projects.append(new LeptonProject("test_project"));
+    projects.append(new LeptonProject(this, "test_project"));
 }
 
 ProjectTree::~ProjectTree() {

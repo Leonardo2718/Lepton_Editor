@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.h
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 24, 2015
+Last Modified: March 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -37,6 +37,7 @@ Usage Agreement:
 // include Qt classes
 #include <QDir>
 #include <QVariant>
+#include <QAbstractItemModel>
 
 // include other project headers
 #include "leptonprojectitem.h"
@@ -48,8 +49,8 @@ class LeptonProject : public LeptonProjectItem {
 
     public:
         // constructors and destructor
-        explicit LeptonProject(const QString& projectDir, const QString& specPath = 0);
-        explicit LeptonProject(const QDir& projectDir, const QString& specPath = 0);
+        explicit LeptonProject(QAbstractItemModel* _qModel, const QString& projectDir, const QString& specPath = 0);
+        //explicit LeptonProject(QAbstractItemModel* _qModel, const QDir& projectDir, const QString& specPath = 0);
         ~LeptonProject();
 
         // getters and setters
@@ -62,10 +63,10 @@ class LeptonProject : public LeptonProjectItem {
         void loadSpec(const QString& filePath);
         /* -loads the project specification from a file */
 
-        void loadProject();
-        /* -load the contents of the project */
-
     public slots:
+        void loadItem();
+        /*  load the contents of the project */
+
         virtual void contextMenuActionTriggered(QAction* actionTriggered);
 
     private:
@@ -73,6 +74,7 @@ class LeptonProject : public LeptonProjectItem {
         QDir workingDirectory;      // stores the project's working directory
         QVariantMap projectSpec;    // stores the project specification
         QString specFilePath;       // stores path to the project's spec file
+        QAbstractItemModel* qModel; // points the project tree model used to display projects
 
         void loadDir(LeptonProjectItem* rootItem, QDir dir, const QVariantMap& dirSpec, const QList<QVariant>& parentDirTypeSpecs = QList<QVariant>(),
                      const QList<QVariant>& parentFileTypeSpecs = QList<QVariant>());
