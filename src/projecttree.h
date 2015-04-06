@@ -55,6 +55,7 @@ class ProjectTree : public ProjectTreeItem {
         virtual int getChildIndex(const ProjectTreeItem* child) const;      // returns internal index of a child
         virtual bool hasChildren() const;
         virtual int childCount() const;
+        bool removedChild(ProjectTreeItem* child);                          // must be overloaded to avoid calling ProjectTreeItem::removedChild(ProjectTreeItem*)
 
         // other public functions
         void createNewProject();    // opens dialog to create a new project

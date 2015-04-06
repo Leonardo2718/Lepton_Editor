@@ -63,8 +63,6 @@ ProjectTreeModel::~ProjectTreeModel() {
 QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & parent) const {
     QModelIndex m;
     //const LeptonProjectItem* p = static_cast<const LeptonProjectItem*>(parent.internalPointer());
-    if (parent.internalPointer() == this)
-        return m;
     if (column != 0 || row < 0)
         return m;
     else if (!parent.isValid()) {
@@ -80,8 +78,6 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & par
 
 QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
     QModelIndex m;
-    if (index.internalPointer() == this)
-        return m;
     if (index.isValid()) {
         const ProjectTreeItem* p = (static_cast<const ProjectTreeItem*>(index.internalPointer()))->getParent();
         if (p == 0)
@@ -99,8 +95,6 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
 }
 
 int ProjectTreeModel::rowCount(const QModelIndex & parent) const {
-    if (parent.internalPointer() == this)
-        return 0;
     if (parent.internalPointer() == 0)
         return projects->childCount();
     else {
@@ -172,8 +166,15 @@ void ProjectTreeModel::openProjectRequest() {
 //~private slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void ProjectTreeModel::beginRemoveItem(const ProjectTreeItem* item) {
-    const ProjectTreeItem* p = item->getParent();
-    this->beginRemoveRows(createIndex(p->getParent()->getChildIndex(p), 0, (void*)p), p->getChildIndex(item), p->getChildIndex(item));
+    const ProjectTreeItem* itemParent = item->getParent();
+    int itemRow = itemParent->getChildIndex(item);
+    const ProjectTreeItem* grandParent = itemParent->getParent();
+    QModelIndex parentIndex;
+    if (grandParent == 0)
+        parentIndex = createIndex(0, 0, (void*)0);
+    else
+        parentIndex = createIndex(grandParent->getChildIndex(itemParent), 0, (void*)itemParent);
+    this->beginRemoveRows(parentIndex, itemRow, itemRow);
 }
 
 void ProjectTreeModel::endRemoveItem() {

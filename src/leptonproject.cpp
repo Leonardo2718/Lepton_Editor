@@ -166,32 +166,32 @@ void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
             QFile newFile(fileName);
             newFile.open(QFile::ReadWrite);
             newFile.close();
-            //emit p->changingItem(this);
-            //emit refreshProject();
             reloadProject();
-            //emit p->itemChanged();
         }
     } else if (adtionData == "%ADD_DIRECTORY") {
         QString dirName = QFileDialog::getSaveFileName(0, "New Directory", workingDirectory.absolutePath(), QString(),0,QFileDialog::ShowDirsOnly);
         if (!dirName.isEmpty()) {
             workingDirectory.mkpath(dirName);
-            //emit p->changingItem(this);
             reloadProject();
-            //emit p->itemChanged();
         }
     } else if (adtionData == "%REFRESH_PROJECT") {
-        //emit p->changingItem(this);
         reloadProject();
-        //emit p->itemChanged();
     } else if (adtionData == "%RENAME_PROJECT") {
         QString newName = QInputDialog::getText(0, "Rename Project", tr("Change project name from \"%0\" to:").arg(data.value("name").toString()));
         if (!newName.isEmpty()) {
             setName(newName);
-            //emit p->changingItem(this);
             reloadProject();
-            //emit p->itemChanged();
         }
     } else if (adtionData == "%CLOSE_PROJECT") {
+        emit p->removingItem(this);
+        ProjectTreeItem* p = (ProjectTreeItem*)this->getParent();
+        bool r = p->removedChild(this);
+        if(r) {
+            emit p->itemRemoved();
+            delete this;
+        } else {
+            emit p->itemRemoved();
+        }
     } else {
     }
 }
@@ -310,21 +310,7 @@ void LeptonProject::loadDir(ProjectTreeItem* rootItem, QDir dir, const QVariantM
             // add context menu actions for the item
             addContextActionsFor(newItem, contextMenuSpecs.value("actions").toMap());
 
-        } /*else if (dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
-            // if the item was not matched, add it as an unknown item if these are visible
-            LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, "UNKNOWN_ITEM_TYPE");
-
-            if (entry.isDir()) {
-                loadDir(newItem, QDir(entry.absoluteFilePath()), itemSpec, directoryTypeSpecs, fileTypeSpecs);
-                if (dirSpec.value(unknownTypes).toMap().value("context_menu").toMap().value("use_default").toBool()) {
-                    addContextActionsFor(newItem, projectSpec.value("default_dir_context_menu").toMap());
-                }
-            } else if (entry.isFile()) {
-                if (dirSpec.value(unknownTypes).toMap().value("context_menu").toMap().value("use_default").toBool()) {
-                    addContextActionsFor(newItem, projectSpec.value("default_file_context_menu").toMap());
-                }
-            }
-        }*/
+        }
     }
 }
 

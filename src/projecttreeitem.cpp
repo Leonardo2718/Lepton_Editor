@@ -102,6 +102,13 @@ const ProjectTreeItem* ProjectTreeItem::addChild(const QVariantMap& _data) {
     return newChild;
 }
 
+/*
+removes a specific child
+*/
+bool ProjectTreeItem::removedChild(ProjectTreeItem* child) {
+    return children.removeOne(child);
+}
+
 void ProjectTreeItem::addContextMenuAction(QAction* a) {
     contextMenuActions->addAction(a);
 }
@@ -109,6 +116,23 @@ void ProjectTreeItem::addContextMenuAction(QAction* a) {
 QList<QAction*> ProjectTreeItem::getContextMenuActions() {
     return contextMenuActions->actions();
 }
+
+
+
+//~protected functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+removes all children
+*/
+void ProjectTreeItem::clear() {
+    qDeleteAll(children);
+    children.clear();
+    foreach (QAction* a, contextMenuActions->actions()) {
+        contextMenuActions->removeAction(a);
+        delete a;
+    }
+}
+
 
 
 //~protected slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,18 +148,6 @@ void ProjectTreeItem::contextMenuActionTriggered(QAction* actionTriggered) {
     } else if (data == "%RENAME_FILE") {
     } else if (data == "%DELETE_FILE") {
     } else {
-    }
-}
-
-/*
-removes all children
-*/
-void ProjectTreeItem::clear() {
-    qDeleteAll(children);
-    children.clear();
-    foreach (QAction* a, contextMenuActions->actions()) {
-        contextMenuActions->removeAction(a);
-        delete a;
     }
 }
 

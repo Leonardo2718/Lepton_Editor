@@ -65,6 +65,8 @@ class ProjectTreeItem : public QObject {
 
         virtual const ProjectTreeItem* addChild(const QVariantMap& _data);
 
+        virtual bool removedChild(ProjectTreeItem* child);        // removes a specific child
+
         void addContextMenuAction(QAction* a);
         QList<QAction*> getContextMenuActions();
 
@@ -77,9 +79,9 @@ class ProjectTreeItem : public QObject {
     public slots:
 
     protected:
-        QVariantMap data;   // data stored by the item
+        QVariantMap data;                                   // data stored by the item
 
-        void clear();       // removes all children
+        void clear();                                       // removes all children
 
     protected slots:
         virtual void contextMenuActionTriggered(QAction* actionTriggered);

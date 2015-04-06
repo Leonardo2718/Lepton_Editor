@@ -73,6 +73,10 @@ int ProjectTree::childCount() const {
     return children.count();
 }
 
+bool ProjectTree::removedChild(ProjectTreeItem* child) {
+    return children.removeOne((LeptonProject*)child);
+}
+
 
 
 //~other public functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,7 +94,6 @@ void ProjectTree::createNewProject() {
 opens dialog to open an already existing project
 */
 void ProjectTree::openProject() {
-    //QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QString(),QFileDialog::ShowDirsOnly);
     QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
     if (!dirName.isEmpty())
         addChild(dirName);
