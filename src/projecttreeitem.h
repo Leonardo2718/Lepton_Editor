@@ -59,9 +59,9 @@ class ProjectTreeItem : public QObject {
 
         // other public functions
 
-        bool hasChildren() const;
+        virtual bool hasChildren() const;
 
-        int childCount() const;
+        virtual int childCount() const;
 
         virtual const ProjectTreeItem* addChild(const QVariantMap& _data);
 

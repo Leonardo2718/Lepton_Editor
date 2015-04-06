@@ -54,6 +54,8 @@ class ProjectTree : public ProjectTreeItem {
         virtual const ProjectTreeItem* getChild(int index) const;           // returns pointer to the child with a given index
         virtual int getChildIndex(const ProjectTreeItem* child) const;      // returns internal index of a child
         virtual const ProjectTreeItem* addChild();
+        virtual bool hasChildren() const;
+        virtual int childCount() const;
 
     private:
         QList<LeptonProject*> children;

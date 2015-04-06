@@ -44,7 +44,7 @@ ProjectTreeItem::ProjectTreeItem(const QVariantMap& _data, ProjectTreeItem* _par
 }
 
 ProjectTreeItem::~ProjectTreeItem(){
-    qDeleteAll(children);
+    clear();
     delete contextMenuActions;
 }
 
@@ -132,5 +132,6 @@ removes all children
 */
 void ProjectTreeItem::clear() {
     qDeleteAll(children);
+    children.clear();
 }
 

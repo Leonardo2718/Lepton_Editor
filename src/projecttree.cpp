@@ -72,3 +72,12 @@ const ProjectTreeItem* ProjectTree::addChild() {
         children.append(p);
     }
 }
+
+bool ProjectTree::hasChildren() const {
+    return !children.isEmpty();
+}
+
+int ProjectTree::childCount() const {
+    return children.count();
+}
+

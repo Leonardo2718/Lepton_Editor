@@ -46,6 +46,10 @@ ProjectTreeModel::ProjectTreeModel(QObject* parent) : QAbstractItemModel(parent)
     //QVariantMap d;
     //d.insert("header_0", "Projects");
     projects = new ProjectTree();
+    connect(projects, SIGNAL(changingItem(const ProjectTreeItem*)), this, SLOT(beginChangeItem(const ProjectTreeItem*)));
+    connect(projects, SIGNAL(itemChanged()), this, SLOT(endChangeItem()));
+    connect(projects, SIGNAL(removingItem(const ProjectTreeItem*)), this, SLOT(beginRemoveItem(const ProjectTreeItem*)));
+    connect(projects, SIGNAL(itemRemoved()), this, SLOT(endRemoveItem()));
 }
 
 ProjectTreeModel::~ProjectTreeModel() {
@@ -59,6 +63,8 @@ ProjectTreeModel::~ProjectTreeModel() {
 QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & parent) const {
     QModelIndex m;
     //const LeptonProjectItem* p = static_cast<const LeptonProjectItem*>(parent.internalPointer());
+    if (parent.internalPointer() == this)
+        return m;
     if (column != 0 || row < 0)
         return m;
     else if (!parent.isValid()) {
@@ -74,6 +80,8 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & par
 
 QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
     QModelIndex m;
+    if (index.internalPointer() == this)
+        return m;
     if (index.isValid()) {
         const ProjectTreeItem* p = (static_cast<const ProjectTreeItem*>(index.internalPointer()))->getParent();
         if (p == 0)
@@ -81,17 +89,25 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
             m = createIndex(0, 0, (void*)0);
         else {
             const ProjectTreeItem* grandParent = static_cast<const ProjectTreeItem*>(p->getParent());
-            m = createIndex(grandParent->getChildIndex(p), 0 , (void*)p);
+            if (grandParent == 0)
+                m = createIndex(projects->getChildIndex(p), 0, (void*)p);
+            else
+                m = createIndex(grandParent->getChildIndex(p), 0 , (void*)p);
         }
     }
     return m;
 }
 
 int ProjectTreeModel::rowCount(const QModelIndex & parent) const {
+    if (parent.internalPointer() == this)
+        return 0;
     if (parent.internalPointer() == 0)
         return projects->childCount();
-    else
-        return static_cast<const ProjectTreeItem*>(parent.internalPointer())->childCount();
+    else {
+        const ProjectTreeItem* p = static_cast<const ProjectTreeItem*>(parent.internalPointer());
+        p->hasChildren();
+        return p->childCount();
+    }
 }
 
 int ProjectTreeModel::columnCount(const QModelIndex & parent) const {

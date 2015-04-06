@@ -65,6 +65,10 @@ LeptonProject::LeptonProject(ProjectTreeItem* _parent, const QString& projectDir
     // set project data
     data.insert("name", workingDirectory.dirName());
     data.insert("type", projectSpec.value("project_type").toString());
+    data.insert("is_directory", true);
+    data.insert("is_file", false);
+    QFileIconProvider iconProvider;
+    data.insert("icon", iconProvider.icon(QFileIconProvider::Folder));
 
     // load the new project
     reloadProject();
@@ -152,7 +156,7 @@ void LeptonProject::reloadProject() {
 void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
     QString adtionData = actionTriggered->data().toString();
 
-    ProjectTreeItem* p;
+    ProjectTreeItem* p = this;
     while(p->getParent() != 0)
         p = (ProjectTreeItem*)p->getParent();
 
@@ -162,30 +166,30 @@ void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
             QFile newFile(fileName);
             newFile.open(QFile::ReadWrite);
             newFile.close();
-            emit p->changingItem(this);
+            //emit p->changingItem(this);
             //emit refreshProject();
             reloadProject();
-            emit p->itemChanged();
+            //emit p->itemChanged();
         }
     } else if (adtionData == "%ADD_DIRECTORY") {
         QString dirName = QFileDialog::getSaveFileName(0, "New Directory", workingDirectory.absolutePath(), QString(),0,QFileDialog::ShowDirsOnly);
         if (!dirName.isEmpty()) {
             workingDirectory.mkpath(dirName);
-            emit p->changingItem(this);
+            //emit p->changingItem(this);
             reloadProject();
-            emit p->itemChanged();
+            //emit p->itemChanged();
         }
     } else if (adtionData == "%REFRESH_PROJECT") {
-        emit p->changingItem(this);
+        //emit p->changingItem(this);
         reloadProject();
-        emit p->itemChanged();
+        //emit p->itemChanged();
     } else if (adtionData == "%RENAME_PROJECT") {
         QString newName = QInputDialog::getText(0, "Rename Project", tr("Change project name from \"%0\" to:").arg(data.value("name").toString()));
         if (!newName.isEmpty()) {
             setName(newName);
-            emit p->changingItem(this);
+            //emit p->changingItem(this);
             reloadProject();
-            emit p->itemChanged();
+            //emit p->itemChanged();
         }
     } else if (adtionData == "%CLOSE_PROJECT") {
     } else {
