@@ -65,19 +65,43 @@ int ProjectTree::getChildIndex(const ProjectTreeItem* child) const {
     return children.indexOf((LeptonProject*)child);
 }
 
-const ProjectTreeItem* ProjectTree::addChild() {
-    QString dirName = QFileDialog::getSaveFileName(0, "New Project", QDir::homePath(), QString(),0,QFileDialog::ShowDirsOnly);
-    if (!dirName.isEmpty() && QDir::home().mkdir(dirName)) {
-        LeptonProject* p = new LeptonProject(this, dirName);
-        children.append(p);
-    }
-}
-
 bool ProjectTree::hasChildren() const {
     return !children.isEmpty();
 }
 
 int ProjectTree::childCount() const {
     return children.count();
+}
+
+
+
+//~other public functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+opens dialog to create a new project
+*/
+void ProjectTree::createNewProject() {
+    QString dirName = QFileDialog::getSaveFileName(0, "New Project", QDir::homePath(), QString(),0,QFileDialog::ShowDirsOnly);
+    if (!dirName.isEmpty() && QDir::home().mkdir(dirName))
+        addChild(dirName);
+}
+
+/*
+opens dialog to open an already existing project
+*/
+void ProjectTree::openProject() {
+    //QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QString(),QFileDialog::ShowDirsOnly);
+    QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
+    if (!dirName.isEmpty())
+        addChild(dirName);
+}
+
+
+
+//~private functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+const ProjectTreeItem* ProjectTree::addChild(const QString& dirName) {
+    LeptonProject* p = new LeptonProject(this, dirName);
+    children.append(p);
 }
 

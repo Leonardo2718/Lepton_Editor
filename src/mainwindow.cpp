@@ -95,6 +95,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     //connect signals to appropriate slots
     connect(projectList, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(projectItemContextMenuRequested(QPoint)) );
+    connect(ui->actionNew_Project, SIGNAL(triggered()), projectTree, SLOT(newProjectRequest()));
+    connect(ui->actionOpen_Project, SIGNAL(triggered()), projectTree, SLOT(openProjectRequest()));
     //connect(projectListModel, SIGNAL(openFileRequested(QString)), this, SLOT(openFileRequested(QString)) );
     //connect(projectTree, SIGNAL(openFileRequested(QString)), this, SLOT(openFileRequested(QString)) );
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );

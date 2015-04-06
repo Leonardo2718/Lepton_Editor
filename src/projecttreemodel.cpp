@@ -123,11 +123,6 @@ QVariant ProjectTreeModel::data(const QModelIndex & index, int role) const {
         if (role == Qt::DisplayRole)
             r = item->getDataItem("name");
         else if (role == Qt::DecorationRole) {
-            /*QFileIconProvider iconProvider;
-            if (item->hasChildren())
-                r = QVariant(iconProvider.icon(QFileIconProvider::Folder));
-            else
-                r = QVariant(iconProvider.icon(QFileIconProvider::File));*/
             r = item->getDataItem("icon");
         }
     }
@@ -164,8 +159,12 @@ QList<QAction*> ProjectTreeModel::getActionsFor(const QModelIndex& index) {
 
 //~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void ProjectTreeModel::addNewProject() {
-    projects->addChild();
+void ProjectTreeModel::newProjectRequest() {
+    projects->createNewProject();
+}
+
+void ProjectTreeModel::openProjectRequest() {
+    projects->openProject();
 }
 
 

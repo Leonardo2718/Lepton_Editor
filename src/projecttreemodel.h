@@ -70,7 +70,8 @@ class ProjectTreeModel : public QAbstractItemModel {
         /* -returns the context menu actions for a particular project item specified by `index` */
 
     public slots:
-        void addNewProject();
+        void newProjectRequest();
+        void openProjectRequest();
 
     private slots:
         void beginRemoveItem(const ProjectTreeItem* item);

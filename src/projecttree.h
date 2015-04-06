@@ -53,12 +53,17 @@ class ProjectTree : public ProjectTreeItem {
 
         virtual const ProjectTreeItem* getChild(int index) const;           // returns pointer to the child with a given index
         virtual int getChildIndex(const ProjectTreeItem* child) const;      // returns internal index of a child
-        virtual const ProjectTreeItem* addChild();
         virtual bool hasChildren() const;
         virtual int childCount() const;
 
+        // other public functions
+        void createNewProject();    // opens dialog to create a new project
+        void openProject();         // opens dialog to open an already existing project
+
     private:
         QList<LeptonProject*> children;
+
+        virtual const ProjectTreeItem* addChild(const QString& dirName);
 };
 
 #endif // PROJECTTREE_H

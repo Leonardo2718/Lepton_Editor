@@ -133,5 +133,9 @@ removes all children
 void ProjectTreeItem::clear() {
     qDeleteAll(children);
     children.clear();
+    foreach (QAction* a, contextMenuActions->actions()) {
+        contextMenuActions->removeAction(a);
+        delete a;
+    }
 }
 
