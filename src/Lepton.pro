@@ -20,7 +20,9 @@ SOURCES += main.cpp\
     findreplacedialog.cpp \
     projecttree.cpp \
     leptonproject.cpp \
-    leptonprojectitem.cpp
+    leptonprojectitem.cpp \
+    projecttreeitem.cpp \
+    projecttreemodel.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -35,7 +37,9 @@ HEADERS  += mainwindow.h \
     findreplacedialog.h \
     projecttree.h \
     leptonproject.h \
-    leptonprojectitem.h
+    leptonprojectitem.h \
+    projecttreeitem.h \
+    projecttreemodel.h
 
 FORMS    += mainwindow.ui \
     settingseditor.ui \

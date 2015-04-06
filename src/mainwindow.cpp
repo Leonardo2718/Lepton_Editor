@@ -88,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     projectList = new QTreeView(this);
     ui->projectManagerArea->layout()->addWidget(projectList);
     //projectListModel = new ProjectModel();
-    projectTree = new ProjectTree();
+    projectTree = new ProjectTreeModel();
     //projectList->setModel(projectListModel);
     projectList->setModel(projectTree);
     projectList->setContextMenuPolicy(Qt::CustomContextMenu);

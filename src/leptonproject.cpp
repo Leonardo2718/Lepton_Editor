@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 29, 2015
+Last Modified: April 5, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,13 +43,14 @@ Usage Agreement:
 #include <QRegularExpressionValidator>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QFileIconProvider>
 
 
 #include <QDebug>
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-LeptonProject::LeptonProject(QAbstractItemModel* _qModel, const QString& projectDir, const QString& specPath)
-: LeptonProjectItem(this), qModel(_qModel), workingDirectory(projectDir) {
+LeptonProject::LeptonProject(ProjectTreeItem* _parent, const QString& projectDir, const QString& specPath)
+: ProjectTreeItem(QVariantMap(), _parent), workingDirectory(projectDir) {
     // if the project directory does not exist, create it
     if (!workingDirectory.exists())
         workingDirectory.mkdir(workingDirectory.absolutePath());
@@ -61,44 +62,17 @@ LeptonProject::LeptonProject(QAbstractItemModel* _qModel, const QString& project
         specFilePath = specPath;
     loadSpec(specFilePath);
 
-    // initialize project data
-    name = workingDirectory.dirName();
-    type = projectSpec.value("project_type").toString();
-    parentItem = 0;
+    // set project data
+    data.insert("name", workingDirectory.dirName());
+    data.insert("type", projectSpec.value("project_type").toString());
 
     // load the new project
-    loadItem();
+    reloadProject();
 
     // connect signals to slots
-    connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
-    connect(this, SIGNAL(refreshProject()), this, SLOT(loadItem()));
+    //connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
+    //connect(this, SIGNAL(refreshProject()), this, SLOT(loadItem()));
 }
-
-/*LeptonProject::LeptonProject(QAbstractItemModel* _qModel, const QDir& projectDir, const QString& specPath)
-: LeptonProjectItem(this), qModel(_qModel), workingDirectory(projectDir) {
-    // if the project directory does not exist, create it
-    if (!workingDirectory.exists())
-        workingDirectory.mkdir(workingDirectory.absolutePath());
-
-    // if a project spec file was specified load it, other wise load the default one
-    if (specPath.isEmpty())
-        specFilePath = LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json");
-    else
-        specFilePath = specPath;
-    loadSpec(specFilePath);
-
-    // initialize project data
-    name = workingDirectory.dirName();
-    type = projectSpec.value("project_type").toString();
-    parentItem = 0;
-
-    // load the new project
-    loadItem();
-
-    // connect signals to slots
-    connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
-    connect(this, SIGNAL(refreshProject()), this, SLOT(loadProject()));
-}*/
 
 LeptonProject::~LeptonProject() {
 }
@@ -115,9 +89,9 @@ void LeptonProject::setName(const QString& newName) {
     ########################################################################################*/
 
     if(workingDirectory.cdUp()) {   // cd into the parent directory
-        workingDirectory.rename(name, newName); // rename the project directory
-        workingDirectory.cd(newName);           // cd back into the renamed directory
-        name = newName;
+        workingDirectory.rename(data.value("name").toString(), newName);    // rename the project directory
+        workingDirectory.cd(newName);                                       // cd back into the renamed directory
+        data.insert("name", newName);
     }
 }
 
@@ -126,9 +100,9 @@ const QString& LeptonProject::getSpecFilePath() {
     return specFilePath;
 }
 
-QList<QAction*> LeptonProject::getActions() {
+/*QList<QAction*> LeptonProject::getActions() {
     return contextMenuActions->actions();
-}
+}*/
 
 
 
@@ -155,8 +129,12 @@ void LeptonProject::loadSpec(const QString& filePath) {
 /*
 -load the contents of the project
 */
-void LeptonProject::loadItem() {
-    emit qModel->layoutAboutToBeChanged();
+void LeptonProject::reloadProject() {
+    ProjectTreeItem* p = this;
+    while(p->getParent() != 0)
+        p = (ProjectTreeItem*)p->getParent();
+    emit p->changingItem(this);
+    //emit qModel->layoutAboutToBeChanged();
     clear();
     loadDir(this, workingDirectory, projectSpec.value("working_directory").toMap());
     //addContextActionsFor(this, projectSpec.value("project_context_menu").toMap());
@@ -164,36 +142,52 @@ void LeptonProject::loadItem() {
     foreach (const QString actionLabel, contextSpec.keys()) {
         QAction* a = new QAction(actionLabel, 0);
         a->setData(contextSpec.value(actionLabel));
-        contextMenuActions->addAction(a);
+        //contextMenuActions->addAction(a);
+        addContextMenuAction(a);
     }
-    emit qModel->layoutChanged();
+    emit p->itemChanged();
+    //emit qModel->layoutChanged();
 }
 
 void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
-    QString data = actionTriggered->data().toString();
-    if (data == "%ADD_FILE"){
+    QString adtionData = actionTriggered->data().toString();
+
+    ProjectTreeItem* p;
+    while(p->getParent() != 0)
+        p = (ProjectTreeItem*)p->getParent();
+
+    if (adtionData == "%ADD_FILE"){
         QString fileName = QFileDialog::getSaveFileName(0, "New File", workingDirectory.absolutePath());
         if (!fileName.isEmpty()) {
             QFile newFile(fileName);
             newFile.open(QFile::ReadWrite);
             newFile.close();
-            emit refreshProject();
+            emit p->changingItem(this);
+            //emit refreshProject();
+            reloadProject();
+            emit p->itemChanged();
         }
-    } else if (data == "%ADD_DIRECTORY") {
+    } else if (adtionData == "%ADD_DIRECTORY") {
         QString dirName = QFileDialog::getSaveFileName(0, "New Directory", workingDirectory.absolutePath(), QString(),0,QFileDialog::ShowDirsOnly);
         if (!dirName.isEmpty()) {
             workingDirectory.mkpath(dirName);
-            emit refreshProject();
+            emit p->changingItem(this);
+            reloadProject();
+            emit p->itemChanged();
         }
-    } else if (data == "%REFRESH_PROJECT") {
-        emit refreshProject();
-    } else if (data == "%RENAME_PROJECT") {
-        QString newName = QInputDialog::getText(0, "Rename Project", tr("Change project name from \"%0\" to:").arg(getName()));
+    } else if (adtionData == "%REFRESH_PROJECT") {
+        emit p->changingItem(this);
+        reloadProject();
+        emit p->itemChanged();
+    } else if (adtionData == "%RENAME_PROJECT") {
+        QString newName = QInputDialog::getText(0, "Rename Project", tr("Change project name from \"%0\" to:").arg(data.value("name").toString()));
         if (!newName.isEmpty()) {
             setName(newName);
-            emit refreshProject();
+            emit p->changingItem(this);
+            reloadProject();
+            emit p->itemChanged();
         }
-    } else if (data == "%CLOSE_PROJECT") {
+    } else if (adtionData == "%CLOSE_PROJECT") {
     } else {
     }
 }
@@ -205,7 +199,7 @@ void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
 /*
 -loads the contents of a directory that is part of the project
 */
-void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVariantMap& dirSpec,
+void LeptonProject::loadDir(ProjectTreeItem* rootItem, QDir dir, const QVariantMap& dirSpec,
                             const QList<QVariant>& parentDirTypeSpecs, const QList<QVariant>& parentFileTypeSpecs ) {
 
     QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden  | QDir::System | QDir::NoDotAndDotDot, QDir::DirsFirst | QDir::Name);
@@ -227,15 +221,17 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
         QString unknownTypes;
         QVariantMap itemSpec;
         bool itemMatched = false;
+        bool isDir = entry.isDir();
+        bool isFile = entry.isFile();
 
         // initiallize reference variables, depending on the type of the filesystem entry
-        if (entry.isDir()) {
+        if (isDir) {
             entryName = QDir(entry.absoluteFilePath()).dirName();
             templateSpecs = templateDirSpecs;
             typeSpecs = directoryTypeSpecs;
             itemTypeKey = "directory_types";
             unknownTypes = "unknown_file_types";
-        } else if (entry.isFile()) {
+        } else if (isFile) {
             entryName = entry.fileName();
             templateSpecs = templateFileSpecs;
             typeSpecs = fileTypeSpecs;
@@ -269,18 +265,39 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
 
         QString itemType = itemSpec.value("type").toString();   // store the type of the item
 
+        if (!itemMatched && dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
+            itemType = "UNKNOWN_ITEM_TYPE";
+            itemSpec = dirSpec.value(unknownTypes).toMap();
+            itemMatched = true;
+        }
+
         if (itemMatched) {
             // if the item was matched, add it to the project normally
-            LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, itemType);
+
+            QVariantMap newData;
+            newData.insert("name", entryName);
+            newData.insert("type", itemType);
+            newData.insert("is_directory", isDir);
+            newData.insert("is_file", isFile);
+            newData.insert("item_spec", itemSpec);
+            QFileIconProvider iconProvider;
+            if (isDir)
+                newData.insert("icon", iconProvider.icon(QFileIconProvider::Folder));
+            else if (isFile)
+                newData.insert("icon", iconProvider.icon(QFileIconProvider::File));
+            else
+                newData.insert("icon", QIcon());
+            ProjectTreeItem* newItem = (ProjectTreeItem*)rootItem->addChild(newData);
+            //LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, itemType);
             QVariantMap contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
 
-            if (entry.isDir()) {
+            if (isDir) {
                 loadDir(newItem, QDir(entry.absoluteFilePath()), itemSpec, directoryTypeSpecs, fileTypeSpecs);  // load project items in the sub directory
                 if (contextMenuSpecs.value("use_default").toBool()) {
                     // add default context menu actions for the item if specified in the spec file
                     addContextActionsFor(newItem, projectSpec.value("default_dir_context_menu").toMap());
                 }
-            } else if (entry.isFile()) {
+            } else if (isFile) {
                 if (contextMenuSpecs.value("use_default").toBool()) {
                     addContextActionsFor(newItem, projectSpec.value("default_file_context_menu").toMap());
                 }
@@ -289,7 +306,7 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
             // add context menu actions for the item
             addContextActionsFor(newItem, contextMenuSpecs.value("actions").toMap());
 
-        } else if (dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
+        } /*else if (dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
             // if the item was not matched, add it as an unknown item if these are visible
             LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, "UNKNOWN_ITEM_TYPE");
 
@@ -303,7 +320,7 @@ void LeptonProject::loadDir(LeptonProjectItem* rootItem, QDir dir, const QVarian
                     addContextActionsFor(newItem, projectSpec.value("default_file_context_menu").toMap());
                 }
             }
-        }
+        }*/
     }
 }
 
@@ -323,11 +340,11 @@ bool LeptonProject::itemNameMatches(const QString& itemName, const QString& patt
 /*
 -sets the context menu actions for `item` based on it's type
 */
-void LeptonProject::addContextActionsFor(LeptonProjectItem* item, const QVariantMap contextSpec) {
+void LeptonProject::addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec) {
     foreach (const QString actionLabel, contextSpec.keys()) {
         QAction* a = new QAction(actionLabel, 0);
         a->setData(contextSpec.value(actionLabel));
-        item->addAction(a);
+        item->addContextMenuAction(a);
     }
 }
 

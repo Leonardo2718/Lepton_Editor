@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.h
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: March 29, 2015
+Last Modified: April 5, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,23 +40,23 @@ Usage Agreement:
 #include <QAbstractItemModel>
 
 // include other project headers
-#include "leptonprojectitem.h"
+//#include "leptonprojectitem.h"
+#include "projecttreeitem.h"
 
 /*
 The main Lepton project class.
 */
-class LeptonProject : public LeptonProjectItem {
+class LeptonProject : public ProjectTreeItem {
 
     public:
         // constructors and destructor
-        explicit LeptonProject(QAbstractItemModel* _qModel, const QString& projectDir, const QString& specPath = 0);
-        //explicit LeptonProject(QAbstractItemModel* _qModel, const QDir& projectDir, const QString& specPath = 0);
+        explicit LeptonProject(ProjectTreeItem* _parent, const QString& projectDir, const QString& specPath = 0);
         ~LeptonProject();
 
         // getters and setters
         void setName(const QString& newName);
         const QString& getSpecFilePath();   // returns path to the project's spec file
-        virtual QList<QAction*> getActions();
+        //virtual QList<QAction*> getActions();
 
         // other public methods
 
@@ -64,7 +64,7 @@ class LeptonProject : public LeptonProjectItem {
         /* -loads the project specification from a file */
 
     public slots:
-        void loadItem();
+        void reloadProject();
         /*  load the contents of the project */
 
         virtual void contextMenuActionTriggered(QAction* actionTriggered);
@@ -74,16 +74,15 @@ class LeptonProject : public LeptonProjectItem {
         QDir workingDirectory;      // stores the project's working directory
         QVariantMap projectSpec;    // stores the project specification
         QString specFilePath;       // stores path to the project's spec file
-        QAbstractItemModel* qModel; // points the project tree model used to display projects
 
-        void loadDir(LeptonProjectItem* rootItem, QDir dir, const QVariantMap& dirSpec, const QList<QVariant>& parentDirTypeSpecs = QList<QVariant>(),
+        void loadDir(ProjectTreeItem* rootItem, QDir dir, const QVariantMap& dirSpec, const QList<QVariant>& parentDirTypeSpecs = QList<QVariant>(),
                      const QList<QVariant>& parentFileTypeSpecs = QList<QVariant>());
         /* -loads the contents of a directory that is part of the project */
 
         bool itemNameMatches(const QString& itemName, const QString& pattern);
         /*  -return true if `itemName` matches the pattern */
 
-        void addContextActionsFor(LeptonProjectItem* item, const QVariantMap contextSpec);
+        void addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec);
         /*  -sets the context menu actions for `item` based on it's type */
 };
 

@@ -2,17 +2,17 @@
 Project: Lepton Editor
 File: projecttree.h
 Author: Leonardo Banderali
-Created: March 14, 2015
-Last Modified: March 23, 2015
+Created: April 5, 2015
+Last Modified: April 5, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
     flexible and extensible code editor which developers can easily customize to their
     liking.
 
-    The ProjectTree class is a subclass of QAbstractItemModel that represents a list of
-    Lepton projects in a tree structure.  It is used to display a list of projects in a
-    QTreeView object.
+    The ProjectTree class is represents the root item for the projects tree.  All direct
+    children of this root class are actual Lepton projects.  This class is used to facilitate
+    project management.
 
 Copyright (C) 2015 Leonardo Banderali
 
@@ -37,39 +37,26 @@ Usage Agreement:
 #define PROJECTTREE_H
 
 // include Qt classes
-#include <QAbstractItemModel>
 #include <QList>
-#include <QAction>
 
 // include other project headers
+#include "projecttreeitem.h"
 #include "leptonproject.h"
 
-class ProjectTree : public QAbstractItemModel {
+class ProjectTree : public ProjectTreeItem {
     Q_OBJECT
 
     public:
         // constructors and destructor
-        explicit ProjectTree(QObject* parent = 0);
+        explicit ProjectTree();
         ~ProjectTree();
 
-        // reimplemented pure virtual methods (see QAbstractItemModel documentation)
-        QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
-        QModelIndex parent(const QModelIndex & index) const;
-        int rowCount(const QModelIndex & parent = QModelIndex()) const;
-        int columnCount(const QModelIndex & parent = QModelIndex()) const;
-        QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-
-        // reimplemented virtual methods (see QAbstractItemModel documentation)
-        Qt::ItemFlags flags(const QModelIndex &index) const;
-        QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-
-        // other public methods
-
-        QList<QAction*> getActionsFor(const QModelIndex& index);
-        /* -returns the context menu actions for a particular project item specified by `index` */
+        virtual const ProjectTreeItem* getChild(int index) const;           // returns pointer to the child with a given index
+        virtual int getChildIndex(const ProjectTreeItem* child) const;      // returns internal index of a child
+        virtual const ProjectTreeItem* addChild();
 
     private:
-        QList<LeptonProject*> projects;
+        QList<LeptonProject*> children;
 };
 
 #endif // PROJECTTREE_H
