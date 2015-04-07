@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: April 5, 2015
+Last Modified: April 6, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -154,13 +154,13 @@ void LeptonProject::reloadProject() {
 }
 
 void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
-    QString adtionData = actionTriggered->data().toString();
+    QString actionData = actionTriggered->data().toString();
 
     ProjectTreeItem* p = this;
     while(p->getParent() != 0)
         p = (ProjectTreeItem*)p->getParent();
 
-    if (adtionData == "%ADD_FILE"){
+    if (actionData == "%ADD_FILE"){
         QString fileName = QFileDialog::getSaveFileName(0, "New File", workingDirectory.absolutePath());
         if (!fileName.isEmpty()) {
             QFile newFile(fileName);
@@ -168,21 +168,21 @@ void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
             newFile.close();
             reloadProject();
         }
-    } else if (adtionData == "%ADD_DIRECTORY") {
+    } else if (actionData == "%ADD_DIRECTORY") {
         QString dirName = QFileDialog::getSaveFileName(0, "New Directory", workingDirectory.absolutePath(), QString(),0,QFileDialog::ShowDirsOnly);
         if (!dirName.isEmpty()) {
             workingDirectory.mkpath(dirName);
             reloadProject();
         }
-    } else if (adtionData == "%REFRESH_PROJECT") {
+    } else if (actionData == "%REFRESH_PROJECT") {
         reloadProject();
-    } else if (adtionData == "%RENAME_PROJECT") {
+    } else if (actionData == "%RENAME_PROJECT") {
         QString newName = QInputDialog::getText(0, "Rename Project", tr("Change project name from \"%0\" to:").arg(data.value("name").toString()));
         if (!newName.isEmpty()) {
             setName(newName);
             reloadProject();
         }
-    } else if (adtionData == "%CLOSE_PROJECT") {
+    } else if (actionData == "%CLOSE_PROJECT") {
         emit p->removingItem(this);
         ProjectTreeItem* p = (ProjectTreeItem*)this->getParent();
         bool r = p->removedChild(this);
@@ -284,6 +284,7 @@ void LeptonProject::loadDir(ProjectTreeItem* rootItem, QDir dir, const QVariantM
             newData.insert("is_directory", isDir);
             newData.insert("is_file", isFile);
             newData.insert("item_spec", itemSpec);
+            newData.insert("path", entry.absoluteFilePath());
             QFileIconProvider iconProvider;
             if (isDir)
                 newData.insert("icon", iconProvider.icon(QFileIconProvider::Folder));

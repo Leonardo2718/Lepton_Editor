@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: April 5, 2015
+Last Modified: April 6, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -65,7 +65,7 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & par
     //const LeptonProjectItem* p = static_cast<const LeptonProjectItem*>(parent.internalPointer());
     if (column != 0 || row < 0)
         return m;
-    else if (!parent.isValid()) {
+    else if (!parent.isValid() || parent.internalPointer() == 0) {
         if (row < projects->childCount())
             m = createIndex(row, column, (void*)projects->getChild(row));
     } else {
@@ -78,8 +78,9 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & par
 
 QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
     QModelIndex m;
-    if (index.isValid()) {
-        const ProjectTreeItem* p = (static_cast<const ProjectTreeItem*>(index.internalPointer()))->getParent();
+    if (index.isValid() && index.internalPointer() != 0) {
+        const ProjectTreeItem* i =static_cast<const ProjectTreeItem*>(index.internalPointer());
+        const ProjectTreeItem* p = i->getParent();
         if (p == 0)
             // if the parent is null then the parent is the root
             m = createIndex(0, 0, (void*)0);
@@ -186,6 +187,15 @@ void ProjectTreeModel::beginChangeItem(const ProjectTreeItem* item) {
 }
 
 void ProjectTreeModel::endChangeItem() {
+    /*const ProjectTreeItem* itemParent = item->getParent();
+    int itemRow = itemParent->getChildIndex(item);
+    const ProjectTreeItem* grandParent = itemParent->getParent();
+    QModelIndex parentIndex;
+    if (grandParent == 0)
+        parentIndex = createIndex(0, 0, (void*)0);
+    else
+        parentIndex = createIndex(grandParent->getChildIndex(itemParent), 0, (void*)itemParent);*/
+    emit dataChanged(createIndex(0, 0, (void*)0), createIndex(0, 0, (void*)0));
     emit layoutChanged();
 }
 

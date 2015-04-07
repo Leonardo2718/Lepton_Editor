@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreeitem.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: April 5, 2015
+Last Modified: April 6, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -32,6 +32,13 @@ Usage Agreement:
 */
 
 #include "projecttreeitem.h"
+
+// include Qt classes
+#include <QFileInfo>
+#include <QFile>
+#include <QDir>
+#include <QFileDialog>
+#include <QInputDialog>
 
 
 
@@ -119,6 +126,20 @@ QList<QAction*> ProjectTreeItem::getContextMenuActions() {
 
 
 
+//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+load contents of the current project
+*/
+void ProjectTreeItem::reloadProject() {
+    ProjectTreeItem* p = this;
+    while(p->getParent()->getParent() != 0)
+        p = (ProjectTreeItem*)p->getParent();
+    p->reloadProject();
+}
+
+
+
 //~protected functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /*
@@ -138,15 +159,46 @@ void ProjectTreeItem::clear() {
 //~protected slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void ProjectTreeItem::contextMenuActionTriggered(QAction* actionTriggered) {
-    QString data = actionTriggered->data().toString();
-    if (data == "%ADD_FILE"){
-    } else if (data == "%ADD_DIRECTORY") {
-    } else if (data == "%REFRESH_PROJECT") {
-    } else if (data == "%RENAME_DIR") {
-    } else if (data == "%REMOVE_DIR") {
-    } else if (data == "%OPEN_FILE") {
-    } else if (data == "%RENAME_FILE") {
-    } else if (data == "%DELETE_FILE") {
+    QString actionData = actionTriggered->data().toString();
+    const bool isDir = data.value("is_directory").toBool();
+    const bool isFile = data.value("is_file").toBool();
+    const QString path = data.value("path").toString();
+
+    if (actionData == "%ADD_FILE" && isDir){
+        QString fileName = QFileDialog::getSaveFileName(0, "New File", path);
+        if (!fileName.isEmpty()) {
+            QFile newFile(fileName);
+            newFile.open(QFile::ReadWrite);
+            newFile.close();
+            reloadProject();
+        }
+    } else if (actionData == "%ADD_DIRECTORY" && isDir) {
+        QString dirName = QFileDialog::getSaveFileName(0, "New Directory", path, QString(),0,QFileDialog::ShowDirsOnly);
+        if (!dirName.isEmpty()) {
+            QDir dir(path);
+            dir.mkpath(dirName);
+            reloadProject();
+        }
+    } else if (actionData == "%RENAME_DIR" && isDir) {
+        QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(data.value("name").toString()));
+        if (!newName.isEmpty()) {
+            QDir dir(path);
+            dir.cdUp();
+            dir.rename(data.value("name").toString(), newName);
+            reloadProject();
+        }
+    } else if (actionData == "%REMOVE_DIR" && isDir) {
+    } else if (actionData == "%OPEN_FILE" && isFile) {
+    } else if (actionData == "%RENAME_FILE" && isFile) {
+        QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
+        if (!newName.isEmpty()) {
+            QDir dir = QFileInfo(path).absoluteDir();
+            dir.rename(data.value("name").toString(), newName);
+            reloadProject();
+        }
+    } else if (actionData == "%DELETE_FILE" && isFile) {
+    } else if (actionData == "%REFRESH_PROJECT") {
+        reloadProject();
     } else {
     }
 }
