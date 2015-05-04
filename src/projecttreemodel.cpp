@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: April 6, 2015
+Last Modified: April 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,7 +36,7 @@ Usage Agreement:
 #include "projecttreemodel.h"
 
 // include Qt classes
-
+#include <QDebug>
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,7 +79,10 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & par
 QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
     QModelIndex m;
     if (index.isValid() && index.internalPointer() != 0) {
-        const ProjectTreeItem* i =static_cast<const ProjectTreeItem*>(index.internalPointer());
+        void* q = index.internalPointer();
+        qDebug() << q;
+        const ProjectTreeItem* i = (const ProjectTreeItem*)q;
+        qDebug() << i->childCount();
         const ProjectTreeItem* p = i->getParent();
         if (p == 0)
             // if the parent is null then the parent is the root
@@ -96,7 +99,7 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
 }
 
 int ProjectTreeModel::rowCount(const QModelIndex & parent) const {
-    if (parent.internalPointer() == 0)
+    if (!parent.isValid() || parent.internalPointer() == 0)
         return projects->childCount();
     else {
         const ProjectTreeItem* p = static_cast<const ProjectTreeItem*>(parent.internalPointer());
@@ -167,7 +170,7 @@ void ProjectTreeModel::openProjectRequest() {
 //~private slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void ProjectTreeModel::beginRemoveItem(const ProjectTreeItem* item) {
-    const ProjectTreeItem* itemParent = item->getParent();
+    /*const ProjectTreeItem* itemParent = item->getParent();
     int itemRow = itemParent->getChildIndex(item);
     const ProjectTreeItem* grandParent = itemParent->getParent();
     QModelIndex parentIndex;
@@ -175,7 +178,9 @@ void ProjectTreeModel::beginRemoveItem(const ProjectTreeItem* item) {
         parentIndex = createIndex(0, 0, (void*)0);
     else
         parentIndex = createIndex(grandParent->getChildIndex(itemParent), 0, (void*)itemParent);
-    this->beginRemoveRows(parentIndex, itemRow, itemRow);
+    this->beginRemoveRows(parentIndex, itemRow, itemRow);*/
+    if (projects->childCount() > 0)
+        this->beginRemoveRows(index(0,0,QModelIndex()), 0, projects->childCount());
 }
 
 void ProjectTreeModel::endRemoveItem() {
@@ -195,7 +200,7 @@ void ProjectTreeModel::endChangeItem() {
         parentIndex = createIndex(0, 0, (void*)0);
     else
         parentIndex = createIndex(grandParent->getChildIndex(itemParent), 0, (void*)itemParent);*/
-    emit dataChanged(createIndex(0, 0, (void*)0), createIndex(0, 0, (void*)0));
+    //emit dataChanged(createIndex(0, 0, (void*)0), createIndex(0, 0, (void*)0));
     emit layoutChanged();
 }
 

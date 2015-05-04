@@ -78,8 +78,8 @@ LeptonProject::LeptonProject(ProjectTreeItem* _parent, const QString& projectDir
     //connect(this, SIGNAL(refreshProject()), this, SLOT(loadItem()));
 }
 
-LeptonProject::~LeptonProject() {
-}
+/*LeptonProject::~LeptonProject() {
+}*/
 
 
 
@@ -184,8 +184,8 @@ void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
         }
     } else if (actionData == "%CLOSE_PROJECT") {
         emit p->removingItem(this);
-        ProjectTreeItem* p = (ProjectTreeItem*)this->getParent();
-        bool r = p->removedChild(this);
+        ProjectTreeItem* par = (ProjectTreeItem*)this->getParent();
+        bool r = par->removedChild(this);
         if(r) {
             emit p->itemRemoved();
             delete this;

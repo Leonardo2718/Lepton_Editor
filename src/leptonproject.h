@@ -51,7 +51,7 @@ class LeptonProject : public ProjectTreeItem {
     public:
         // constructors and destructor
         explicit LeptonProject(ProjectTreeItem* _parent, const QString& projectDir, const QString& specPath = 0);
-        ~LeptonProject();
+        //~LeptonProject();
 
         // getters and setters
         void setName(const QString& newName);

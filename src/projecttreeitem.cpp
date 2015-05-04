@@ -132,10 +132,11 @@ QList<QAction*> ProjectTreeItem::getContextMenuActions() {
 load contents of the current project
 */
 void ProjectTreeItem::reloadProject() {
-    ProjectTreeItem* p = this;
+    /*ProjectTreeItem* p = this;
     while(p->getParent()->getParent() != 0)
         p = (ProjectTreeItem*)p->getParent();
-    p->reloadProject();
+    p->reloadProject();*/
+    parent->reloadProject();
 }
 
 
