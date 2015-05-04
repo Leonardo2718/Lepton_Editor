@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.h
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: April 5, 2015
+Last Modified: May 4, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,13 +43,13 @@ Usage Agreement:
 #include "projecttreeitem.h"
 #include "leptonproject.h"
 
-class ProjectTree : public ProjectTreeItem {
+class ProjectTreeRoot : public ProjectTreeItem {
     Q_OBJECT
 
     public:
         // constructors and destructor
-        explicit ProjectTree();
-        ~ProjectTree();
+        explicit ProjectTreeRoot();
+        ~ProjectTreeRoot();
 
         virtual const ProjectTreeItem* getChild(int index) const;           // returns pointer to the child with a given index
         virtual int getChildIndex(const ProjectTreeItem* child) const;      // returns internal index of a child

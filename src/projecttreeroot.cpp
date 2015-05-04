@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: April 5, 2015
+Last Modified: May 4, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -33,7 +33,7 @@ Usage Agreement:
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "projecttree.h"
+#include "projecttreeroot.h"
 
 // include Qt classes
 #include <QFileDialog>
@@ -43,37 +43,37 @@ Usage Agreement:
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectTree::ProjectTree() : ProjectTreeItem(QVariantMap(), 0) {
+ProjectTreeRoot::ProjectTreeRoot() : ProjectTreeItem(QVariantMap(), 0) {
     LeptonProject* p = new LeptonProject(this, "/home/leonardo/Programming/Lepton_Editor/build-Lepton-Desktop-Debug/test_project");
     children.append(p);
 }
 
-ProjectTree::~ProjectTree() {
+ProjectTreeRoot::~ProjectTreeRoot() {
     qDeleteAll(children);
 }
 
 /*
 returns pointer to the child with a given index
-*/const ProjectTreeItem* ProjectTree::getChild(int index) const {
+*/const ProjectTreeItem* ProjectTreeRoot::getChild(int index) const {
     return children.at(index);
 }
 
 /*
 returns internal index of a child
 */
-int ProjectTree::getChildIndex(const ProjectTreeItem* child) const {
+int ProjectTreeRoot::getChildIndex(const ProjectTreeItem* child) const {
     return children.indexOf((LeptonProject*)child);
 }
 
-bool ProjectTree::hasChildren() const {
+bool ProjectTreeRoot::hasChildren() const {
     return !children.isEmpty();
 }
 
-int ProjectTree::childCount() const {
+int ProjectTreeRoot::childCount() const {
     return children.count();
 }
 
-bool ProjectTree::removedChild(ProjectTreeItem* child) {
+bool ProjectTreeRoot::removedChild(ProjectTreeItem* child) {
     return children.removeOne((LeptonProject*)child);
 }
 
@@ -84,7 +84,7 @@ bool ProjectTree::removedChild(ProjectTreeItem* child) {
 /*
 opens dialog to create a new project
 */
-void ProjectTree::createNewProject() {
+void ProjectTreeRoot::createNewProject() {
     QString dirName = QFileDialog::getSaveFileName(0, "New Project", QDir::homePath(), QString(),0,QFileDialog::ShowDirsOnly);
     if (!dirName.isEmpty() && QDir::home().mkdir(dirName))
         addChild(dirName);
@@ -93,7 +93,7 @@ void ProjectTree::createNewProject() {
 /*
 opens dialog to open an already existing project
 */
-void ProjectTree::openProject() {
+void ProjectTreeRoot::openProject() {
     QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
     if (!dirName.isEmpty())
         addChild(dirName);
@@ -103,7 +103,7 @@ void ProjectTree::openProject() {
 
 //~private functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const ProjectTreeItem* ProjectTree::addChild(const QString& dirName) {
+const ProjectTreeItem* ProjectTreeRoot::addChild(const QString& dirName) {
     LeptonProject* p = new LeptonProject(this, dirName);
     children.append(p);
 }

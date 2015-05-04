@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: April 12, 2015
+Last Modified: May 4, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -37,6 +37,7 @@ Usage Agreement:
 
 // include Qt classes
 #include <QDebug>
+#include "projecttreeroot.h"
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,7 +46,8 @@ ProjectTreeModel::ProjectTreeModel(QObject* parent) : QAbstractItemModel(parent)
     //projects.append(new LeptonProject(this, "test_project"));
     //QVariantMap d;
     //d.insert("header_0", "Projects");
-    projects = new ProjectTree();
+    itemContextMenuActions = 0;
+    projects = new ProjectTreeRoot();
     connect(projects, SIGNAL(changingItem(const ProjectTreeItem*)), this, SLOT(beginChangeItem(const ProjectTreeItem*)));
     connect(projects, SIGNAL(itemChanged()), this, SLOT(endChangeItem()));
     connect(projects, SIGNAL(removingItem(const ProjectTreeItem*)), this, SLOT(beginRemoveItem(const ProjectTreeItem*)));
@@ -150,7 +152,11 @@ QVariant ProjectTreeModel::headerData(int section, Qt::Orientation orientation, 
 */
 QList<QAction*> ProjectTreeModel::getActionsFor(const QModelIndex& index) {
     ProjectTreeItem* item = static_cast<ProjectTreeItem*>(index.internalPointer());
-    return item->getContextMenuActions();
+    if (itemContextMenuActions != 0)
+        disconnect(itemContextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+    itemContextMenuActions = item->getContextMenuActions();
+    connect(itemContextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+    return itemContextMenuActions->actions();
 }
 
 
@@ -202,5 +208,53 @@ void ProjectTreeModel::endChangeItem() {
         parentIndex = createIndex(grandParent->getChildIndex(itemParent), 0, (void*)itemParent);*/
     //emit dataChanged(createIndex(0, 0, (void*)0), createIndex(0, 0, (void*)0));
     emit layoutChanged();
+}
+
+/*
+-handles an action triggered from an item's context menu
+*/
+void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
+    /*QString actionData = actionTriggered->data().toString();
+    const bool isDir = data.value("is_directory").toBool();
+    const bool isFile = data.value("is_file").toBool();
+    const QString path = data.value("path").toString();
+
+    if (actionData == "%ADD_FILE" && isDir){
+        QString fileName = QFileDialog::getSaveFileName(0, "New File", path);
+        if (!fileName.isEmpty()) {
+            QFile newFile(fileName);
+            newFile.open(QFile::ReadWrite);
+            newFile.close();
+            reloadProject();
+        }
+    } else if (actionData == "%ADD_DIRECTORY" && isDir) {
+        QString dirName = QFileDialog::getSaveFileName(0, "New Directory", path, QString(),0,QFileDialog::ShowDirsOnly);
+        if (!dirName.isEmpty()) {
+            QDir dir(path);
+            dir.mkpath(dirName);
+            reloadProject();
+        }
+    } else if (actionData == "%RENAME_DIR" && isDir) {
+        QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(data.value("name").toString()));
+        if (!newName.isEmpty()) {
+            QDir dir(path);
+            dir.cdUp();
+            dir.rename(data.value("name").toString(), newName);
+            reloadProject();
+        }
+    } else if (actionData == "%REMOVE_DIR" && isDir) {
+    } else if (actionData == "%OPEN_FILE" && isFile) {
+    } else if (actionData == "%RENAME_FILE" && isFile) {
+        QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
+        if (!newName.isEmpty()) {
+            QDir dir = QFileInfo(path).absoluteDir();
+            dir.rename(data.value("name").toString(), newName);
+            reloadProject();
+        }
+    } else if (actionData == "%DELETE_FILE" && isFile) {
+    } else if (actionData == "%REFRESH_PROJECT") {
+        reloadProject();
+    } else {
+    }*/
 }
 

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreeitem.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: April 6, 2015
+Last Modified: May 4, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -47,7 +47,7 @@ Usage Agreement:
 ProjectTreeItem::ProjectTreeItem(const QVariantMap& _data, ProjectTreeItem* _parent) : QObject(_parent), parent(_parent), data(_data) {
     children.clear();
     contextMenuActions = new QActionGroup(0);
-    connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
+    //connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
 }
 
 ProjectTreeItem::~ProjectTreeItem(){
@@ -120,8 +120,8 @@ void ProjectTreeItem::addContextMenuAction(QAction* a) {
     contextMenuActions->addAction(a);
 }
 
-QList<QAction*> ProjectTreeItem::getContextMenuActions() {
-    return contextMenuActions->actions();
+QActionGroup* ProjectTreeItem::getContextMenuActions() {
+    return contextMenuActions;
 }
 
 

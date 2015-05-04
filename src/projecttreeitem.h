@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreeitem.h
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: April 6, 2015
+Last Modified: May 4, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -68,7 +68,7 @@ class ProjectTreeItem : public QObject {
         virtual bool removedChild(ProjectTreeItem* child);        // removes a specific child
 
         void addContextMenuAction(QAction* a);
-        QList<QAction*> getContextMenuActions();
+        QActionGroup* getContextMenuActions();
 
     signals:
         void removingItem(const ProjectTreeItem*);

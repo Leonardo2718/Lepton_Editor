@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.h
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: April 5, 2015
+Last Modified: May 4, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
