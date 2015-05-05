@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: May 4, 2015
+Last Modified: May 5, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -62,16 +62,8 @@ LeptonProject::LeptonProject(ProjectTreeItem* _parent, const QString& projectDir
         specFilePath = specPath;
     loadSpec(specFilePath);
 
-    // set project data
-    data.insert("name", workingDirectory.dirName());
-    data.insert("type", projectSpec.value("project_type").toString());
-    data.insert("is_directory", true);
-    data.insert("is_file", false);
-    QFileIconProvider iconProvider;
-    data.insert("icon", iconProvider.icon(QFileIconProvider::Folder));
-
     // load the new project
-    reloadProject();
+    load();
 
     // connect signals to slots
     //connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
@@ -133,23 +125,29 @@ void LeptonProject::loadSpec(const QString& filePath) {
 /*
 -load the contents of the project
 */
-void LeptonProject::reloadProject() {
-    ProjectTreeItem* p = this;
+void LeptonProject::load() {
+    /*ProjectTreeItem* p = this;
     while(p->getParent() != 0)
         p = (ProjectTreeItem*)p->getParent();
     emit p->changingItem(this);
     //emit qModel->layoutAboutToBeChanged();
     clear();
-    loadDir(this, workingDirectory, projectSpec.value("working_directory").toMap());
-    //addContextActionsFor(this, projectSpec.value("project_context_menu").toMap());
-    QVariantMap contextSpec = projectSpec.value("project_context_menu").toMap();
-    foreach (const QString actionLabel, contextSpec.keys()) {
-        QAction* a = new QAction(actionLabel, 0);
-        a->setData(contextSpec.value(actionLabel));
-        //contextMenuActions->addAction(a);
-        addContextMenuAction(a);
-    }
-    emit p->itemChanged();
+    loadDir(this, workingDirectory, projectSpec.value("working_directory").toMap());*/
+
+    // set project data
+    data.insert("name", workingDirectory.dirName());
+    data.insert("type", projectSpec.value("project_type").toString());
+    data.insert("is_directory", true);
+    data.insert("is_file", false);
+    data.insert("path", workingDirectory.absolutePath());
+    data.insert("item_spec", projectSpec.value("working_directory"));
+    data.insert("project_spec", projectSpec);
+    QFileIconProvider iconProvider;
+    data.insert("icon", iconProvider.icon(QFileIconProvider::Folder));
+    addContextActionsFor(this, projectSpec.value("project_context_menu").toMap()); //%%% This is not working (it "apparently" does nothing)
+    ProjectTreeItem::load();
+
+    //emit p->itemChanged();
     //emit qModel->layoutChanged();
 }
 
@@ -331,11 +329,11 @@ bool LeptonProject::itemNameMatches(const QString& itemName, const QString& patt
 /*
 -sets the context menu actions for `item` based on it's type
 */
-void LeptonProject::addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec) {
+/*void LeptonProject::addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec) {
     foreach (const QString actionLabel, contextSpec.keys()) {
         QAction* a = new QAction(actionLabel, 0);
         a->setData(contextSpec.value(actionLabel));
         item->addContextMenuAction(a);
     }
-}
+}*/
 

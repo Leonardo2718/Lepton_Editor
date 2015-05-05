@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreeitem.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 4, 2015
+Last Modified: May 5, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -34,11 +34,14 @@ Usage Agreement:
 #include "projecttreeitem.h"
 
 // include Qt classes
+#include <QDir>
 #include <QFileInfo>
 #include <QFile>
-#include <QDir>
 #include <QFileDialog>
+#include <QFileIconProvider>
 #include <QInputDialog>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 
 
@@ -47,6 +50,7 @@ Usage Agreement:
 ProjectTreeItem::ProjectTreeItem(const QVariantMap& _data, ProjectTreeItem* _parent) : QObject(_parent), parent(_parent), data(_data) {
     children.clear();
     contextMenuActions = new QActionGroup(0);
+    load();
     //connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
 }
 
@@ -124,6 +128,18 @@ QActionGroup* ProjectTreeItem::getContextMenuActions() {
     return contextMenuActions;
 }
 
+/*
+-loads this item by creating its children
+*/
+void ProjectTreeItem::load() {
+    clear();
+    if (data.contains("load_script")){
+    }
+    if (data.value("is_directory").toBool()) {
+        loadAsDir();
+    }
+}
+
 
 
 //~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,6 +169,153 @@ void ProjectTreeItem::clear() {
         contextMenuActions->removeAction(a);
         delete a;
     }
+}
+
+/*
+-loads the contents of a directory as part of this item
+*/
+void ProjectTreeItem::loadAsDir() {
+    ProjectTreeItem* rootItem = this;
+    QDir dir(data.value("path").toString());
+    const QVariantMap dirSpec = data.value("item_spec").toMap();
+    const QVariantMap projectSpec = data.value("project_spec").toMap();
+    const QList<QVariant> parentDirTypeSpecs = data.value("parent_dir_type_specs").toList();
+    const QList<QVariant> parentFileTypeSpecs = data.value("parent_file_type_specs").toList();
+
+    QFileInfoList entries = dir.entryInfoList(QDir::AllEntries | QDir::Hidden  | QDir::System | QDir::NoDotAndDotDot, QDir::DirsFirst | QDir::Name);
+
+    QList<QVariant> templateDirSpecs = dirSpec.value("template_directories").toList();
+    QList<QVariant> directoryTypeSpecs = dirSpec.value("directory_types").toList();
+    directoryTypeSpecs.append(parentDirTypeSpecs);
+
+    QList<QVariant> templateFileSpecs = dirSpec.value("template_files").toList();
+    QList<QVariant> fileTypeSpecs = dirSpec.value("file_types").toList();
+    fileTypeSpecs.append(parentFileTypeSpecs);
+
+    foreach (const QFileInfo& entry, entries) {
+        // define variables for later reference
+        QString entryName;
+        QList<QVariant> templateSpecs;
+        QList<QVariant> typeSpecs;
+        QString itemTypeKey;
+        QString unknownTypes;
+        QVariantMap itemSpec;
+        bool itemMatched = false;
+        bool isDir = entry.isDir();
+        bool isFile = entry.isFile();
+
+        // initiallize reference variables, depending on the type of the filesystem entry
+        if (isDir) {
+            entryName = QDir(entry.absoluteFilePath()).dirName();
+            templateSpecs = templateDirSpecs;
+            typeSpecs = directoryTypeSpecs;
+            itemTypeKey = "directory_types";
+            unknownTypes = "unknown_file_types";
+        } else if (isFile) {
+            entryName = entry.fileName();
+            templateSpecs = templateFileSpecs;
+            typeSpecs = fileTypeSpecs;
+            itemTypeKey = "file_types";
+            unknownTypes = "unknown_directories";
+        } else {
+            continue;
+        }
+
+        // check if the entry matches a project item
+        foreach (const QVariant& specV, templateSpecs) {
+            QVariantMap spec = specV.toMap();
+            if (itemNameMatches(entryName, spec.value("name").toString())) {
+                itemSpec = spec;
+                itemMatched = true;
+                break;
+            }
+        }
+
+        // if the entry has not yet been matched, continue checking if the entry matches a project item
+        if (!itemMatched) {
+            foreach (const QVariant& specV, typeSpecs) {
+                QVariantMap spec = specV.toMap();
+                if (itemNameMatches(entryName, projectSpec.value(itemTypeKey).toMap().value(spec.value("type").toString()).toMap().value("name_filter").toString())) {
+                    itemSpec = spec;
+                    itemMatched = true;
+                    break;
+                }
+            }
+        }
+
+        QString itemType = itemSpec.value("type").toString();   // store the type of the item
+
+        if (!itemMatched && dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
+            itemType = "UNKNOWN_ITEM_TYPE";
+            itemSpec = dirSpec.value(unknownTypes).toMap();
+            itemMatched = true;
+        }
+
+        if (itemMatched) {
+            // if the item was matched, add it to the project normally
+
+            QVariantMap newData;
+            newData.insert("name", entryName);
+            newData.insert("type", itemType);
+            newData.insert("is_directory", isDir);
+            newData.insert("is_file", isFile);
+            newData.insert("item_spec", itemSpec);
+            newData.insert("project_spec", projectSpec);
+            newData.insert("path", entry.absoluteFilePath());
+            QFileIconProvider iconProvider;
+            if (isDir) {
+                newData.insert("parent_dir_type_specs", directoryTypeSpecs);
+                newData.insert("parent_file_type_specs", fileTypeSpecs);
+                newData.insert("icon", iconProvider.icon(QFileIconProvider::Folder));
+            } else if (isFile) {
+                newData.insert("icon", iconProvider.icon(QFileIconProvider::File));
+            } else
+                newData.insert("icon", QIcon());
+            ProjectTreeItem* newItem = (ProjectTreeItem*)rootItem->addChild(newData);
+            //LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, itemType);
+            QVariantMap contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
+
+            if (isDir) {
+                //loadDir(newItem, QDir(entry.absoluteFilePath()), itemSpec, directoryTypeSpecs, fileTypeSpecs);  // load project items in the sub directory
+                if (contextMenuSpecs.value("use_default").toBool()) {
+                    // add default context menu actions for the item if specified in the spec file
+                    addContextActionsFor(newItem, projectSpec.value("default_dir_context_menu").toMap());
+                }
+            } else if (isFile) {
+                if (contextMenuSpecs.value("use_default").toBool()) {
+                    addContextActionsFor(newItem, projectSpec.value("default_file_context_menu").toMap());
+                }
+            }
+
+            // add context menu actions for the item
+            addContextActionsFor(newItem, contextMenuSpecs.value("actions").toMap());
+
+        }
+    }
+}
+
+/*
+-sets the context menu actions for `item` based on it's type
+*/
+void ProjectTreeItem::addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec) {
+    foreach (const QString actionLabel, contextSpec.keys()) {
+        QAction* a = new QAction(actionLabel, 0);
+        a->setData(contextSpec.value(actionLabel));
+        item->addContextMenuAction(a);
+    }
+}
+
+/*
+-return true if `itemName` matches the pattern
+*/
+bool ProjectTreeItem::itemNameMatches(const QString& itemName, const QString& pattern) {
+    QRegularExpression regex(pattern);
+    if (!regex.isValid()) return false;
+
+    QRegularExpressionValidator validator(regex);
+
+    int offset = 0;
+    return validator.validate((QString&)itemName, offset) == QValidator::Acceptable;
 }
 
 

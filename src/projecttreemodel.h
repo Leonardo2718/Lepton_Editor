@@ -84,7 +84,7 @@ class ProjectTreeModel : public QAbstractItemModel {
 
     private:
         ProjectTreeRoot* projects;
-        QActionGroup* itemContextMenuActions;
+        ProjectTreeItem* lastItemSelected;
 };
 
 #endif // PROJECTTREEMODEL_H

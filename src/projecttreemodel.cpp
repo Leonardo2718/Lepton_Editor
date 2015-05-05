@@ -36,8 +36,8 @@ Usage Agreement:
 #include "projecttreemodel.h"
 
 // include Qt classes
+#include <QFileDialog>
 #include <QDebug>
-#include "projecttreeroot.h"
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +46,7 @@ ProjectTreeModel::ProjectTreeModel(QObject* parent) : QAbstractItemModel(parent)
     //projects.append(new LeptonProject(this, "test_project"));
     //QVariantMap d;
     //d.insert("header_0", "Projects");
-    itemContextMenuActions = 0;
+    lastItemSelected = 0;
     projects = new ProjectTreeRoot();
     connect(projects, SIGNAL(changingItem(const ProjectTreeItem*)), this, SLOT(beginChangeItem(const ProjectTreeItem*)));
     connect(projects, SIGNAL(itemChanged()), this, SLOT(endChangeItem()));
@@ -82,9 +82,9 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex & index) const {
     QModelIndex m;
     if (index.isValid() && index.internalPointer() != 0) {
         void* q = index.internalPointer();
-        qDebug() << q;
+        //qDebug() << q;
         const ProjectTreeItem* i = (const ProjectTreeItem*)q;
-        qDebug() << i->childCount();
+        //qDebug() << i->childCount();
         const ProjectTreeItem* p = i->getParent();
         if (p == 0)
             // if the parent is null then the parent is the root
@@ -152,11 +152,11 @@ QVariant ProjectTreeModel::headerData(int section, Qt::Orientation orientation, 
 */
 QList<QAction*> ProjectTreeModel::getActionsFor(const QModelIndex& index) {
     ProjectTreeItem* item = static_cast<ProjectTreeItem*>(index.internalPointer());
-    if (itemContextMenuActions != 0)
-        disconnect(itemContextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
-    itemContextMenuActions = item->getContextMenuActions();
-    connect(itemContextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
-    return itemContextMenuActions->actions();
+    if (lastItemSelected != 0)
+        disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+    lastItemSelected = item;
+    connect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+    return lastItemSelected->getContextMenuActions()->actions();
 }
 
 
@@ -214,47 +214,48 @@ void ProjectTreeModel::endChangeItem() {
 -handles an action triggered from an item's context menu
 */
 void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
-    /*QString actionData = actionTriggered->data().toString();
-    const bool isDir = data.value("is_directory").toBool();
-    const bool isFile = data.value("is_file").toBool();
-    const QString path = data.value("path").toString();
+    QString actionData = actionTriggered->data().toString();
+    qDebug() << actionData;
+    const bool isDir = lastItemSelected->getDataItem("is_directory").toBool();
+    const bool isFile = lastItemSelected->getDataItem("is_file").toBool();
 
-    if (actionData == "%ADD_FILE" && isDir){
+    if (isDir && actionData == "%ADD_FILE"){
+        const QString path = lastItemSelected->getDataItem("path").toString();
         QString fileName = QFileDialog::getSaveFileName(0, "New File", path);
         if (!fileName.isEmpty()) {
             QFile newFile(fileName);
-            newFile.open(QFile::ReadWrite);
+            newFile.open(QFile::ReadWrite);     // creates the file if it does not yet exist
             newFile.close();
-            reloadProject();
+            lastItemSelected->reloadProject();
         }
-    } else if (actionData == "%ADD_DIRECTORY" && isDir) {
-        QString dirName = QFileDialog::getSaveFileName(0, "New Directory", path, QString(),0,QFileDialog::ShowDirsOnly);
+    } else if (isDir && actionData == "%ADD_DIRECTORY") {
+        /*QString dirName = QFileDialog::getSaveFileName(0, "New Directory", path, QString(),0,QFileDialog::ShowDirsOnly);
         if (!dirName.isEmpty()) {
             QDir dir(path);
             dir.mkpath(dirName);
             reloadProject();
-        }
-    } else if (actionData == "%RENAME_DIR" && isDir) {
-        QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(data.value("name").toString()));
+        }*/
+    } else if (isDir && actionData == "%RENAME_DIR") {
+        /*QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(data.value("name").toString()));
         if (!newName.isEmpty()) {
             QDir dir(path);
             dir.cdUp();
             dir.rename(data.value("name").toString(), newName);
             reloadProject();
-        }
-    } else if (actionData == "%REMOVE_DIR" && isDir) {
-    } else if (actionData == "%OPEN_FILE" && isFile) {
-    } else if (actionData == "%RENAME_FILE" && isFile) {
-        QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
+        }*/
+    } else if (isDir && actionData == "%REMOVE_DIR") {
+    } else if (isFile && actionData == "%OPEN_FILE") {
+    } else if (isFile && actionData == "%RENAME_FILE") {
+        /*QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
         if (!newName.isEmpty()) {
             QDir dir = QFileInfo(path).absoluteDir();
             dir.rename(data.value("name").toString(), newName);
             reloadProject();
-        }
-    } else if (actionData == "%DELETE_FILE" && isFile) {
+        }*/
+    } else if (isFile && actionData == "%DELETE_FILE") {
     } else if (actionData == "%REFRESH_PROJECT") {
-        reloadProject();
+        //reloadProject();
     } else {
-    }*/
+    }
 }
 

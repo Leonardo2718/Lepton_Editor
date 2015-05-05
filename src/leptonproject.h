@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.h
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: May 4, 2015
+Last Modified: May 5, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -64,7 +64,7 @@ class LeptonProject : public ProjectTreeItem {
         /* -loads the project specification from a file */
 
     public slots:
-        void reloadProject();
+        virtual void load();
         /*  load the contents of the project */
 
         virtual void contextMenuActionTriggered(QAction* actionTriggered);
@@ -82,7 +82,7 @@ class LeptonProject : public ProjectTreeItem {
         bool itemNameMatches(const QString& itemName, const QString& pattern);
         /*  -return true if `itemName` matches the pattern */
 
-        void addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec);
+        //void addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec);
         /*  -sets the context menu actions for `item` based on it's type */
 };
 

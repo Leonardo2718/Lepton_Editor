@@ -70,6 +70,9 @@ class ProjectTreeItem : public QObject {
         void addContextMenuAction(QAction* a);
         QActionGroup* getContextMenuActions();
 
+        virtual void load();
+        /*  -loads this item by creating its children */
+
     signals:
         void removingItem(const ProjectTreeItem*);
         void itemRemoved();
@@ -84,6 +87,15 @@ class ProjectTreeItem : public QObject {
         QVariantMap data;                                   // data stored by the item
 
         void clear();                                       // removes all children
+
+        void loadAsDir();
+        /*  -loads the contents of a directory as part of this item */
+
+        void addContextActionsFor(ProjectTreeItem* item, const QVariantMap contextSpec);
+        /*  -sets the context menu actions for `item` based on it's type */
+
+        bool itemNameMatches(const QString& itemName, const QString& pattern);
+        /*  -return true if `itemName` matches the pattern */
 
     protected slots:
         virtual void contextMenuActionTriggered(QAction* actionTriggered);
