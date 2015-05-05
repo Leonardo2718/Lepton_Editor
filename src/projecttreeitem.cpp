@@ -133,11 +133,32 @@ QActionGroup* ProjectTreeItem::getContextMenuActions() {
 */
 void ProjectTreeItem::load() {
     clear();
-    if (data.contains("load_script")){
+
+    if (data.contains("load_script")) {
+        /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%% Will execute the load script specified in the spec file for this item. %%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
     }
+
+    QVariantMap projectSpec = data.value("project_spec").toMap();
+    QString itemType = data.value("item_spec").toMap().value("type").toString();
+    QString itemTypeKey;
+    QString defaultContextMenuKey;
+
     if (data.value("is_directory").toBool()) {
         loadAsDir();
+        defaultContextMenuKey = "default_dir_context_menu";
+        itemTypeKey = "directory_types";
+    } else if (data.value("is_file").toBool()) {
+        defaultContextMenuKey = "default_file_context_menu";
+        itemTypeKey = "file_types";
     }
+
+    // load context menu actions
+    QVariantMap contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
+    if (contextMenuSpecs.value("use_default").toBool()) // add default context menu actions
+        addContextActionsFor(this, projectSpec.value(defaultContextMenuKey).toMap());
+    addContextActionsFor(this, contextMenuSpecs.value("actions").toMap());
 }
 
 
@@ -262,6 +283,8 @@ void ProjectTreeItem::loadAsDir() {
             newData.insert("item_spec", itemSpec);
             newData.insert("project_spec", projectSpec);
             newData.insert("path", entry.absoluteFilePath());
+            if (itemSpec.contains("load_script"))
+                newData.insert("load_script", itemSpec.value("load_script"));
             QFileIconProvider iconProvider;
             if (isDir) {
                 newData.insert("parent_dir_type_specs", directoryTypeSpecs);
@@ -271,24 +294,7 @@ void ProjectTreeItem::loadAsDir() {
                 newData.insert("icon", iconProvider.icon(QFileIconProvider::File));
             } else
                 newData.insert("icon", QIcon());
-            ProjectTreeItem* newItem = (ProjectTreeItem*)rootItem->addChild(newData);
-            //LeptonProjectItem* newItem = (LeptonProjectItem*)rootItem->addChild(entryName, itemType);
-            QVariantMap contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
-
-            if (isDir) {
-                //loadDir(newItem, QDir(entry.absoluteFilePath()), itemSpec, directoryTypeSpecs, fileTypeSpecs);  // load project items in the sub directory
-                if (contextMenuSpecs.value("use_default").toBool()) {
-                    // add default context menu actions for the item if specified in the spec file
-                    addContextActionsFor(newItem, projectSpec.value("default_dir_context_menu").toMap());
-                }
-            } else if (isFile) {
-                if (contextMenuSpecs.value("use_default").toBool()) {
-                    addContextActionsFor(newItem, projectSpec.value("default_file_context_menu").toMap());
-                }
-            }
-
-            // add context menu actions for the item
-            addContextActionsFor(newItem, contextMenuSpecs.value("actions").toMap());
+            rootItem->addChild(newData);
 
         }
     }
