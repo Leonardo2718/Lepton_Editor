@@ -40,7 +40,6 @@ Usage Agreement:
 #include <QAbstractItemModel>
 
 // include other project headers
-//#include "leptonprojectitem.h"
 #include "projecttreeitem.h"
 
 /*
@@ -71,10 +70,6 @@ class LeptonProject : public ProjectTreeItem {
         QDir workingDirectory;      // stores the project's working directory
         QVariantMap projectSpec;    // stores the project specification
         QString specFilePath;       // stores path to the project's spec file
-
-        void loadDir(ProjectTreeItem* rootItem, QDir dir, const QVariantMap& dirSpec, const QList<QVariant>& parentDirTypeSpecs = QList<QVariant>(),
-                     const QList<QVariant>& parentFileTypeSpecs = QList<QVariant>());
-        /* -loads the contents of a directory that is part of the project */
 
         bool itemNameMatches(const QString& itemName, const QString& pattern);
         /*  -return true if `itemName` matches the pattern */

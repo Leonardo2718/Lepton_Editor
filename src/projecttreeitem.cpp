@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreeitem.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 5, 2015
+Last Modified: May 6, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -51,7 +51,6 @@ ProjectTreeItem::ProjectTreeItem(const QVariantMap& _data, ProjectTreeItem* _par
     children.clear();
     contextMenuActions = new QActionGroup(0);
     load();
-    //connect(contextMenuActions, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuActionTriggered(QAction*)));
 }
 
 ProjectTreeItem::~ProjectTreeItem(){
@@ -156,7 +155,8 @@ void ProjectTreeItem::load() {
 
     // load context menu actions
     QVariantMap contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
-    if (contextMenuSpecs.value("use_default").toBool()) // add default context menu actions
+    if (contextMenuSpecs.value("use_default").toBool())
+        // add default context menu actions
         addContextActionsFor(this, projectSpec.value(defaultContextMenuKey).toMap());
     addContextActionsFor(this, contextMenuSpecs.value("actions").toMap());
 }
@@ -169,10 +169,6 @@ void ProjectTreeItem::load() {
 load contents of the current project
 */
 void ProjectTreeItem::reloadProject() {
-    /*ProjectTreeItem* p = this;
-    while(p->getParent()->getParent() != 0)
-        p = (ProjectTreeItem*)p->getParent();
-    p->reloadProject();*/
     parent->reloadProject();
 }
 

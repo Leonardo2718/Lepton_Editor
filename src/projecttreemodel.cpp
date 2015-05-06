@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: May 4, 2015
+Last Modified: May 6, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,9 +43,6 @@ Usage Agreement:
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTreeModel::ProjectTreeModel(QObject* parent) : QAbstractItemModel(parent) {
-    //projects.append(new LeptonProject(this, "test_project"));
-    //QVariantMap d;
-    //d.insert("header_0", "Projects");
     lastItemSelected = 0;
     projects = new ProjectTreeRoot();
     connect(projects, SIGNAL(changingItem(const ProjectTreeItem*)), this, SLOT(beginChangeItem(const ProjectTreeItem*)));
@@ -64,7 +61,6 @@ ProjectTreeModel::~ProjectTreeModel() {
 
 QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex & parent) const {
     QModelIndex m;
-    //const LeptonProjectItem* p = static_cast<const LeptonProjectItem*>(parent.internalPointer());
     if (column != 0 || row < 0)
         return m;
     else if (!parent.isValid() || parent.internalPointer() == 0) {
@@ -176,15 +172,6 @@ void ProjectTreeModel::openProjectRequest() {
 //~private slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void ProjectTreeModel::beginRemoveItem(const ProjectTreeItem* item) {
-    /*const ProjectTreeItem* itemParent = item->getParent();
-    int itemRow = itemParent->getChildIndex(item);
-    const ProjectTreeItem* grandParent = itemParent->getParent();
-    QModelIndex parentIndex;
-    if (grandParent == 0)
-        parentIndex = createIndex(0, 0, (void*)0);
-    else
-        parentIndex = createIndex(grandParent->getChildIndex(itemParent), 0, (void*)itemParent);
-    this->beginRemoveRows(parentIndex, itemRow, itemRow);*/
     if (projects->childCount() > 0)
         this->beginRemoveRows(index(0,0,QModelIndex()), 0, projects->childCount());
 }
@@ -198,15 +185,6 @@ void ProjectTreeModel::beginChangeItem(const ProjectTreeItem* item) {
 }
 
 void ProjectTreeModel::endChangeItem() {
-    /*const ProjectTreeItem* itemParent = item->getParent();
-    int itemRow = itemParent->getChildIndex(item);
-    const ProjectTreeItem* grandParent = itemParent->getParent();
-    QModelIndex parentIndex;
-    if (grandParent == 0)
-        parentIndex = createIndex(0, 0, (void*)0);
-    else
-        parentIndex = createIndex(grandParent->getChildIndex(itemParent), 0, (void*)itemParent);*/
-    //emit dataChanged(createIndex(0, 0, (void*)0), createIndex(0, 0, (void*)0));
     emit layoutChanged();
 }
 
