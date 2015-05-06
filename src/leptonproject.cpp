@@ -130,50 +130,6 @@ void LeptonProject::load() {
     loadAsDir();
 }
 
-/*
-void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
-    QString actionData = actionTriggered->data().toString();
-
-    ProjectTreeItem* p = this;
-    while(p->getParent() != 0)
-        p = (ProjectTreeItem*)p->getParent();
-
-    if (actionData == "%ADD_FILE"){
-        QString fileName = QFileDialog::getSaveFileName(0, "New File", workingDirectory.absolutePath());
-        if (!fileName.isEmpty()) {
-            QFile newFile(fileName);
-            newFile.open(QFile::ReadWrite);
-            newFile.close();
-            reloadProject();
-        }
-    } else if (actionData == "%ADD_DIRECTORY") {
-        QString dirName = QFileDialog::getSaveFileName(0, "New Directory", workingDirectory.absolutePath(), QString(),0,QFileDialog::ShowDirsOnly);
-        if (!dirName.isEmpty()) {
-            workingDirectory.mkpath(dirName);
-            reloadProject();
-        }
-    } else if (actionData == "%REFRESH_PROJECT") {
-        reloadProject();
-    } else if (actionData == "%RENAME_PROJECT") {
-        QString newName = QInputDialog::getText(0, "Rename Project", tr("Change project name from \"%0\" to:").arg(data.value("name").toString()));
-        if (!newName.isEmpty()) {
-            setName(newName);
-            reloadProject();
-        }
-    } else if (actionData == "%CLOSE_PROJECT") {
-        emit p->removingItem(this);
-        ProjectTreeItem* par = (ProjectTreeItem*)this->getParent();
-        bool r = par->removedChild(this);
-        if(r) {
-            emit p->itemRemoved();
-            delete this;
-        } else {
-            emit p->itemRemoved();
-        }
-    } else {
-    }
-}
-*/
 
 
 //~private methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -38,7 +38,7 @@ Usage Agreement:
 // include Qt classes
 #include <QFileDialog>
 #include <QInputDialog>
-#include <QDebug>
+
 
 
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,7 +194,6 @@ void ProjectTreeModel::endChangeItem() {
 */
 void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
     QString actionData = actionTriggered->data().toString();
-    qDebug() << actionData;
     const bool isDir = lastItemSelected->getDataItem("is_directory").toBool();
     const bool isFile = lastItemSelected->getDataItem("is_file").toBool();
 
@@ -219,7 +218,7 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
             ### item will end up so some pointer deletion and re-allocation is bound to happen.    ##
             ### Whoever designed this library clearly didn't think of this use case.  All that's   ##
             ### really needed is just an additional function that simply informs the view that     ##
-            ### it's internal pointers are no longer valid but does NOT IMPLY THAT AN ITEM MUST BE ##
+            ### it's internal pointers are no longer valid but DOES NOT IMPLY THAT AN ITEM MUST BE ##
             ### REMOVED.  Anyway, using `beginRemoveRows()` and `endRemoveRows()` will have to do  ##
             ### for now.  It solves the problem of the random segfaults.)                          ##
             #######################################################################################*/
@@ -228,7 +227,7 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
             QFile newFile(fileName);
             newFile.open(QFile::ReadWrite); // creates the file in case it does not yet exist
             newFile.close();
-            lastItemSelected->load();
+            lastItemSelected->reload();
             endRemoveRows();
         }
     } else if (isDir && actionData == "%ADD_DIRECTORY") {
@@ -239,7 +238,7 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
             beginRemoveRows(indexFor(p), 0, p->childCount());
             QDir dir(path);
             dir.mkpath(dirName);
-            lastItemSelected->load();
+            lastItemSelected->reload();
             endRemoveRows();
         }
     } else if (isDir && actionData == "%RENAME_DIR") {
@@ -254,7 +253,7 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
             disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
                                     // item signals should be disconnected as it will be deleted.
             lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
-            p->load();              // the parent must be reloaded since the item was removed
+            p->reload();            // the parent must be reloaded since the item was removed
             endRemoveRows();
         }*/
     } else if (isDir && actionData == "%REMOVE_DIR") {
@@ -265,7 +264,7 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
         disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
                                 // item signals should be disconnected as it will be deleted.
         lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
-        p->load();              // the parent must be reloaded since the item was removed
+        p->reload();            // the parent must be reloaded since the item was removed
         endRemoveRows();
     } else if (isFile && actionData == "%OPEN_FILE") {
     } else if (isFile && actionData == "%RENAME_FILE") {
@@ -283,12 +282,12 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
         disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
                                 // item signals should be disconnected as it will be deleted.
         lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
-        p->load();              // the parent must be reloaded since the item was removed
+        p->reload();            // the parent must be reloaded since the item was removed
         endRemoveRows();
     } else if (actionData == "%REFRESH") {
         const ProjectTreeItem* p = lastItemSelected->getParent();
         beginRemoveRows(indexFor(p), 0, p->childCount());
-        lastItemSelected->load();
+        lastItemSelected->reload();
         endRemoveRows();
     } else {
     }

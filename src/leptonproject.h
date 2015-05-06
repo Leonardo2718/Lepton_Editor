@@ -63,8 +63,6 @@ class LeptonProject : public ProjectTreeItem {
         virtual void load();
         /*  load the contents of the project */
 
-        //virtual void contextMenuActionTriggered(QAction* actionTriggered);
-
     private:
         QDir workingDirectory;      // stores the project's working directory
         QVariantMap projectSpec;    // stores the project specification

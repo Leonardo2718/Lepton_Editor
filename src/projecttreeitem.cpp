@@ -161,6 +161,13 @@ void ProjectTreeItem::load() {
     addContextActionsFor(this, contextMenuSpecs.value("actions").toMap());
 }
 
+/*
+-reloads this item (currently does the same as `load()`)
+*/
+void ProjectTreeItem::reload() {
+    load();
+}
+
 
 
 //~protected functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -309,52 +316,3 @@ bool ProjectTreeItem::itemNameMatches(const QString& itemName, const QString& pa
     return validator.validate((QString&)itemName, offset) == QValidator::Acceptable;
 }
 
-
-
-//~protected slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/*
-void ProjectTreeItem::contextMenuActionTriggered(QAction* actionTriggered) {
-    QString actionData = actionTriggered->data().toString();
-    const bool isDir = data.value("is_directory").toBool();
-    const bool isFile = data.value("is_file").toBool();
-    const QString path = data.value("path").toString();
-
-    if (actionData == "%ADD_FILE" && isDir){
-        QString fileName = QFileDialog::getSaveFileName(0, "New File", path);
-        if (!fileName.isEmpty()) {
-            QFile newFile(fileName);
-            newFile.open(QFile::ReadWrite);
-            newFile.close();
-            reloadProject();
-        }
-    } else if (actionData == "%ADD_DIRECTORY" && isDir) {
-        QString dirName = QFileDialog::getSaveFileName(0, "New Directory", path, QString(),0,QFileDialog::ShowDirsOnly);
-        if (!dirName.isEmpty()) {
-            QDir dir(path);
-            dir.mkpath(dirName);
-            reloadProject();
-        }
-    } else if (actionData == "%RENAME_DIR" && isDir) {
-        QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(data.value("name").toString()));
-        if (!newName.isEmpty()) {
-            QDir dir(path);
-            dir.cdUp();
-            dir.rename(data.value("name").toString(), newName);
-            reloadProject();
-        }
-    } else if (actionData == "%REMOVE_DIR" && isDir) {
-    } else if (actionData == "%OPEN_FILE" && isFile) {
-    } else if (actionData == "%RENAME_FILE" && isFile) {
-        QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
-        if (!newName.isEmpty()) {
-            QDir dir = QFileInfo(path).absoluteDir();
-            dir.rename(data.value("name").toString(), newName);
-            reloadProject();
-        }
-    } else if (actionData == "%DELETE_FILE" && isFile) {
-    } else if (actionData == "%REFRESH_PROJECT") {
-        reloadProject();
-    } else {
-    }
-}
-*/

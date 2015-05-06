@@ -73,6 +73,9 @@ class ProjectTreeItem : public QObject {
         virtual void load();
         /*  -loads this item by creating its children */
 
+        virtual void reload();
+        /*  -reloads this item (currently does the same as `load()`) */
+
     signals:
         void removingItem(const ProjectTreeItem*);
         void itemRemoved();
@@ -92,9 +95,6 @@ class ProjectTreeItem : public QObject {
 
         bool itemNameMatches(const QString& itemName, const QString& pattern);
         /*  -return true if `itemName` matches the pattern */
-
-    protected slots:
-        //virtual void contextMenuActionTriggered(QAction* actionTriggered);
 
     private:
         ProjectTreeItem* parent;            // pointer to parent tree item
