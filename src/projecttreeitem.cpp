@@ -163,17 +163,6 @@ void ProjectTreeItem::load() {
 
 
 
-//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-/*
-load contents of the current project
-*/
-void ProjectTreeItem::reloadProject() {
-    parent->reloadProject();
-}
-
-
-
 //~protected functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /*
@@ -323,7 +312,7 @@ bool ProjectTreeItem::itemNameMatches(const QString& itemName, const QString& pa
 
 
 //~protected slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+/*
 void ProjectTreeItem::contextMenuActionTriggered(QAction* actionTriggered) {
     QString actionData = actionTriggered->data().toString();
     const bool isDir = data.value("is_directory").toBool();
@@ -368,4 +357,4 @@ void ProjectTreeItem::contextMenuActionTriggered(QAction* actionTriggered) {
     } else {
     }
 }
-
+*/

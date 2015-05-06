@@ -60,11 +60,10 @@ class LeptonProject : public ProjectTreeItem {
         void loadSpec(const QString& filePath);
         /* -loads the project specification from a file */
 
-    public slots:
         virtual void load();
         /*  load the contents of the project */
 
-        virtual void contextMenuActionTriggered(QAction* actionTriggered);
+        //virtual void contextMenuActionTriggered(QAction* actionTriggered);
 
     private:
         QDir workingDirectory;      // stores the project's working directory

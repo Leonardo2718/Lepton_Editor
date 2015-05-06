@@ -109,8 +109,6 @@ void LeptonProject::loadSpec(const QString& filePath) {
     }
 }
 
-//~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 /*
 -load the contents of the project
 */
@@ -126,13 +124,13 @@ void LeptonProject::load() {
     QFileIconProvider iconProvider;
     data.insert("icon", iconProvider.icon(QFileIconProvider::Folder));
 
-    // add context menu actions
+    // clear and load the project
+    clear();
     addContextActionsFor(this, projectSpec.value("project_context_menu").toMap());
-
-    // load the project
     loadAsDir();
 }
 
+/*
 void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
     QString actionData = actionTriggered->data().toString();
 
@@ -175,7 +173,7 @@ void LeptonProject::contextMenuActionTriggered(QAction* actionTriggered) {
     } else {
     }
 }
-
+*/
 
 
 //~private methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

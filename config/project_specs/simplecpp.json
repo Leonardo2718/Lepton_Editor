@@ -101,13 +101,14 @@
     "default_dir_context_menu": {
         "Add file": "%ADD_FILE",
         "Add directory": "%ADD_DIRECTORY",
+        "Refresh": "%REFRESH",
         "Rename": "%RENAME_DIR",
         "Remove": "%REMOVE_DIR"
     },
     "project_context_menu": {
         "Add file": "%ADD_FILE",
         "Add directory": "%ADD_DIRECTORY",
-        "Refresh": "%REFRESH_PROJECT",
+        "Refresh": "%REFRESH",
         "Rename": "%RENAME_PROJECT",
         "Close": "%CLOSE_PROJECT"
     }

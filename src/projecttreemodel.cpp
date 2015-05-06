@@ -37,6 +37,7 @@ Usage Agreement:
 
 // include Qt classes
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QDebug>
 
 
@@ -201,27 +202,71 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
         const QString path = lastItemSelected->getDataItem("path").toString();
         QString fileName = QFileDialog::getSaveFileName(0, "New File", path);
         if (!fileName.isEmpty()) {
+            const ProjectTreeItem* p = lastItemSelected->getParent();
+
+            /*#######################################################################################
+            ### Here, it would make sense to call `beginInsertRows()` since we are adding an item. ##
+            ### But, because the project item will be reloaded, some pointers are going to be      ##
+            ### deleted and re-allocated.  So, `beginRemoveRows()` MUST be called to notify the    ##
+            ### view that its internal pointers are no longer valid and avoid any potential        ##
+            ### segfaults.  Also, we don't know ahead of time the index of the new row because it  ##
+            ### gets created when the item is reloaded.                                            ##
+            ###                                                                                    ##
+            ### (This makes no semantic sense.  Why are we having to call `beginRemoveRows()` and  ##
+            ### `endRemoveRows()` when we're actually ADDING a row?!  The project item NEEDS to be ##
+            ### reloaded becuase a change in its internal structure can change the item itself.    ##
+            ### Also, there is no way that I know of to really predict where the newly inserted    ##
+            ### item will end up so some pointer deletion and re-allocation is bound to happen.    ##
+            ### Whoever designed this library clearly didn't think of this use case.  All that's   ##
+            ### really needed is just an additional function that simply informs the view that     ##
+            ### it's internal pointers are no longer valid but does NOT IMPLY THAT AN ITEM MUST BE ##
+            ### REMOVED.  Anyway, using `beginRemoveRows()` and `endRemoveRows()` will have to do  ##
+            ### for now.  It solves the problem of the random segfaults.)                          ##
+            #######################################################################################*/
+
+            beginRemoveRows(indexFor(p), 0, p->childCount());
             QFile newFile(fileName);
-            newFile.open(QFile::ReadWrite);     // creates the file if it does not yet exist
+            newFile.open(QFile::ReadWrite); // creates the file in case it does not yet exist
             newFile.close();
-            lastItemSelected->reloadProject();
+            lastItemSelected->load();
+            endRemoveRows();
         }
     } else if (isDir && actionData == "%ADD_DIRECTORY") {
-        /*QString dirName = QFileDialog::getSaveFileName(0, "New Directory", path, QString(),0,QFileDialog::ShowDirsOnly);
+        const QString path = lastItemSelected->getDataItem("path").toString();
+        QString dirName = QFileDialog::getSaveFileName(0, "New Directory", path, QString(),0,QFileDialog::ShowDirsOnly);
         if (!dirName.isEmpty()) {
+            const ProjectTreeItem* p = lastItemSelected->getParent();
+            beginRemoveRows(indexFor(p), 0, p->childCount());
             QDir dir(path);
             dir.mkpath(dirName);
-            reloadProject();
-        }*/
+            lastItemSelected->load();
+            endRemoveRows();
+        }
     } else if (isDir && actionData == "%RENAME_DIR") {
-        /*QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(data.value("name").toString()));
+        /*const QString path = lastItemSelected->getDataItem("path").toString();
+        QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(lastItemSelected->getDataItem("name").toString()));
         if (!newName.isEmpty()) {
+            ProjectTreeItem* p = (ProjectTreeItem*)lastItemSelected->getParent();
+            beginRemoveRows(indexFor(p), 0, p->childCount());
             QDir dir(path);
             dir.cdUp();
-            dir.rename(data.value("name").toString(), newName);
-            reloadProject();
+            dir.rename(lastItemSelected->getDataItem("name").toString(), newName);
+            disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+                                    // item signals should be disconnected as it will be deleted.
+            lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
+            p->load();              // the parent must be reloaded since the item was removed
+            endRemoveRows();
         }*/
     } else if (isDir && actionData == "%REMOVE_DIR") {
+        ProjectTreeItem* p = (ProjectTreeItem*)lastItemSelected->getParent();
+        beginRemoveRows(indexFor(p), 0, p->childCount());
+        QDir dir(lastItemSelected->getDataItem("path").toString());
+        dir.removeRecursively();
+        disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+                                // item signals should be disconnected as it will be deleted.
+        lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
+        p->load();              // the parent must be reloaded since the item was removed
+        endRemoveRows();
     } else if (isFile && actionData == "%OPEN_FILE") {
     } else if (isFile && actionData == "%RENAME_FILE") {
         /*QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
@@ -231,9 +276,39 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
             reloadProject();
         }*/
     } else if (isFile && actionData == "%DELETE_FILE") {
-    } else if (actionData == "%REFRESH_PROJECT") {
-        //reloadProject();
+        ProjectTreeItem* p = (ProjectTreeItem*)lastItemSelected->getParent();
+        beginRemoveRows(indexFor(p), 0, p->childCount());
+        QDir dir(p->getDataItem("path").toString());
+        dir.remove(lastItemSelected->getDataItem("path").toString());
+        disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+                                // item signals should be disconnected as it will be deleted.
+        lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
+        p->load();              // the parent must be reloaded since the item was removed
+        endRemoveRows();
+    } else if (actionData == "%REFRESH") {
+        const ProjectTreeItem* p = lastItemSelected->getParent();
+        beginRemoveRows(indexFor(p), 0, p->childCount());
+        lastItemSelected->load();
+        endRemoveRows();
     } else {
+    }
+}
+
+
+
+//~private functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+-returns the model index for a given model item
+*/
+QModelIndex ProjectTreeModel::indexFor(const ProjectTreeItem* item) {
+    if (item != 0 && item != projects) {
+        const ProjectTreeItem* p = item->getParent();
+        int col = 0;
+        int row = p->getChildIndex(item);
+        return createIndex(row, col, (void*)item);
+    } else {
+        return createIndex(0, 0, (void*)0);
     }
 }
 
