@@ -169,6 +169,16 @@ void ProjectTreeModel::openProjectRequest() {
 }
 
 
+/*
+-should be connected to a `doubleClick` singal from the model view to handle double click events
+*/
+void ProjectTreeModel::itemDoubleClicked(const QModelIndex& itemIndex) {
+    const ProjectTreeItem* item = (const ProjectTreeItem*)itemIndex.internalPointer();
+    if (item->getDataItem("is_file").toBool())
+        emit openFileRequest(item->getDataItem("path").toString());
+}
+
+
 
 //~private slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -267,6 +277,7 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
         p->reload();            // the parent must be reloaded since the item was removed
         endRemoveRows();
     } else if (isFile && actionData == "%OPEN_FILE") {
+        emit openFileRequest(lastItemSelected->getDataItem("path").toString());
     } else if (isFile && actionData == "%RENAME_FILE") {
         /*QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
         if (!newName.isEmpty()) {

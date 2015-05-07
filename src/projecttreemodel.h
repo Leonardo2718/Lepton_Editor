@@ -73,6 +73,12 @@ class ProjectTreeModel : public QAbstractItemModel {
         void newProjectRequest();
         void openProjectRequest();
 
+        void itemDoubleClicked(const QModelIndex& itemIndex);
+        /*  -should be connected to a `doubleClick` singal from the  model view to handle double click events */
+
+    signals:
+        void openFileRequest(const QString& path);  // signal requesting for the file at `path` to be opened for editing
+
     private slots:
         void beginRemoveItem(const ProjectTreeItem* item);
         void endRemoveItem();
