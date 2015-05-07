@@ -251,26 +251,49 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
             lastItemSelected->reload();
             endRemoveRows();
         }
-    } else if (isDir && actionData == "%RENAME_DIR") {
-        /*const QString path = lastItemSelected->getDataItem("path").toString();
-        QString newName = QInputDialog::getText(0, "Rename Directory", tr("Change directory name from \"%0\" to:").arg(lastItemSelected->getDataItem("name").toString()));
+    } else if (actionData == "%RENAME_DIR" || actionData == "%RENAME_FILE") {
+        const QString path = lastItemSelected->getDataItem("path").toString();
+        QString msg;
+        if (isDir)
+            msg = "directory";
+        else if (isFile)
+            msg = "file";
+        else
+            return;
+        QString oldName = lastItemSelected->getDataItem("name").toString();
+        QString newName = QInputDialog::getText(0, tr("Rename %0").arg(msg) ,
+                                                tr("Change %0 name from \"%1\" to:").arg(msg).arg(oldName),
+                                                QLineEdit::Normal,
+                                                oldName);
         if (!newName.isEmpty()) {
             ProjectTreeItem* p = (ProjectTreeItem*)lastItemSelected->getParent();
             beginRemoveRows(indexFor(p), 0, p->childCount());
             QDir dir(path);
             dir.cdUp();
             dir.rename(lastItemSelected->getDataItem("name").toString(), newName);
+
+            /*###################################################################################
+            ### Here, we reload the parent item instead of this item because changing its name ##
+            ### may have also changed its type.                                                ##
+            ###################################################################################*/
+
             disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
                                     // item signals should be disconnected as it will be deleted.
             lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
             p->reload();            // the parent must be reloaded since the item was removed
             endRemoveRows();
-        }*/
+        }
     } else if (isDir && actionData == "%REMOVE_DIR") {
         ProjectTreeItem* p = (ProjectTreeItem*)lastItemSelected->getParent();
         beginRemoveRows(indexFor(p), 0, p->childCount());
         QDir dir(lastItemSelected->getDataItem("path").toString());
         dir.removeRecursively();
+
+        /*###########################################################################
+        ### Here, we reload the parent item because this item no longer exists and ##
+        ### must be removed from its parent.                                       ##
+        ###########################################################################*/
+
         disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
                                 // item signals should be disconnected as it will be deleted.
         lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
@@ -279,12 +302,16 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
     } else if (isFile && actionData == "%OPEN_FILE") {
         emit openFileRequest(lastItemSelected->getDataItem("path").toString());
     } else if (isFile && actionData == "%RENAME_FILE") {
-        /*QString newName = QInputDialog::getText(0, "Rename File", tr("Change file name from \"%0\" to:").arg(data.value("name").toString()));
-        if (!newName.isEmpty()) {
-            QDir dir = QFileInfo(path).absoluteDir();
-            dir.rename(data.value("name").toString(), newName);
-            reloadProject();
-        }*/
+        /*ProjectTreeItem* p = (ProjectTreeItem*)lastItemSelected->getParent();
+        beginRemoveRows(indexFor(p), 0, p->childCount());
+        QDir dir(path);
+        dir.cdUp();
+        dir.rename(lastItemSelected->getDataItem("name").toString(), newName);
+        disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+                                // item signals should be disconnected as it will be deleted.
+        lastItemSelected = 0;   // since the item will be deleted, it should no be pointed to anymore
+        p->reload();            // the parent must be reloaded since the item was removed
+        endRemoveRows();*/
     } else if (isFile && actionData == "%DELETE_FILE") {
         ProjectTreeItem* p = (ProjectTreeItem*)lastItemSelected->getParent();
         beginRemoveRows(indexFor(p), 0, p->childCount());
