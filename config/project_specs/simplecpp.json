@@ -54,6 +54,7 @@
     "file_types": {
         "header_file": {
             "name_filter": ".+\\.(h|hpp|hxx)",
+            "icon": "icons/cpp_h.png",
             "context_menu": {
                 "use_default": true,
                 "actions": {}
