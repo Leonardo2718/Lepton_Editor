@@ -42,8 +42,10 @@ Usage Agreement:
 #include <QInputDialog>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QPixmap>
+#include <QIcon>
 
-
+#include <QDebug>
 
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -284,10 +286,22 @@ void ProjectTreeItem::loadAsDir() {
             newData.insert("item_spec", itemSpec);
             newData.insert("project_spec", projectSpec);
             newData.insert("path", entry.absoluteFilePath());
+            newData.insert("project_file_spec", data.value("project_file_spec"));
             if (itemSpec.contains("load_script"))
                 newData.insert("load_script", itemSpec.value("load_script"));
             QFileIconProvider iconProvider;
-            if (isDir) {
+            QVariantMap itemTypeSpec = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap();
+            if (itemTypeSpec.contains("icon") && itemTypeSpec.value("icon").toString() != "%NO_ICON") {
+                QString iconVal = itemTypeSpec.value("icon").toString();
+                QDir specsDir = QFileInfo(data.value("project_file_spec").toString()).dir();
+                QString iconPath = specsDir.absoluteFilePath(iconVal);
+                if (QFileInfo(iconPath).exists()) {
+                    QPixmap pmap(iconPath);
+                    newData.insert("icon", QIcon(pmap));
+                } else {
+                    newData.insert("icon", QIcon());
+                }
+            } else if (isDir) {
                 newData.insert("parent_dir_type_specs", directoryTypeSpecs);
                 newData.insert("parent_file_type_specs", fileTypeSpecs);
                 newData.insert("icon", iconProvider.icon(QFileIconProvider::Folder));

@@ -121,6 +121,7 @@ void LeptonProject::load() {
     data.insert("path", workingDirectory.absolutePath());
     data.insert("item_spec", projectSpec.value("working_directory"));
     data.insert("project_spec", projectSpec);
+    data.insert("project_file_spec", specFilePath);
     QFileIconProvider iconProvider;
     data.insert("icon", iconProvider.icon(QFileIconProvider::Folder));
 
