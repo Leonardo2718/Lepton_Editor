@@ -154,7 +154,11 @@ void ProjectTreeItem::load() {
     }
 
     // load context menu actions
-    QVariantMap contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
+    QVariantMap contextMenuSpecs;
+    if (data.value("type").toString() == "UNKNOWN_ITEM_TYPE")
+        contextMenuSpecs = data.value("item_spec").toMap().value("context_menu").toMap();
+    else
+        contextMenuSpecs = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap().value("context_menu").toMap();
     if (contextMenuSpecs.value("use_default").toBool())
         // add default context menu actions
         addContextActionsFor(this, projectSpec.value(defaultContextMenuKey).toMap());
@@ -261,6 +265,11 @@ void ProjectTreeItem::loadAsDir() {
         if (!itemMatched && dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
             itemType = "UNKNOWN_ITEM_TYPE";
             itemSpec = dirSpec.value(unknownTypes).toMap();
+            if (isDir) {
+                QVariantMap t = itemSpec;
+                itemSpec.insert("unknown_directories", t);
+                itemSpec.insert("unknown_file_types", t);
+            }
             itemMatched = true;
         }
 
