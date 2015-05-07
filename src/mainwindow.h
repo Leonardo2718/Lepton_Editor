@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: April 5, 2015
+Last Modified: May 7, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,7 +43,6 @@ Usage Agreement:
 #include <QString>
 
 #include "editortabbar.h"
-#include "projectmodel.h"
 //#include "projecttree.h"
 #include "projecttreemodel.h"
 #include "settingseditor.h"
@@ -117,9 +116,6 @@ class MainWindow : public QMainWindow {
 
         void on_actionAbout_Qt_triggered();
         /* -called to display an "about window" for Qt */
-
-        void openFileFromProjecManager(QModelIndex index);
-        /* -opens a file when it is double clicked in the project manager list */
 
         void on_actionSettings_Editor_triggered();
         /*  -opens the settings editor window */

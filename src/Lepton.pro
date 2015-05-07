@@ -13,13 +13,11 @@ SOURCES += main.cpp\
     scintillaeditor.cpp \
     leptonlexer.cpp \
     generalconfig.cpp \
-    projectmodel.cpp \
     projectitem.cpp \
     syntaxhighlightmanager.cpp \
     settingseditor.cpp \
     findreplacedialog.cpp \
     leptonproject.cpp \
-    leptonprojectitem.cpp \
     projecttreeitem.cpp \
     projecttreemodel.cpp \
     projecttreeroot.cpp
@@ -29,14 +27,12 @@ HEADERS  += mainwindow.h \
     scintillaeditor.h \
     leptonlexer.h \
     generalconfig.h \
-    projectmodel.h \
     projectitem.h \
     syntaxhighlightmanager.h \
     leptonconfig.h \
     settingseditor.h \
     findreplacedialog.h \
     leptonproject.h \
-    leptonprojectitem.h \
     projecttreeitem.h \
     projecttreemodel.h \
     projecttreeroot.h

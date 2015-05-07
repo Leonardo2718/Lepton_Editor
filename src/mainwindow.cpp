@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 6, 2015
+Last Modified: May 7, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -252,17 +252,6 @@ void MainWindow::on_actionAbout_Lepton_Editor_triggered() {
 void MainWindow::on_actionAbout_Qt_triggered(){
 /* -called to display an "about window" for Qt */
     QMessageBox::aboutQt(this, "About Qt - LeptonEditor");
-}
-
-void MainWindow::openFileFromProjecManager(QModelIndex index) {
-/* -opens a file when it is double clicked in the project manager list */
-    if ( index.isValid() ) {                            //if the index provided is valid
-        ProjectItem* item = (ProjectItem*)index.internalPointer();  //get the model item
-        if ( item->isFile() ) {                                     //if the item is a file
-            QString filePath = item->getPath();                         //get the path to the file
-            openFile(filePath);                                         //open the file
-        }
-    }
 }
 
 void MainWindow::on_actionSettings_Editor_triggered() {
