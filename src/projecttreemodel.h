@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.h
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: May 6, 2015
+Last Modified: May 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -80,11 +80,6 @@ class ProjectTreeModel : public QAbstractItemModel {
         void openFileRequest(const QString& path);  // signal requesting for the file at `path` to be opened for editing
 
     private slots:
-        void beginRemoveItem(const ProjectTreeItem* item);
-        void endRemoveItem();
-        void beginChangeItem(const ProjectTreeItem* item);
-        void endChangeItem();
-
         void handleContextMenuAction(QAction* actionTriggered);
         /*  -handles an action triggered from an item's context menu */
 
@@ -94,6 +89,12 @@ class ProjectTreeModel : public QAbstractItemModel {
 
         QModelIndex indexFor(const ProjectTreeItem* item);
         /*  -returns the model index for a given model item */
+
+        void loadSession();
+        /*  -load projects saved from previous session */
+
+        void saveSession();
+        /*  -save open projects from current session */
 };
 
 #endif // PROJECTTREEMODEL_H

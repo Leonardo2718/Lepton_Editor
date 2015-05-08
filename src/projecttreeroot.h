@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.h
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 4, 2015
+Last Modified: May 7, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -55,16 +55,18 @@ class ProjectTreeRoot : public ProjectTreeItem {
         virtual int getChildIndex(const ProjectTreeItem* child) const;      // returns internal index of a child
         virtual bool hasChildren() const;
         virtual int childCount() const;
-        bool removedChild(ProjectTreeItem* child);                          // must be overloaded to avoid calling ProjectTreeItem::removedChild(ProjectTreeItem*)
+        bool removeChild(ProjectTreeItem* child);                          // must be overloaded to avoid calling ProjectTreeItem::removedChild(ProjectTreeItem*)
 
         // other public functions
         void createNewProject();    // opens dialog to create a new project
         void openProject();         // opens dialog to open an already existing project
+        void openProject(const QString& projectPath, const QString& specPath = 0);   // opens the project specified
+        void closeProject(ProjectTreeItem* project);    // closes a project if it exists, other wise does nothing
 
     private:
         QList<LeptonProject*> children;
 
-        virtual const ProjectTreeItem* addChild(const QString& dirName);
+        virtual const ProjectTreeItem* addChild(const QString& dirName, const QString& specPath = 0);
 };
 
 #endif // PROJECTTREE_H

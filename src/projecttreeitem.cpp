@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreeitem.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 6, 2015
+Last Modified: May 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -42,8 +42,10 @@ Usage Agreement:
 #include <QInputDialog>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QPixmap>
+#include <QIcon>
 
-
+#include <QDebug>
 
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -115,7 +117,7 @@ const ProjectTreeItem* ProjectTreeItem::addChild(const QVariantMap& _data) {
 /*
 removes a specific child
 */
-bool ProjectTreeItem::removedChild(ProjectTreeItem* child) {
+bool ProjectTreeItem::removeChild(ProjectTreeItem* child) {
     return children.removeOne(child);
 }
 
@@ -263,6 +265,9 @@ void ProjectTreeItem::loadAsDir() {
         QString itemType = itemSpec.value("type").toString();   // store the type of the item
 
         if (!itemMatched && dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
+            if (entry.isHidden() && dirSpec.value(unknownTypes).toMap().value("ignore_hidden").toBool())
+                continue;   // if the item is hidden and should be ignored, ignore it
+
             itemType = "UNKNOWN_ITEM_TYPE";
             itemSpec = dirSpec.value(unknownTypes).toMap();
             if (isDir) {
@@ -284,10 +289,22 @@ void ProjectTreeItem::loadAsDir() {
             newData.insert("item_spec", itemSpec);
             newData.insert("project_spec", projectSpec);
             newData.insert("path", entry.absoluteFilePath());
+            newData.insert("project_file_spec", data.value("project_file_spec"));
             if (itemSpec.contains("load_script"))
                 newData.insert("load_script", itemSpec.value("load_script"));
             QFileIconProvider iconProvider;
-            if (isDir) {
+            QVariantMap itemTypeSpec = projectSpec.value(itemTypeKey).toMap().value(itemType).toMap();
+            if (itemTypeSpec.contains("icon") && itemTypeSpec.value("icon").toString() != "%NO_ICON") {
+                QString iconVal = itemTypeSpec.value("icon").toString();
+                QDir specsDir = QFileInfo(data.value("project_file_spec").toString()).dir();
+                QString iconPath = specsDir.absoluteFilePath(iconVal);
+                if (QFileInfo(iconPath).exists()) {
+                    QPixmap pmap(iconPath);
+                    newData.insert("icon", QIcon(pmap));
+                } else {
+                    newData.insert("icon", QIcon());
+                }
+            } else if (isDir) {
                 newData.insert("parent_dir_type_specs", directoryTypeSpecs);
                 newData.insert("parent_file_type_specs", fileTypeSpecs);
                 newData.insert("icon", iconProvider.icon(QFileIconProvider::Folder));

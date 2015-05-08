@@ -1,0 +1,137 @@
+{
+    "project_type": "Simple Project",
+    "working_directory": {
+        "file_types": [
+            {"type": "ccpp_header", "local_directory_only": false},
+            {"type": "cpp_source", "local_directory_only": false},
+            {"type": "c_source", "local_directory_only": false},
+            {"type": "python_source", "local_directory_only": false},
+            {"type": "octave_matlab_source", "local_directory_only": false},
+            {"type": "haskell_source", "local_directory_only": false},
+            {"type": "javascript_source", "local_directory_only": false},
+            {"type": "markdown_file", "local_directory_only": false},
+            {"type": "html_file", "local_directory_only": false},
+            {"type": "css_file", "local_directory_only": false},
+            {"type": "xml_file", "local_directory_only": false}
+        ],
+        "unknown_file_types": {
+            "are_visible": true,
+            "ignore_hidden": true,
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            },
+            "local_directory_only": false
+        },
+        "unknown_directories": {
+            "are_visible": true,
+            "ignore_hidden": true,
+            "ignore": [".git", "bin", "lib"],
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            },
+            "local_directory_only": false
+        }
+    },
+    "file_types": {
+        "ccpp_header": {
+            "name_filter": ".+\\.(h|hpp|hxx)",
+            "icon": "icons/cpp_h.png",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "cpp_source": {
+            "name_filter": ".+\\.(cpp|cxx|cc)",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "c_source": {
+            "name_filter": ".+\\.c",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        }, 
+        "python_source": {
+            "name_filter": ".+\\.(py|pyw)",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "octave_matlab_source": {
+            "name_filter": ".+\\.m",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        }
+        ,
+        "haskell_source": {
+            "name_filter": ".+\\.hs",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "javascript_source": {
+            "name_filter": ".+\\.(js|json)",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "markdown_file": {
+            "name_filter": ".+\\.md",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "html_file": {
+            "name_filter": ".+\\.(html|htm|php)",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "css_file": {
+            "name_filter": ".+\\.css",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        },
+        "xml_file": {
+            "name_filter": ".+\\.xml",
+            "context_menu": {
+                "use_default": true,
+                "actions": {}
+            }
+        }
+    },
+    "default_file_context_menu": {
+        "Open": "%OPEN_FILE",
+        "Rename": "%RENAME_FILE",
+        "Remove": "%DELETE_FILE"
+    },
+    "default_dir_context_menu": {
+        "Add file": "%ADD_FILE",
+        "Add directory": "%ADD_DIRECTORY",
+        "Refresh": "%REFRESH",
+        "Rename": "%RENAME_DIR",
+        "Remove": "%REMOVE_DIR"
+    },
+    "project_context_menu": {
+        "Add file": "%ADD_FILE",
+        "Add directory": "%ADD_DIRECTORY",
+        "Refresh": "%REFRESH",
+        "Rename": "%RENAME_PROJECT",
+        "Close": "%CLOSE_PROJECT"
+    }
+}

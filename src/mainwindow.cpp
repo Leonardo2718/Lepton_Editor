@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 7, 2015
+Last Modified: May 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -61,10 +61,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     selectorSpaceTab->addAction( ui->actionUse_Tabs );
     selectorSpaceTab->addAction( ui->actionUse_Spaces );
 
-    //hide the extra featuers
-    //ui->projectManagerArea->hide();
-    //ui->editorTools->hide();
-
     //set session object information
     QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
     QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
@@ -87,16 +83,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     projectList = new QTreeView(this);
     ui->projectManagerArea->layout()->addWidget(projectList);
-    //projectListModel = new ProjectModel();
     projectTree = new ProjectTreeModel();
-    //projectList->setModel(projectListModel);
     projectList->setModel(projectTree);
     projectList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     //connect signals to appropriate slots
     connect(projectList, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(projectItemContextMenuRequested(QPoint)) );
-    connect(ui->actionNew_Project, SIGNAL(triggered()), projectTree, SLOT(newProjectRequest()));
-    connect(ui->actionOpen_Project, SIGNAL(triggered()), projectTree, SLOT(openProjectRequest()));
     connect(projectTree, SIGNAL(openFileRequest(QString)), this, SLOT(openFileRequested(QString)));
     connect(projectList, SIGNAL(doubleClicked(QModelIndex)), projectTree, SLOT(itemDoubleClicked(QModelIndex)));
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
@@ -199,13 +191,13 @@ void MainWindow::editTabChanged() {
 void MainWindow::on_actionOpen_Project_triggered() {
 /* -called to add a new project directory to tree model */
     if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
-    //projectListModel->openProjectRequest();
+    projectTree->openProjectRequest();
 }
 
 void MainWindow::on_actionNew_Project_triggered() {
 /* -called to create and add a new project to tree model */
     if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
-    //projectListModel->newProjectRequest();
+    projectTree->newProjectRequest();
 }
 
 void MainWindow::projectItemContextMenuRequested(const QPoint& position) {

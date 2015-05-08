@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 4, 2015
+Last Modified: May 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,8 +44,6 @@ Usage Agreement:
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTreeRoot::ProjectTreeRoot() : ProjectTreeItem(QVariantMap(), 0) {
-    LeptonProject* p = new LeptonProject(this, "/home/leonardo/Programming/Lepton_Editor/build-Lepton-Desktop-Debug/test_project");
-    children.append(p);
 }
 
 ProjectTreeRoot::~ProjectTreeRoot() {
@@ -73,7 +71,7 @@ int ProjectTreeRoot::childCount() const {
     return children.count();
 }
 
-bool ProjectTreeRoot::removedChild(ProjectTreeItem* child) {
+bool ProjectTreeRoot::removeChild(ProjectTreeItem* child) {
     return children.removeOne((LeptonProject*)child);
 }
 
@@ -99,12 +97,26 @@ void ProjectTreeRoot::openProject() {
         addChild(dirName);
 }
 
+/*
+opens the project specified
+*/
+void ProjectTreeRoot::openProject(const QString& projectPath, const QString& specPath) {
+    addChild(projectPath, specPath);
+}
+
+/*
+closes a project if it exists, other wise does nothing
+*/
+void ProjectTreeRoot::closeProject(ProjectTreeItem* project) {
+    removeChild(project);
+}
+
 
 
 //~private functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-const ProjectTreeItem* ProjectTreeRoot::addChild(const QString& dirName) {
-    LeptonProject* p = new LeptonProject(this, dirName);
+const ProjectTreeItem* ProjectTreeRoot::addChild(const QString& dirName, const QString& specPath) {
+    LeptonProject* p = new LeptonProject(this, dirName, specPath);
     children.append(p);
 }
 
