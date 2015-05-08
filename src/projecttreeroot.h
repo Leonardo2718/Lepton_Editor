@@ -60,13 +60,13 @@ class ProjectTreeRoot : public ProjectTreeItem {
         // other public functions
         void createNewProject();    // opens dialog to create a new project
         void openProject();         // opens dialog to open an already existing project
-        void openProject(const QString& projectPath);   // opens the project specified
+        void openProject(const QString& projectPath, const QString& specPath = 0);   // opens the project specified
         void closeProject(ProjectTreeItem* project);    // closes a project if it exists, other wise does nothing
 
     private:
         QList<LeptonProject*> children;
 
-        virtual const ProjectTreeItem* addChild(const QString& dirName);
+        virtual const ProjectTreeItem* addChild(const QString& dirName, const QString& specPath = 0);
 };
 
 #endif // PROJECTTREE_H

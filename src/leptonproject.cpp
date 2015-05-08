@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: leptonproject.cpp
 Author: Leonardo Banderali
 Created: March 15, 2015
-Last Modified: May 6, 2015
+Last Modified: May 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -57,7 +57,7 @@ LeptonProject::LeptonProject(ProjectTreeItem* _parent, const QString& projectDir
 
     // if a project spec file was specified load it, other wise load the default one
     if (specPath.isEmpty())
-        specFilePath = LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/simplecpp.json");
+        specFilePath = LeptonConfig::mainSettings->getConfigDirPath("project_specs").append("/plain.json");
     else
         specFilePath = specPath;
     loadSpec(specFilePath);
