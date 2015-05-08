@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: May 6, 2015
+Last Modified: May 7, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -38,6 +38,10 @@ Usage Agreement:
 // include Qt classes
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QSettings>
+
+// include other Lepton headers
+#include "leptonconfig.h"
 
 
 
@@ -50,9 +54,16 @@ ProjectTreeModel::ProjectTreeModel(QObject* parent) : QAbstractItemModel(parent)
     connect(projects, SIGNAL(itemChanged()), this, SLOT(endChangeItem()));
     connect(projects, SIGNAL(removingItem(const ProjectTreeItem*)), this, SLOT(beginRemoveItem(const ProjectTreeItem*)));
     connect(projects, SIGNAL(itemRemoved()), this, SLOT(endRemoveItem()));
+
+    //set session object information
+    QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
+
+    loadSession();
 }
 
 ProjectTreeModel::~ProjectTreeModel() {
+    saveSession();
     delete projects;
 }
 
@@ -161,11 +172,15 @@ QList<QAction*> ProjectTreeModel::getActionsFor(const QModelIndex& index) {
 //~public slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void ProjectTreeModel::newProjectRequest() {
+    beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());
     projects->createNewProject();
+    endRemoveRows();
 }
 
 void ProjectTreeModel::openProjectRequest() {
+    beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());
     projects->openProject();
+    endRemoveRows();
 }
 
 
@@ -327,6 +342,12 @@ void ProjectTreeModel::handleContextMenuAction(QAction* actionTriggered) {
         beginRemoveRows(indexFor(p), 0, p->childCount());
         lastItemSelected->reload();
         endRemoveRows();
+    } else if (actionData == "%CLOSE_PROJECT") {
+        beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());
+        disconnect(lastItemSelected->getContextMenuActions(), SIGNAL(triggered(QAction*)), this, SLOT(handleContextMenuAction(QAction*)));
+        projects->removeChild(lastItemSelected);
+        lastItemSelected = 0;
+        endRemoveRows();
     } else {
     }
 }
@@ -347,5 +368,30 @@ QModelIndex ProjectTreeModel::indexFor(const ProjectTreeItem* item) {
     } else {
         return createIndex(0, 0, (void*)0);
     }
+}
+
+/*
+-load projects saved from previous session
+*/
+void ProjectTreeModel::loadSession() {
+    QSettings session;
+    QVariantList projectList = session.value("projectPathList").toList();
+    foreach (const QVariant& projectPath, projectList) {
+        projects->openProject(projectPath.toString());
+    }
+}
+
+/*
+-save open projects from current session
+*/
+void ProjectTreeModel::saveSession() {
+    QSettings session;
+    QVariantList projectList;
+    const int projectCount = projects->childCount();
+    for (int i = 0; i < projectCount; i++) {
+        LeptonProject* p = (LeptonProject*)projects->getChild(i);
+        projectList.append(p->getDataItem("path"));
+    }
+    session.setValue("projectPathList", projectList);
 }
 

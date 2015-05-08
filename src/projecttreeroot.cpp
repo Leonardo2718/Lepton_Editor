@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 4, 2015
+Last Modified: May 7, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,8 +44,10 @@ Usage Agreement:
 //~public methods~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTreeRoot::ProjectTreeRoot() : ProjectTreeItem(QVariantMap(), 0) {
+#ifdef QT_DEBUG
     LeptonProject* p = new LeptonProject(this, "/home/leonardo/Programming/Lepton_Editor/build-Lepton-Desktop-Debug/test_project");
     children.append(p);
+#endif
 }
 
 ProjectTreeRoot::~ProjectTreeRoot() {
@@ -73,7 +75,7 @@ int ProjectTreeRoot::childCount() const {
     return children.count();
 }
 
-bool ProjectTreeRoot::removedChild(ProjectTreeItem* child) {
+bool ProjectTreeRoot::removeChild(ProjectTreeItem* child) {
     return children.removeOne((LeptonProject*)child);
 }
 
@@ -97,6 +99,20 @@ void ProjectTreeRoot::openProject() {
     QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
     if (!dirName.isEmpty())
         addChild(dirName);
+}
+
+/*
+opens the project specified
+*/
+void ProjectTreeRoot::openProject(const QString& projectPath) {
+    addChild(projectPath);
+}
+
+/*
+closes a project if it exists, other wise does nothing
+*/
+void ProjectTreeRoot::closeProject(ProjectTreeItem* project) {
+    removeChild(project);
 }
 
 

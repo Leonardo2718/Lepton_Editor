@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.h
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: May 6, 2015
+Last Modified: May 7, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -94,6 +94,12 @@ class ProjectTreeModel : public QAbstractItemModel {
 
         QModelIndex indexFor(const ProjectTreeItem* item);
         /*  -returns the model index for a given model item */
+
+        void loadSession();
+        /*  -load projects saved from previous session */
+
+        void saveSession();
+        /*  -save open projects from current session */
 };
 
 #endif // PROJECTTREEMODEL_H
