@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreeitem.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 7, 2015
+Last Modified: May 8, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -265,6 +265,9 @@ void ProjectTreeItem::loadAsDir() {
         QString itemType = itemSpec.value("type").toString();   // store the type of the item
 
         if (!itemMatched && dirSpec.value(unknownTypes).toMap().value("are_visible").toBool()) {
+            if (entry.isHidden() && dirSpec.value(unknownTypes).toMap().value("ignore_hidden").toBool())
+                continue;   // if the item is hidden and should be ignored, ignore it
+
             itemType = "UNKNOWN_ITEM_TYPE";
             itemSpec = dirSpec.value(unknownTypes).toMap();
             if (isDir) {
