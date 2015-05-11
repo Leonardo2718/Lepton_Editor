@@ -119,7 +119,7 @@ QVariant ProjectTypeModel::headerData(int section, Qt::Orientation orientation, 
     }
 }
 
-Qt::ItemFlag ProjectTypeModel::flags(const QModelIndex &index) const {
+Qt::ItemFlags ProjectTypeModel::flags(const QModelIndex &index) const {
     ItemEntry* item = (ItemEntry*)index.internalPointer();
     return item->flags();
 }
@@ -140,7 +140,7 @@ QString ProjectTypeModel::specFileFromIndex(const QModelIndex& index) {
 
 //~private class definitions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), itemDescription(), flags(Qt::NoItemFlags), specFile(filePath) {
+ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), itemDescription(), itemFlags(Qt::NoItemFlags), specFile(filePath) {
     if (specFile.exists()) {
         if (specFile.isDir()) {
             // if the file system item is a directory, use its name as project name, use no description, and get all its children

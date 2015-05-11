@@ -63,7 +63,7 @@ class ProjectTypeModel : public QAbstractItemModel {
 
         // reimplemented virtual functions
         QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-        Qt::ItemFlag flags(const QModelIndex &index) const;
+        Qt::ItemFlags flags(const QModelIndex &index) const;
 
         // other public functions
 
@@ -94,7 +94,7 @@ class ProjectTypeModel : public QAbstractItemModel {
                     return itemIcon;
                 }
 
-                Qt::ItemFlag flags() const {
+                Qt::ItemFlags flags() const {
                     return itemFlags;
                 }
 
@@ -127,7 +127,7 @@ class ProjectTypeModel : public QAbstractItemModel {
                 QString itemName;
                 QString itemDescription;
                 QIcon itemIcon;
-                Qt::ItemFlag itemFlags;
+                Qt::ItemFlags itemFlags;
                 QFileInfo specFile;
                 QList<ItemEntry*> children;
                 ItemEntry* itemParent;
