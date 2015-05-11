@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectypemodel.h
 Author: Leonardo Banderali
 Created: May 10, 2015
-Last Modified: May 10, 2015
+Last Modified: May 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -35,7 +35,11 @@ Usage Agreement:
 #ifndef PROJECTTYPEMODEL_H
 #define PROJECTTYPEMODEL_H
 
+// include Qt classes
 #include <QObject>
+#include <QAbstractItemModel>
+#include <QFileInfo>
+#include <QIcon>
 
 
 
@@ -48,7 +52,71 @@ class ProjectTypeModel : public QAbstractItemModel {
 
     public:
         // constructors and destructor
-        ProjectTypeModel();
+        ProjectTypeModel(QObject* _parent);
+
+        // base class pure virtual functions
+        QModelIndex index(int row, int column, const QModelIndex &parent) const;
+        QModelIndex parent(const QModelIndex &child) const;
+        int rowCount(const QModelIndex &parent) const;
+        int columnCount(const QModelIndex &parent) const;
+        QVariant data(const QModelIndex &index, int role) const;
+
+        // reimplemented virtual functions
+        QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+    private:
+
+        /*
+        `ItemEntry` is a convenience class representing an item in the model.
+        */
+        class ItemEntry {
+            public:
+                // constructors and destructor
+                ItemEntry(const QString& filePath);
+                ~ItemEntry();
+
+                // getters and setters
+                QString name() const {
+                    return itemName;
+                }
+
+                QString description() const {
+                    return itemDescription;
+                }
+
+                QIcon getIcon() const {
+                    return itemIcon;
+                }
+
+                int childCount() const {
+                    return children.count();
+                }
+
+                ItemEntry* childAt(int i) {
+                    if (i < 0 || i > children.count())
+                        return 0;
+                    else
+                        return children.at(i);
+                }
+
+                int indexOf(const ItemEntry* const child) const {
+                    return children.indexOf(child);
+                }
+
+                ItemEntry* parent() {
+                    return itemParent;
+                }
+
+            private:
+                QString itemName;
+                QString itemDescription;
+                QIcon itemIcon;
+                QFileInfo specFile;
+                QList<ItemEntry*> children;
+                ItemEntry* itemParent;
+        };
+
+        QList<ItemEntry*> entries;
 };
 
 #endif // PROJECTTYPEMODEL_H
