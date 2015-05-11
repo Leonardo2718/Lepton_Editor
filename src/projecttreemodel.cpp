@@ -175,9 +175,12 @@ void ProjectTreeModel::newProjectRequest() {
 }
 
 void ProjectTreeModel::openProjectRequest() {
-    beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());
-    projects->openProject();
-    endRemoveRows();
+    QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
+    if (!dirName.isEmpty()) {
+        beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());
+        projects->openProject(dirName);
+        endRemoveRows();
+    }
 }
 
 

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.h
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 7, 2015
+Last Modified: May 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -59,7 +59,7 @@ class ProjectTreeRoot : public ProjectTreeItem {
 
         // other public functions
         void createNewProject();    // opens dialog to create a new project
-        void openProject();         // opens dialog to open an already existing project
+        //void openProject();         // opens dialog to open an already existing project
         void openProject(const QString& projectPath, const QString& specPath = 0);   // opens the project specified
         void closeProject(ProjectTreeItem* project);    // closes a project if it exists, other wise does nothing
 
