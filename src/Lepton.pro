@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     projecttreeitem.cpp \
     projecttreemodel.cpp \
     projecttreeroot.cpp \
-    projecttypemodel.cpp
+    projecttypemodel.cpp \
+    projecttypeselector.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -37,10 +38,12 @@ HEADERS  += mainwindow.h \
     projecttreeitem.h \
     projecttreemodel.h \
     projecttreeroot.h \
-    projecttypemodel.h
+    projecttypemodel.h \
+    projecttypeselector.h
 
 FORMS    += mainwindow.ui \
     settingseditor.ui \
-    findreplacedialog.ui
+    findreplacedialog.ui \
+    projecttypeselector.ui
 
 unix|win32: LIBS += -lqscintilla2
