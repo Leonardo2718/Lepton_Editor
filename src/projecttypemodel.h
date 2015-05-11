@@ -99,8 +99,8 @@ class ProjectTypeModel : public QAbstractItemModel {
                         return children.at(i);
                 }
 
-                int indexOf(const ItemEntry* const child) const {
-                    return children.indexOf(child);
+                int indexOf(const ItemEntry* child) const {
+                    return children.indexOf((ItemEntry*)child);
                 }
 
                 ItemEntry* parent() {

@@ -58,14 +58,14 @@ ProjectTypeModel::ProjectTypeModel(QObject* _parent) : QAbstractItemModel(_paren
 //~base class pure virtual functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 QModelIndex ProjectTypeModel::index(int row, int column, const QModelIndex &parent) const {
-    ItemEntry* p = parent.internalPointer();
+    ItemEntry* p = (ItemEntry*)parent.internalPointer();
     ItemEntry* item = p->childAt(row);
     return createIndex(row, column, (void*)item);
     //if (item != 0)
 }
 
 QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
-    ItemEntry* item = (ItemEntry*)(child.internalPointer());
+    ItemEntry* item = (ItemEntry*)child.internalPointer();
     if (child.isValid() && item != 0) {
         ItemEntry* parent = item->parent();
         if (parent->parent() == 0)
@@ -75,7 +75,7 @@ QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
             return createIndex(gp->indexOf(parent), child.column(), parent);
         }
     } else
-        return createIndex(0, 0, (void*)index);
+        return createIndex(0, 0, (void*)0);
 }
 
 int ProjectTypeModel::rowCount(const QModelIndex &parent) const {
@@ -123,7 +123,7 @@ QVariant ProjectTypeModel::headerData(int section, Qt::Orientation orientation, 
 
 //~private class definitions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : specFile(filePath) {
+ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), itemDescription(), specFile(filePath) {
     if (specFile.exists()) {
         if (specFile.isDir()) {
             // if the file system item is a directory, use its name as project name, use no description, and get all its children
@@ -158,15 +158,15 @@ ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : specFile(fileP
                 }
             } else {
                 itemName = filePath;
-                description = "(File could not be parsed)";
+                itemDescription = "(File could not be parsed)";
             }
         } else {
             itemName = filePath;
-            description = "(Unkown file system entry)";
+            itemDescription = "(Unkown file system entry)";
         }
     } else {
         itemName = filePath;
-        description = "(File does not exist)";
+        itemDescription = "(File does not exist)";
     }
 }
 
