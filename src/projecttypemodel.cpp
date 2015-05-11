@@ -126,6 +126,18 @@ Qt::ItemFlag ProjectTypeModel::flags(const QModelIndex &index) const {
 
 
 
+//~other public functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+-returns the file path of a spec file specified by an index
+*/
+QString ProjectTypeModel::specFileFromIndex(const QModelIndex& index) {
+    ItemEntry* item = (ItemEntry*)index.internalPointer();
+    return item->specFilePath();
+}
+
+
+
 //~private class definitions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), itemDescription(), flags(Qt::NoItemFlags), specFile(filePath) {

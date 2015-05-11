@@ -65,6 +65,11 @@ class ProjectTypeModel : public QAbstractItemModel {
         QVariant headerData(int section, Qt::Orientation orientation, int role) const;
         Qt::ItemFlag flags(const QModelIndex &index) const;
 
+        // other public functions
+
+        QString specFileFromIndex(const QModelIndex& index);
+        /*  -returns the file path of a spec file specified by an index */
+
     private:
 
         /*
@@ -89,6 +94,14 @@ class ProjectTypeModel : public QAbstractItemModel {
                     return itemIcon;
                 }
 
+                Qt::ItemFlag flags() const {
+                    return itemFlags;
+                }
+
+                QString specFilePath() const {
+                    return specFile.absoluteFilePath();
+                }
+
                 int childCount() const {
                     return children.count();
                 }
@@ -108,9 +121,7 @@ class ProjectTypeModel : public QAbstractItemModel {
                     return itemParent;
                 }
 
-                Qt::ItemFlag flags() const {
-                    return itemFlags;
-                }
+
 
             private:
                 QString itemName;

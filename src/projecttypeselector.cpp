@@ -55,10 +55,13 @@ ProjectTypeSelector::~ProjectTypeSelector() {
 
 
 
-//~getters and setters~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~other public functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-QModelIndex ProjectTypeSelector::selectedItemIndex() const {
-    return selectedItem;
+/*
+-returns the file path to the spec file selected
+*/
+QString ProjectTypeSelector::selectedSpecFile() const {
+    return projectTypes->specFileFromIndex(selectedItem);
 }
 
 

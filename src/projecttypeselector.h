@@ -61,8 +61,10 @@ class ProjectTypeSelector : public QWidget {
         explicit ProjectTypeSelector(QWidget *parent = 0);
         ~ProjectTypeSelector();
 
-        // getters and setters
-        QModelIndex selectedItemIndex() const;
+        // other public functions
+
+        QString selectedSpecFile() const;
+        /*  -returns the file path to the spec file selected */
 
     signals:
         void itemSelected();
