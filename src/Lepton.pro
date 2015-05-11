@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     leptonproject.cpp \
     projecttreeitem.cpp \
     projecttreemodel.cpp \
-    projecttreeroot.cpp
+    projecttreeroot.cpp \
+    projecttypemodel.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -35,7 +36,8 @@ HEADERS  += mainwindow.h \
     leptonproject.h \
     projecttreeitem.h \
     projecttreemodel.h \
-    projecttreeroot.h
+    projecttreeroot.h \
+    projecttypemodel.h
 
 FORMS    += mainwindow.ui \
     settingseditor.ui \
