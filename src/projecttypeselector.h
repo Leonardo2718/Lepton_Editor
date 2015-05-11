@@ -61,9 +61,21 @@ class ProjectTypeSelector : public QWidget {
         explicit ProjectTypeSelector(QWidget *parent = 0);
         ~ProjectTypeSelector();
 
+        // getters and setters
+        QModelIndex selectedItemIndex() const;
+
+    signals:
+        void itemSelected();
+        void itemChosen();
+
+    private slots:
+        void itemClicked(const QModelIndex& index);         // handles an item being clicked
+        void itemDoubleClicked(const QModelIndex& index);   // handles an item being double clicked
+
     private:
         Ui::ProjectTypeSelector *ui;
         ProjectTypeModel* projectTypes;
+        QModelIndex selectedItem;
 };
 
 #endif // PROJECTTYPESELECTOR_H

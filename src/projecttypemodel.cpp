@@ -119,11 +119,16 @@ QVariant ProjectTypeModel::headerData(int section, Qt::Orientation orientation, 
     }
 }
 
+Qt::ItemFlag ProjectTypeModel::flags(const QModelIndex &index) const {
+    ItemEntry* item = (ItemEntry*)index.internalPointer();
+    return item->flags();
+}
+
 
 
 //~private class definitions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), itemDescription(), specFile(filePath) {
+ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), itemDescription(), flags(Qt::NoItemFlags), specFile(filePath) {
     if (specFile.exists()) {
         if (specFile.isDir()) {
             // if the file system item is a directory, use its name as project name, use no description, and get all its children
@@ -132,6 +137,7 @@ ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), it
             itemDescription = "";
             QFileIconProvider iconProvider;
             itemIcon = iconProvider.icon(QFileIconProvider::Folder);
+            itemFlags = Qt::ItemIsEnabled;
             foreach(const QString& dirItem, dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Readable, QDir::Name | QDir::DirsFirst)){
                 children.append(new ItemEntry(dirItem));
             }
@@ -155,6 +161,7 @@ ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), it
                         QPixmap pmap(iconPath);
                         itemIcon = QIcon(pmap);
                     }
+                    itemFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
                 }
             } else {
                 itemName = filePath;

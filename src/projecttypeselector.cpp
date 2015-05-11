@@ -40,11 +40,44 @@ Usage Agreement:
 
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectTypeSelector::ProjectTypeSelector(QWidget *parent) : QWidget(parent), ui(new Ui::ProjectTypeSelector) {
+ProjectTypeSelector::ProjectTypeSelector(QWidget *parent) : QWidget(parent), ui(new Ui::ProjectTypeSelector), selectedItem() {
     ui->setupUi(this);
+    projectTypes = new ProjectTypeModel();
+    ui->projectTypeDisplay->setModel(projectTypes);
+    connect(ui->projectTypeDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
+    connect(ui->projectTypeDisplay, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(itemDoubleClicked(QModelIndex)));
 }
 
 ProjectTypeSelector::~ProjectTypeSelector() {
+    delete projectTypes;
     delete ui;
+}
+
+
+
+//~getters and setters~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+QModelIndex ProjectTypeSelector::selectedItemIndex() const {
+    return selectedItem;
+}
+
+
+
+//~private slots~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+handles an item being clicked
+*/
+void ProjectTypeSelector::itemClicked(const QModelIndex& index) {
+    selectedItem = index;
+    emit itemSelected();
+}
+
+/*
+handles an item being double clicked
+*/
+void ProjectTypeSelector::itemDoubleClicked(const QModelIndex& index) {
+    selectedItem = index;
+    emit itemChosen();
 }
 

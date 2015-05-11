@@ -52,7 +52,7 @@ class ProjectTypeModel : public QAbstractItemModel {
 
     public:
         // constructors and destructor
-        ProjectTypeModel(QObject* _parent);
+        ProjectTypeModel(QObject* _parent = 0);
 
         // base class pure virtual functions
         QModelIndex index(int row, int column, const QModelIndex &parent) const;
@@ -63,6 +63,7 @@ class ProjectTypeModel : public QAbstractItemModel {
 
         // reimplemented virtual functions
         QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+        Qt::ItemFlag flags(const QModelIndex &index) const;
 
     private:
 
@@ -107,10 +108,15 @@ class ProjectTypeModel : public QAbstractItemModel {
                     return itemParent;
                 }
 
+                Qt::ItemFlag flags() const {
+                    return itemFlags;
+                }
+
             private:
                 QString itemName;
                 QString itemDescription;
                 QIcon itemIcon;
+                Qt::ItemFlag itemFlags;
                 QFileInfo specFile;
                 QList<ItemEntry*> children;
                 ItemEntry* itemParent;
