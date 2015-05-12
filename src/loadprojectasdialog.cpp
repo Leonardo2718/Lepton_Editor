@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: loadprojectasdialog.cpp
 Author: Leonardo Banderali
 Created: May 11, 2015
-Last Modified: May 11, 2015
+Last Modified: May 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,7 +39,9 @@ Usage Agreement:
 
 
 
-LoadProjectAsDialog::LoadProjectAsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::LoadProjectAsDialog) {
+//~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+LoadProjectAsDialog::LoadProjectAsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::LoadProjectAsDialog) {
     ui->setupUi(this);
     specSelector = new ProjectTypeSelector(ui->selectArea);
     QVBoxLayout* l = new QVBoxLayout(ui->selectArea);
@@ -51,3 +53,22 @@ LoadProjectAsDialog::~LoadProjectAsDialog() {
     delete specSelector;
     delete ui;
 }
+
+
+
+//~static convenience functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+-a convenience function that opens a `LoadProjectAsDialog` and returns the file path to the selected project spec
+*/
+QString LoadProjectAsDialog::getSpecFilePath(QWidget* parent) {
+    LoadProjectAsDialog dialog(parent);
+
+    int state = dialog.exec();
+
+    if (state == QDialog::Accepted)
+        return dialog.specSelector->selectedSpecFile();
+    else
+        return QString();
+}
+

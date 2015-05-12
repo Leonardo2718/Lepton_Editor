@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: loadprojectasdialog.h
 Author: Leonardo Banderali
 Created: May 11, 2015
-Last Modified: May 11, 2015
+Last Modified: May 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -54,8 +54,13 @@ class LoadProjectAsDialog : public QDialog {
 
     public:
         // constructors and destructor
-        explicit LoadProjectAsDialog(QWidget *parent = 0);
+        explicit LoadProjectAsDialog(QWidget* parent = 0);
         ~LoadProjectAsDialog();
+
+        // static convenience functions
+
+        static QString getSpecFilePath(QWidget* parent = 0);
+        /*  -a convenience function that opens a `LoadProjectAsDialog` and returns the file path to the selected project spec */
 
     private:
         Ui::LoadProjectAsDialog *ui;

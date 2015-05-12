@@ -1,5 +1,6 @@
 {
     "project_type": "Simple Project",
+    "description": "A simple plain project that knows about several different file types.",
     "working_directory": {
         "file_types": [
             {"type": "ccpp_header", "local_directory_only": false},

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectypemodel.h
 Author: Leonardo Banderali
 Created: May 10, 2015
-Last Modified: May 11, 2015
+Last Modified: May 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -53,6 +53,7 @@ class ProjectTypeModel : public QAbstractItemModel {
     public:
         // constructors and destructor
         ProjectTypeModel(QObject* _parent = 0);
+        ~ProjectTypeModel();
 
         // base class pure virtual functions
         QModelIndex index(int row, int column, const QModelIndex &parent) const;
@@ -78,7 +79,7 @@ class ProjectTypeModel : public QAbstractItemModel {
         class ItemEntry {
             public:
                 // constructors and destructor
-                ItemEntry(const QString& filePath);
+                ItemEntry(const QString& filePath, ItemEntry* parent = 0);
                 ~ItemEntry();
 
                 // getters and setters
@@ -120,8 +121,6 @@ class ProjectTypeModel : public QAbstractItemModel {
                 ItemEntry* parent() {
                     return itemParent;
                 }
-
-
 
             private:
                 QString itemName;

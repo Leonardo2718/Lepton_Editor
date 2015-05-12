@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: May 11, 2015
+Last Modified: May 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,6 +43,7 @@ Usage Agreement:
 
 // include other Lepton headers
 #include "leptonconfig.h"
+#include "loadprojectasdialog.h"
 
 
 
@@ -175,6 +176,9 @@ void ProjectTreeModel::newProjectRequest() {
 }
 
 void ProjectTreeModel::openProjectRequest() {
+    /*QString specFilePath = LoadProjectAsDialog::getSpecFilePath();
+    if (specFilePath.isEmpty())
+        return;*/
     QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
     if (!dirName.isEmpty()) {
         beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());

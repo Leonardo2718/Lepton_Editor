@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectypemodel.cpp
 Author: Leonardo Banderali
 Created: May 10, 2015
-Last Modified: May 11, 2015
+Last Modified: May 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -50,7 +50,14 @@ Usage Agreement:
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTypeModel::ProjectTypeModel(QObject* _parent) : QAbstractItemModel(_parent) {
-    LeptonConfig::mainSettings->getConfigDirPath("project_specs");
+    QDir specsDir(LeptonConfig::mainSettings->getConfigDirPath("project_specs"));
+    foreach (const QFileInfo& entry, specsDir.entryInfoList(QDir::NoDotAndDotDot |QDir::Files | QDir::Readable, QDir::Name)) {
+        entries.append(new ItemEntry(entry.absoluteFilePath()));
+    }
+}
+
+ProjectTypeModel::~ProjectTypeModel() {
+    qDeleteAll(entries);
 }
 
 
@@ -59,20 +66,30 @@ ProjectTypeModel::ProjectTypeModel(QObject* _parent) : QAbstractItemModel(_paren
 
 QModelIndex ProjectTypeModel::index(int row, int column, const QModelIndex &parent) const {
     ItemEntry* p = (ItemEntry*)parent.internalPointer();
-    ItemEntry* item = p->childAt(row);
-    return createIndex(row, column, (void*)item);
-    //if (item != 0)
+
+    ItemEntry* item;
+    if (p != 0)
+        item = p->childAt(row);
+    else
+        item = entries.at(row);
+
+    //return createIndex(row, column, (void*)item);
+    return createIndex(row, 0, (void*)item);
 }
 
 QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
     ItemEntry* item = (ItemEntry*)child.internalPointer();
     if (child.isValid() && item != 0) {
         ItemEntry* parent = item->parent();
-        if (parent->parent() == 0)
-            return createIndex(entries.indexOf(parent), child.column(), parent);
+        if (parent == 0)
+            return createIndex(0, 0, (void*)0);
+        else if (parent->parent() == 0)
+            //return createIndex(entries.indexOf(parent), child.column(), parent);
+            return createIndex(entries.indexOf(parent), 0, parent);
         else {
             ItemEntry* gp = parent->parent();
-            return createIndex(gp->indexOf(parent), child.column(), parent);
+            //return createIndex(gp->indexOf(parent), child.column(), parent);
+            return createIndex(gp->indexOf(parent), 0, parent);
         }
     } else
         return createIndex(0, 0, (void*)0);
@@ -88,20 +105,19 @@ int ProjectTypeModel::rowCount(const QModelIndex &parent) const {
 }
 
 int ProjectTypeModel::columnCount(const QModelIndex &parent) const {
-    return 2;   // one column for the project type, and one for the description
+    return 1;   // one column for the project type, and one for the description
 }
 
 QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
+    QVariant r;
     if (role == Qt::DisplayRole) {
         ItemEntry* item = (ItemEntry*)(index.internalPointer());
         if (index.column() == 0)
-            return QVariant(item->name());
+            r = QVariant(item->name());
         else if (index.column() == 1)
-            return QVariant(item->description());
-        else
-            return QVariant();
-    } else
-        return QVariant();
+            r = QVariant(item->description());
+    }
+    return r;
 }
 
 
@@ -109,19 +125,24 @@ QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
 //~reimplemented virtual functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 QVariant ProjectTypeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    QVariant r;
     if (orientation == Qt::Horizontal) {
         if (role == Qt::DisplayRole) {
-            if (section = 0)
-                return QVariant("Project Type");
-            else if (section = 1)
-                return QVariant("Description");
+            if (section == 0)
+                r = QVariant("Project Type");
+            else if (section == 1)
+                r = QVariant("Description");
         }
     }
+    return r;
 }
 
 Qt::ItemFlags ProjectTypeModel::flags(const QModelIndex &index) const {
     ItemEntry* item = (ItemEntry*)index.internalPointer();
-    return item->flags();
+    if (item != 0)
+        return item->flags();
+    else
+        return Qt::NoItemFlags;
 }
 
 
@@ -133,14 +154,18 @@ Qt::ItemFlags ProjectTypeModel::flags(const QModelIndex &index) const {
 */
 QString ProjectTypeModel::specFileFromIndex(const QModelIndex& index) {
     ItemEntry* item = (ItemEntry*)index.internalPointer();
-    return item->specFilePath();
+    if (item != 0)
+        return item->specFilePath();
+    else
+        return QString();
 }
 
 
 
 //~private class definitions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), itemDescription(), itemFlags(Qt::NoItemFlags), specFile(filePath) {
+ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath, ItemEntry* parent) :
+itemName(), itemDescription(), itemFlags(Qt::NoItemFlags), specFile(filePath), itemParent(parent) {
     if (specFile.exists()) {
         if (specFile.isDir()) {
             // if the file system item is a directory, use its name as project name, use no description, and get all its children
@@ -150,8 +175,8 @@ ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath) : itemName(), it
             QFileIconProvider iconProvider;
             itemIcon = iconProvider.icon(QFileIconProvider::Folder);
             itemFlags = Qt::ItemIsEnabled;
-            foreach(const QString& dirItem, dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Readable, QDir::Name | QDir::DirsFirst)){
-                children.append(new ItemEntry(dirItem));
+            foreach(const QFileInfo& entry, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Readable, QDir::Name | QDir::DirsFirst)){
+                children.append(new ItemEntry(entry.absoluteFilePath(), this));
             }
         } else if (specFile.isFile()) {
             // if the file system item is a file, parse it and get the display info from it.
