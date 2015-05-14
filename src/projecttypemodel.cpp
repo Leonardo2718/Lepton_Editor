@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectypemodel.cpp
 Author: Leonardo Banderali
 Created: May 10, 2015
-Last Modified: May 12, 2015
+Last Modified: May 14, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -68,13 +68,14 @@ QModelIndex ProjectTypeModel::index(int row, int column, const QModelIndex &pare
     ItemEntry* p = (ItemEntry*)parent.internalPointer();
 
     ItemEntry* item;
-    if (p != 0)
+    if (p != 0 && row < p->childCount())
         item = p->childAt(row);
-    else
+    else if (p == 0 && row < entries.count())
         item = entries.at(row);
+    else
+        return createIndex(0, 0, (void*)0);
 
-    //return createIndex(row, column, (void*)item);
-    return createIndex(row, 0, (void*)item);
+    return createIndex(row, column, (void*)item);
 }
 
 QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
@@ -105,7 +106,7 @@ int ProjectTypeModel::rowCount(const QModelIndex &parent) const {
 }
 
 int ProjectTypeModel::columnCount(const QModelIndex &parent) const {
-    return 1;   // one column for the project type, and one for the description
+    return 2;   // one column for the project type, and one for the description
 }
 
 QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
@@ -142,7 +143,7 @@ Qt::ItemFlags ProjectTypeModel::flags(const QModelIndex &index) const {
     if (item != 0)
         return item->flags();
     else
-        return Qt::NoItemFlags;
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
 
@@ -174,7 +175,7 @@ itemName(), itemDescription(), itemFlags(Qt::NoItemFlags), specFile(filePath), i
             itemDescription = "";
             QFileIconProvider iconProvider;
             itemIcon = iconProvider.icon(QFileIconProvider::Folder);
-            itemFlags = Qt::ItemIsEnabled;
+            itemFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
             foreach(const QFileInfo& entry, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::Readable, QDir::Name | QDir::DirsFirst)){
                 children.append(new ItemEntry(entry.absoluteFilePath(), this));
             }
@@ -198,8 +199,8 @@ itemName(), itemDescription(), itemFlags(Qt::NoItemFlags), specFile(filePath), i
                         QPixmap pmap(iconPath);
                         itemIcon = QIcon(pmap);
                     }
-                    itemFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
                 }
+                itemFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
             } else {
                 itemName = filePath;
                 itemDescription = "(File could not be parsed)";
