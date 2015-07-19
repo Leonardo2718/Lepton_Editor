@@ -41,7 +41,7 @@ Usage Agreement:
 
 // include other project headers
 #include "projecttypemodel.h"
-
+#include "projecttreemodel.h"
 // define name spaces
 namespace Ui {
 class ProjectTypeSelector;
@@ -77,6 +77,7 @@ class ProjectTypeSelector : public QWidget {
     private:
         Ui::ProjectTypeSelector *ui;
         ProjectTypeModel* projectTypes;
+        //ProjectTreeModel* projectTypes;
         QModelIndex selectedItem;
 };
 

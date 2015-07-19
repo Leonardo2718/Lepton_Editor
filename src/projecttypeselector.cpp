@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttypeselector.cpp
 Author: Leonardo Banderali
 Created: May 11, 2015
-Last Modified: May 11, 2015
+Last Modified: May 21, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,9 +43,10 @@ Usage Agreement:
 ProjectTypeSelector::ProjectTypeSelector(QWidget *parent) : QWidget(parent), ui(new Ui::ProjectTypeSelector), selectedItem() {
     ui->setupUi(this);
     projectTypes = new ProjectTypeModel();
+    //projectTypes = new ProjectTreeModel();
     ui->projectTypeDisplay->setModel(projectTypes);
-    connect(ui->projectTypeDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
-    connect(ui->projectTypeDisplay, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(itemDoubleClicked(QModelIndex)));
+    //connect(ui->projectTypeDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(itemClicked(QModelIndex)));
+    // connect(ui->projectTypeDisplay, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(itemDoubleClicked(QModelIndex)));
 }
 
 ProjectTypeSelector::~ProjectTypeSelector() {
@@ -61,7 +62,7 @@ ProjectTypeSelector::~ProjectTypeSelector() {
 -returns the file path to the spec file selected
 */
 QString ProjectTypeSelector::selectedSpecFile() const {
-    return projectTypes->specFileFromIndex(selectedItem);
+    //return projectTypes->specFileFromIndex(selectedItem);
 }
 
 
@@ -72,15 +73,16 @@ QString ProjectTypeSelector::selectedSpecFile() const {
 handles an item being clicked
 */
 void ProjectTypeSelector::itemClicked(const QModelIndex& index) {
-    selectedItem = index;
-    emit itemSelected();
+    /*selectedItem = index;
+    emit itemSelected();*/
+    //qDebug() << "Point 1";
 }
 
 /*
 handles an item being double clicked
 */
 void ProjectTypeSelector::itemDoubleClicked(const QModelIndex& index) {
-    selectedItem = index;
-    emit itemChosen();
+    /*selectedItem = index;
+    emit itemChosen();*/
 }
 

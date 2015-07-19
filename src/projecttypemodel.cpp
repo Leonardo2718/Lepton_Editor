@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectypemodel.cpp
 Author: Leonardo Banderali
 Created: May 10, 2015
-Last Modified: May 14, 2015
+Last Modified: May 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -50,14 +50,19 @@ Usage Agreement:
 //~constructors and destructor~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectTypeModel::ProjectTypeModel(QObject* _parent) : QAbstractItemModel(_parent) {
-    QDir specsDir(LeptonConfig::mainSettings->getConfigDirPath("project_specs"));
+    /*QDir specsDir(LeptonConfig::mainSettings->getConfigDirPath("project_specs"));
     foreach (const QFileInfo& entry, specsDir.entryInfoList(QDir::NoDotAndDotDot |QDir::Files | QDir::Readable, QDir::Name)) {
         entries.append(new ItemEntry(entry.absoluteFilePath()));
-    }
+    }*/
+    /*ents.append(new QString("Str 1"));
+    ents.append(new QString("Str 2"));*/
+    m = new ProjectTreeModel(_parent);
 }
 
 ProjectTypeModel::~ProjectTypeModel() {
-    qDeleteAll(entries);
+    //qDeleteAll(entries);
+    //qDeleteAll(ents);
+    delete m;
 }
 
 
@@ -65,7 +70,7 @@ ProjectTypeModel::~ProjectTypeModel() {
 //~base class pure virtual functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 QModelIndex ProjectTypeModel::index(int row, int column, const QModelIndex &parent) const {
-    ItemEntry* p = (ItemEntry*)parent.internalPointer();
+    /*ItemEntry* p = (ItemEntry*)parent.internalPointer();
 
     ItemEntry* item;
     if (p != 0 && row < p->childCount())
@@ -75,11 +80,16 @@ QModelIndex ProjectTypeModel::index(int row, int column, const QModelIndex &pare
     else
         return createIndex(0, 0, (void*)0);
 
-    return createIndex(row, column, (void*)item);
+    return createIndex(row, column, (void*)item);*/
+    /*if (parent.internalPointer() == 0 && row < ents.length()) {
+        return createIndex(row, column, (void*)ents.at(row));
+    } else
+        return createIndex(0, 0, (void*)0);*/
+    m->index(row, column, parent);
 }
 
 QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
-    ItemEntry* item = (ItemEntry*)child.internalPointer();
+    /*ItemEntry* item = (ItemEntry*)child.internalPointer();
     if (child.isValid() && item != 0) {
         ItemEntry* parent = item->parent();
         if (parent == 0)
@@ -93,24 +103,36 @@ QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
             return createIndex(gp->indexOf(parent), 0, parent);
         }
     } else
+        return createIndex(0, 0, (void*)0);*/
+    /*QString* s = (QString*)child.internalPointer();
+    if (s != 0 && ents.contains(s)) {
         return createIndex(0, 0, (void*)0);
+    } else
+        return createIndex(0, 0, (void*)0);*/
+    m->parent(child);
 }
 
 int ProjectTypeModel::rowCount(const QModelIndex &parent) const {
-    if (parent.internalPointer() == 0)
+    /*if (parent.internalPointer() == 0)
         return entries.count();
     else {
         ItemEntry* item = (ItemEntry*)(parent.internalPointer());
         return item->childCount();
-    }
+    }*/
+    /*if (parent.internalPointer() == 0) {
+        return ents.count();
+    } else
+        return 0;*/
+    m->rowCount(parent);
 }
 
 int ProjectTypeModel::columnCount(const QModelIndex &parent) const {
-    return 2;   // one column for the project type, and one for the description
+    //return 1;   // one column for the project type, and one for the description
+    m->columnCount(parent);
 }
 
 QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
-    QVariant r;
+    /*QVariant r;
     if (role == Qt::DisplayRole) {
         ItemEntry* item = (ItemEntry*)(index.internalPointer());
         if (index.column() == 0)
@@ -118,7 +140,13 @@ QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
         else if (index.column() == 1)
             r = QVariant(item->description());
     }
-    return r;
+    return r;*/
+    /*QString* s = (QString*)index.internalPointer();
+    if (s != 0 && ents.contains(s) && role == Qt::DisplayRole) {
+        return QVariant(*s);
+    } else
+        return QVariant();*/
+    m->data(index, role);
 }
 
 
@@ -126,7 +154,7 @@ QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
 //~reimplemented virtual functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 QVariant ProjectTypeModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    QVariant r;
+    /*QVariant r;
     if (orientation == Qt::Horizontal) {
         if (role == Qt::DisplayRole) {
             if (section == 0)
@@ -135,15 +163,17 @@ QVariant ProjectTypeModel::headerData(int section, Qt::Orientation orientation, 
                 r = QVariant("Description");
         }
     }
-    return r;
+    return r;*/
+    //return QAbstractItemModel::headerData(section, orientation, role);
 }
 
 Qt::ItemFlags ProjectTypeModel::flags(const QModelIndex &index) const {
-    ItemEntry* item = (ItemEntry*)index.internalPointer();
+    /*ItemEntry* item = (ItemEntry*)index.internalPointer();
     if (item != 0)
         return item->flags();
     else
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;*/
+    //return QAbstractItemModel::flags(index);
 }
 
 
@@ -153,20 +183,21 @@ Qt::ItemFlags ProjectTypeModel::flags(const QModelIndex &index) const {
 /*
 -returns the file path of a spec file specified by an index
 */
-QString ProjectTypeModel::specFileFromIndex(const QModelIndex& index) {
+/*QString ProjectTypeModel::specFileFromIndex(const QModelIndex& index) {
     ItemEntry* item = (ItemEntry*)index.internalPointer();
     if (item != 0)
         return item->specFilePath();
     else
         return QString();
-}
+}*/
 
 
 
 //~private class definitions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath, ItemEntry* parent) :
+/*ProjectTypeModel::ItemEntry::ItemEntry(const QString& filePath, ItemEntry* parent) :
 itemName(), itemDescription(), itemFlags(Qt::NoItemFlags), specFile(filePath), itemParent(parent) {
+    children.clear();
     if (specFile.exists()) {
         if (specFile.isDir()) {
             // if the file system item is a directory, use its name as project name, use no description, and get all its children
@@ -217,5 +248,5 @@ itemName(), itemDescription(), itemFlags(Qt::NoItemFlags), specFile(filePath), i
 
 ProjectTypeModel::ItemEntry::~ItemEntry() {
     qDeleteAll(children);
-}
+}*/
 
