@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 8, 2015
+Last Modified: July 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -139,6 +139,9 @@ class MainWindow : public QMainWindow {
 
         void replaceInCurrent(const FindReplaceDialog::DialogParameters& parameters);
         /*  -called to perform a "replace" on the current tab file using the data in `parameters` */
+
+        void on_actionRemove_trailing_spaces_triggered();
+        /*  remove trailing spaces from the current file */
 
     private:
         Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window

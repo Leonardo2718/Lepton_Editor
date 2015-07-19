@@ -252,6 +252,8 @@
     <addaction name="actionReplace_Tabs_with_Spaces"/>
     <addaction name="actionReplace_Spaces_with_Tabs"/>
     <addaction name="separator"/>
+    <addaction name="actionRemove_trailing_spaces"/>
+    <addaction name="separator"/>
     <addaction name="action_Find_Replace"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -419,6 +421,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionRemove_trailing_spaces">
+   <property name="text">
+    <string>Remove trailing spaces</string>
    </property>
   </action>
  </widget>

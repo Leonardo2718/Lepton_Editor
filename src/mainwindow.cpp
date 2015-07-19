@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 8, 2015
+Last Modified: July 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -287,6 +287,14 @@ void MainWindow::replaceInCurrent(const FindReplaceDialog::DialogParameters& par
 /*  -called to perform a "replace" on the current tab file using the data in `parameters` */
     editors->current()->replace(parameters.replaceText);
 }
+
+/*
+remove trailing spaces from the current file
+*/
+void MainWindow::on_actionRemove_trailing_spaces_triggered(){
+    editors->current()->removeTrailingSpaces();
+}
+
 
 
 

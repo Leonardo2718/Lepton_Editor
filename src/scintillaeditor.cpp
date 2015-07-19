@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: March 10, 2015
+Last Modified: July 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -197,4 +197,18 @@ void ScintillaEditor::changeSpacesToTabs() {
     }
 
     setText( editorTextLines.join("\n") );
+}
+
+/*
+remove the spaces at the end of each line
+*/
+void ScintillaEditor::removeTrailingSpaces() {
+    setText( text().replace(QRegularExpression("[ \t]+\n"), "\n") );    // remove trailing spaces (except last line)
+    setText( text().remove(QRegularExpression("[ \t]+$")) );            // remove trailing spaces in last line
+
+    /*######################################################################################
+    ### Note that these are not combined into a single step because doing so would cause  ##
+    ### an extra '\n' do be placed at the end of the file if not already present.  This   ##
+    ### functionallity should be implemented separately.                                  ##
+    ######################################################################################*/
 }
