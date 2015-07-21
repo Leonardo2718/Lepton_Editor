@@ -263,6 +263,8 @@
     <addaction name="actionUse_Tabs"/>
     <addaction name="actionUse_Spaces"/>
     <addaction name="separator"/>
+    <addaction name="actionRemove_trailing_spaces_on_save"/>
+    <addaction name="separator"/>
     <addaction name="actionSettings_Editor"/>
    </widget>
    <widget class="QMenu" name="menuLanguage">
@@ -426,6 +428,14 @@
   <action name="actionRemove_trailing_spaces">
    <property name="text">
     <string>Remove trailing spaces</string>
+   </property>
+  </action>
+  <action name="actionRemove_trailing_spaces_on_save">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Remove trailing spaces on save</string>
    </property>
   </action>
  </widget>
