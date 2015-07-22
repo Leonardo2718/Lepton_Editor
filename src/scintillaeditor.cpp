@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: July 19, 2015
+Last Modified: July 21, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,6 +41,7 @@ Usage Agreement:
 #include <QDomDocument>
 #include <QMessageBox>
 #include <Qsci/qscilexercpp.h>
+#include <QScrollBar>
 
 //include other Lepton classes and objects
 #include "scintillaeditor.h"
@@ -203,12 +204,20 @@ void ScintillaEditor::changeSpacesToTabs() {
 remove the spaces at the end of each line
 */
 void ScintillaEditor::removeTrailingSpaces() {
+    int line = 0;
+    int index = 0;
+    int v = verticalScrollBar()->value();   // save the old vertical scroll position
+    getCursorPosition(&line, &index);       // save the old cursor position
+
+    /*#################################################################################
+    ### Note that the following are not combined into a single step because doing so ##
+    ### would cause an extra '\n' do be placed at the end of the file if not already ##
+    ### present.  This functionallity should be implemented separately.              ##
+    #################################################################################*/
+
     setText( text().replace(QRegularExpression("[ \t]+\n"), "\n") );    // remove trailing spaces (except last line)
     setText( text().remove(QRegularExpression("[ \t]+$")) );            // remove trailing spaces in last line
 
-    /*######################################################################################
-    ### Note that these are not combined into a single step because doing so would cause  ##
-    ### an extra '\n' do be placed at the end of the file if not already present.  This   ##
-    ### functionallity should be implemented separately.                                  ##
-    ######################################################################################*/
+    setCursorPosition(line, index);     // reset the vertical scroll position
+    verticalScrollBar()->setValue(v);   // reset the cursor position
 }
