@@ -10,12 +10,12 @@
         "selection_foreground": "#CCCCCC",
         "font": {
             "font_family": "Monospace",
-            "font_point_size": 10,
+            "font_point_size": 8,
             "font_style": "normal",
             "font_weight": "normal"
             },
         "whitespace_visibility": "visible",
-        "whitespace_color": "#505050",
+        "whitespace_color": "#606060",
         "margins_background": "#3B3B3B",
         "margins_foreground": "#888888"
     }

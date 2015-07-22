@@ -92,55 +92,51 @@ QToolBar {
 
 /*~Scroll Bars~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 QScrollBar:horizontal {
-    border: 0px solid #888888;
+    border: 0 1px solid #BBBBBB;
     background: #BBBBBB;
-    height: 12px;
-    margin: 0px 15px 0px 15px;
+    height: 10px;
+    margin: 0px 20px 0 20px;
 }
 QScrollBar::handle:horizontal {
     background: #4C4C4C;
-    min-width: 10px;
+    min-width: 20px;
 }
 QScrollBar::add-line:horizontal {
-    width: 13px;
-    height: 13px;
-    padding: 0px 0px 0px 0px transparent;
-    margin: 0px 0px 0px 0px transparent;
+    border-left: 3px solid #BBBBBB;
+    background: #4C4C4C;
+    width: 17px;
     subcontrol-position: right;
     subcontrol-origin: margin;
 }
 QScrollBar::sub-line:horizontal {
-    width: 13px;
-    height: 13px;
-    padding: 0px 0px 0px 0px transparent;
-    margin: 0px 0px 0px 0px transparent;
+    border-right: 3px solid #BBBBBB;
+    background: #4C4C4C;
+    width: 17px;
     subcontrol-position: left;
     subcontrol-origin: margin;
 }
 
 QScrollBar:vertical {
-    border: 0px solid #888888;
+    border: 1px 0 solid #BBBBBB;
     background: #BBBBBB;
-    width: 12px;
-    margin: 15px 0 15px 0;
+    width: 10px;
+    margin: 20px 0 20px 0;
 }
 QScrollBar::handle:vertical {
     background: #4C4C4C;
-    min-height: 10px;
+    min-height: 20px;
 }
 QScrollBar::add-line:vertical {
-    height: 13px;
-    height: 13px;
-    padding: 0px 0px 0px 0px transparent;
-    margin: 0px 0px 0px 0px transparent;
+    border-top: 3px solid #BBBBBB;
+    background: #4C4C4C;
+    height: 17px;
     subcontrol-position: bottom;
     subcontrol-origin: margin;
 }
 QScrollBar::sub-line:vertical {
-    height: 13px;
-    height: 13px;
-    padding: 0px 0px 0px 0px transparent;
-    margin: 0px 0px 0px 0px transparent;
+    border-bottom: 3px solid #BBBBBB;
+    background: #4C4C4C;
+    height: 17px;
     subcontrol-position: top;
     subcontrol-origin: margin;
 }
@@ -167,4 +163,54 @@ QHeaderView::section {
 /*~Tree view~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 QTreeView {
 	background: #BBBBBB;
+    show-decoration-selected: 1;
 }
+
+/*QTreeView::item:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e7effd, stop: 1 #cbdaf1);
+    border: 1px solid #bfcde4;
+}*/
+
+QTreeView::item:selected {
+    /*border: 1px solid #567dbc;/**/
+    background-color: #4C4C4C;
+    color: #FFF;
+}
+
+/*QTreeView::branch {
+    border-image: none;
+    image: none;
+}*/
+
+QTreeView::branch:selected {
+        background: #4C4C4C;
+}
+
+/* this code is the example code from the Qt documentation */
+/*
+QTreeView::branch:has-siblings:!adjoins-item {
+    border-image: url(vline.png) 0;/
+}
+
+QTreeView::branch:has-siblings:adjoins-item {
+    border-image: url(branch-more.png) 0;
+    border-image: none;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+    border-image: url(branch-end.png) 0;
+    border-image: none;
+}
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+        border-image: none;
+        image: url(branch-closed.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+        border-image: none;
+        image: url(branch-open.png);
+}
+/**/
