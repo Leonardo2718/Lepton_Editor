@@ -155,6 +155,7 @@ class MainWindow : public QMainWindow {
         QActionGroup* selectorSpaceTab; // group of actions to select whether to use spaces or tabs
         FindReplaceDialog  findReplace; // a dialog used to do find/replace tasks
         QLabel* statusLabel;            // the message shown on the status bar
+        QString statusLabelTemplate;    // holds the template used to generate the status bar message
 
         void openFile(const QString& filePath);
         /* -opens a specified file in an editor tab */

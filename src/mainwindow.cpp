@@ -69,7 +69,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //setup main window
     setWindowTitle("Lepton Editor");
 
-    statusLabel = new QLabel("Line: 0, Col: 0 ");
+    statusLabelTemplate = LeptonConfig::mainSettings->getValue("status_bar", "template").toString();
+    statusLabel = new QLabel();
     ui->statusBar->addPermanentWidget(statusLabel);
 
     //setup other windows
@@ -114,6 +115,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() {
     //delete projectListModel;
     delete projectTree;
+    delete statusLabel;
     delete ui;
 }
 
@@ -301,12 +303,18 @@ void MainWindow::on_actionRemove_trailing_spaces_triggered(){
     editors->current()->removeTrailingSpaces();
 }
 
-/*  update the status bar label */
+/*
+update the status bar label
+*/
 void MainWindow::updateStatusLabel() {
     int line = 0;
     int col = 0;
     editors->current()->getCursorPosition(&line, &col);
-    statusLabel->setText(tr("Line: %0, Col: %1 ").arg(line + 1).arg(col));
+    QString labelText = statusLabelTemplate;
+    labelText.replace(QRegularExpression("%l"), tr("%0").arg(line + 1));
+    labelText.replace(QRegularExpression("%c"), tr("%0").arg(col));
+    labelText.replace(QRegularExpression("%C"), tr("%0").arg(col + 1));
+    statusLabel->setText(labelText);
 }
 
 
