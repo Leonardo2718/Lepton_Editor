@@ -1,4 +1,7 @@
 {
+    "status_bar": {
+        "template": "Line: %l | Col: %c "
+    },
     "application_theme": {
       "stylesheet": "themes/defaultTheme.css"
     },

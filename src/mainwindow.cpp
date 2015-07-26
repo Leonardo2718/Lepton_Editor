@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: July 20, 2015
+Last Modified: July 26, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -42,6 +42,7 @@ Usage Agreement:
 #include <QMessageBox>
 #include <QSettings>
 #include <QVariant>
+#include <QLabel>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "leptonconfig.h"
@@ -68,6 +69,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //setup main window
     setWindowTitle("Lepton Editor");
 
+    statusLabelTemplate = LeptonConfig::mainSettings->getValue("status_bar", "template").toString();
+    statusLabel = new QLabel();
+    ui->statusBar->addPermanentWidget(statusLabel);
+
     //setup other windows
     configsEditor.setParent(this, Qt::Dialog);
     findReplace.setParent(this, Qt::Dialog);
@@ -77,7 +82,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->editorArea->layout()->addWidget(editors);
 
     //create a new editor
-    editors->addTab();
+    //editors->addTab();
+    insertTab();
 
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
@@ -109,6 +115,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() {
     //delete projectListModel;
     delete projectTree;
+    delete statusLabel;
     delete ui;
 }
 
@@ -185,6 +192,7 @@ void MainWindow::editTabChanged() {
         setLanguageSelectorMenu();
         setSpaceTabSelector();
         editors->current()->setFocus(Qt::TabFocusReason);
+        updateStatusLabel();
     }
 }
 
@@ -295,6 +303,20 @@ void MainWindow::on_actionRemove_trailing_spaces_triggered(){
     editors->current()->removeTrailingSpaces();
 }
 
+/*
+update the status bar label
+*/
+void MainWindow::updateStatusLabel() {
+    int line = 0;
+    int col = 0;
+    editors->current()->getCursorPosition(&line, &col);
+    QString labelText = statusLabelTemplate;
+    labelText.replace(QRegularExpression("%l"), tr("%0").arg(line + 1));
+    labelText.replace(QRegularExpression("%c"), tr("%0").arg(col));
+    labelText.replace(QRegularExpression("%C"), tr("%0").arg(col + 1));
+    statusLabel->setText(labelText);
+}
+
 
 
 //~private method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -303,7 +325,8 @@ void MainWindow::openFile(const QString& filePath) {
 /* -opens a specified file in an editor tab */
     if ( filePath.isEmpty() ) return;
     if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
-        qint8 i = editors->addTab();
+        //qint8 i = editors->addTab();
+        int i = insertTab();
         editors->setCurrentIndex(i);
     }
     editors->current()->loadFile(filePath);         //insert text into editor
@@ -440,4 +463,14 @@ QString MainWindow::getDialogDirPath(const QString& location) {
     }
 
     return path;
+}
+
+/*
+inserts a new editor tab and returns the new editor object
+*/
+int MainWindow::insertTab() {
+    int index = editors->addTab();
+    ScintillaEditor* newEditor = dynamic_cast<ScintillaEditor*>(editors->widget(index));
+    connect(newEditor, SIGNAL(cursorPositionChanged(int,int)), this, SLOT(updateStatusLabel()));
+    return index;
 }
