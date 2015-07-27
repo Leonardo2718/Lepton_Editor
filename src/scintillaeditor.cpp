@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: July 21, 2015
+Last Modified: July 26, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -47,7 +47,7 @@ Usage Agreement:
 #include "scintillaeditor.h"
 #include "leptonconfig.h"
 
-
+#include <QDebug>
 
 //~public method implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -204,20 +204,75 @@ void ScintillaEditor::changeSpacesToTabs() {
 remove the spaces at the end of each line
 */
 void ScintillaEditor::removeTrailingSpaces() {
+    /*
     int line = 0;
     int index = 0;
     int v = verticalScrollBar()->value();   // save the old vertical scroll position
     getCursorPosition(&line, &index);       // save the old cursor position
-
+    */
     /*#################################################################################
     ### Note that the following are not combined into a single step because doing so ##
     ### would cause an extra '\n' do be placed at the end of the file if not already ##
     ### present.  This functionallity should be implemented separately.              ##
     #################################################################################*/
-
+    /*
     setText( text().replace(QRegularExpression("[ \t]+\n"), "\n") );    // remove trailing spaces (except last line)
     setText( text().remove(QRegularExpression("[ \t]+$")) );            // remove trailing spaces in last line
 
     setCursorPosition(line, index);     // reset the vertical scroll position
     verticalScrollBar()->setValue(v);   // reset the cursor position
+    */
+    /*
+    int maxLines = wEditor->2Call(SCI_GETLINECOUNT);
+    for (int line = 0; line < maxLines; line++) {
+        int lineStart = wEditor.Call(SCI_POSITIONFROMLINE, line);
+        int lineEnd = wEditor.Call(SCI_GETLINEENDPOSITION, line);
+        int i = lineEnd - 1;
+        char ch = static_cast<char>(wEditor.Call(SCI_GETCHARAT, i));
+        while ((i >= lineStart) && ((ch == ' ') || (ch == '\t'))) {
+            i--;
+            ch = static_cast<char>(wEditor.Call(SCI_GETCHARAT, i));
+        }
+        if (i < (lineEnd - 1)) {
+            wEditor.Call(SCI_SETTARGETSTART, i + 1);
+            wEditor.Call(SCI_SETTARGETEND, lineEnd);
+            wEditor.CallString(SCI_REPLACETARGET, 0, "");
+        }
+    }
+    */
+    /*
+    QString t = text();
+    QRegularExpression ws = QRegularExpression("[ \t]+\n");
+    QRegularExpressionMatchIterator trailingSpaces = ws.globalMatch(t);
+    while (trailingSpaces.hasNext()) {
+        QRegularExpressionMatch m = trailingSpaces.next();
+        qDebug() << m.captured() << m.capturedStart() << " " << m.capturedEnd() - 1;
+        SendScintilla(SCI_SETTARGETSTART, m.capturedStart());
+        SendScintilla(SCI_SETTARGETEND, m.capturedEnd() - 1);
+        SendScintilla(SCI_REPLACETARGET, "\n");
+    }//*/
+
+    /*######################################################################################
+    ### To remove the trailing white spaces, the program traverses the text in reverse.   ##
+    ### This is done to avoid continually changing the search position when removing      ##
+    ### spaces.  First, the algorithm searchs for a new line character or the end of      ##
+    ### the file.  Once found, it records its position and continues searching in reverse ##
+    ### for white space characters (space or tab).  When the last white space character   ##
+    ### is found, it removes them from the line in the text.  This process is repeated    ##
+    ### for every line in the file.                                                       ##
+    ######################################################################################*/
+
+    QString t = text();
+    for (int i = t.length(); i > 0; i--) {
+        while (i > 0 && i < t.length() && t.at(i) != '\n') // could also be an `if (...) continue` but this is clearer
+            i--;
+        int prev = i;
+        while (i > 0 && (t.at(i - 1) == ' ' || t.at(i - 1) == '\t'))
+            i--;
+        if (i < prev) {
+            SendScintilla(SCI_SETTARGETSTART, 0 > i ? 0 : i);
+            SendScintilla(SCI_SETTARGETEND, prev);
+            SendScintilla(SCI_REPLACETARGET, "");
+        }
+    }
 }
