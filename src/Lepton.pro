@@ -5,6 +5,15 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Lepton
 TEMPLATE = app
 
+equals(QMAKE_CXX, "g++") {
+    greaterThan(QT_GCC_MAJOR_VERSION, 4):   QMAKE_CXXFLAGS  += -std=c++14
+    lessThan(QT_GCC_MAJOR_VERSION, 5):      CONFIG          += c++14
+}
+!equals(QMAKE_CXX, "g++") {
+    CONFIG          += c++14
+}
+DEFINES     += "CXX11_REGEX"
+
 CONFIG      += qscintilla2
 
 SOURCES += main.cpp\
