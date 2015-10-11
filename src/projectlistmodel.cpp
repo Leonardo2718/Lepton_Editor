@@ -35,14 +35,16 @@ Usage Agreement:
 
 // project headers
 #include "projectlistmodel.h"
+#include "leptonconfig.h"
+
+// Qt classes
+#include <QSettings>
 
 
 
 //~class implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectListModel::ProjectListModel() {
-    //root = std::make_unique<ProjectListItem>(QFileInfo{});
-}
+ProjectListModel::ProjectListModel() : root{std::make_unique<ProjectListRoot>()} {}
 
 QModelIndex ProjectListModel::index(int row, int column, const QModelIndex& parent) const noexcept {
     auto p = static_cast<ProjectListItem*>(parent.internalPointer());
@@ -59,9 +61,6 @@ QModelIndex ProjectListModel::parent(const QModelIndex& index) const noexcept {
         int row = 0;
         if (parent != root.get()) {
             auto grandParent = parent->parent();
-            /*auto ptr = std::unique_ptr<ProjectListItem>(parent);  // cast to unique_ptr to make comparison
-            row = grandParent->children.indexOf(ptr);
-            ptr.release();*/                                  // release unique_ptr to avoid deleting it
             row = grandParent->indexOfChild(parent);
         }
         return createIndex(row, 0, static_cast<void*>(parent));
@@ -85,4 +84,37 @@ QVariant ProjectListModel::data(const QModelIndex & index, int role) const noexc
         return item->data(role);
     else
         return QVariant{};
+}
+
+/*
+-load projects saved from previous session
+*/
+void ProjectListModel::loadSession() {
+    QSettings session;
+    QVariantList projectList = session.value("projectPathList").toList();
+    foreach (const QVariant& projectEntry, projectList) {
+        QVariantMap d = projectEntry.toMap();
+        QVariantList commands{};
+        commands.append(QString("load"));
+        commands.append(d.value("project_path"));
+        root->addChild(commands);
+    }
+}
+
+/*
+-save open projects from current session
+*/
+void ProjectListModel::saveSession() {
+    QSettings session;
+    QVariantList projectList;
+    const int projectCount = root->childCount();
+    for (int i = 0; i < projectCount; i++) {
+        auto project = dynamic_cast<Project*>(root->childAt(i));
+        if (project != nullptr) {
+            QVariantMap d;
+            d.insert("project_path", project->path());
+            projectList.append(d);
+        }
+    }
+    session.setValue("projectPathList", projectList);
 }

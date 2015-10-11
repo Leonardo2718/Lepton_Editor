@@ -150,6 +150,9 @@ class Project: public ProjectListItem {
 
         QVariant data(int role = Qt::DisplayRole) const;
 
+        QString path() const;
+        /*  returns path of the project */
+
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
 

@@ -73,6 +73,12 @@ class ProjectListModel : public QAbstractItemModel {
 
         bool addItem(const QModelIndex& parent = QModelIndex());
 
+        void loadSession();
+        /*  -load projects saved from previous session */
+
+        void saveSession();
+        /*  -save open projects from current session */
+
     signals:
 
     public slots:

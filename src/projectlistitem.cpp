@@ -220,6 +220,11 @@ QVariant Project::data(int role) const {
         return QVariant{};
 }
 
+/*  returns path of the project */
+QString Project::path() const {
+    return projectDir.absolutePath();
+}
+
 std::unique_ptr<ProjectListItem> Project::constructChild(const QVariantList& args) {
     auto command = args.at(0).toString();
     auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
