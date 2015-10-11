@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: scintillaeditor.h
 Author: Leonardo Banderali
 Created: May 5, 2014
-Last Modified: March 10, 2015
+Last Modified: July 26, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,12 +41,13 @@ Usage Agreement:
 #include <QDomDocument>
 #include <QMessageBox>
 #include <Qsci/qscilexercpp.h>
+#include <QScrollBar>
 
 //include other Lepton classes and objects
 #include "scintillaeditor.h"
 #include "leptonconfig.h"
 
-
+#include <QDebug>
 
 //~public method implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -197,4 +198,34 @@ void ScintillaEditor::changeSpacesToTabs() {
     }
 
     setText( editorTextLines.join("\n") );
+}
+
+/*
+remove the spaces at the end of each line
+*/
+void ScintillaEditor::removeTrailingSpaces() {
+
+    /*######################################################################################
+    ### To remove the trailing white spaces, the program traverses the text in reverse.   ##
+    ### This is done to avoid continually changing the search position when removing      ##
+    ### spaces.  First, the algorithm searchs for a new line character or the end of      ##
+    ### the file.  Once found, it records its position and continues searching in reverse ##
+    ### for white space characters (space or tab).  When the last white space character   ##
+    ### is found, it removes them from the line in the text.  This process is repeated    ##
+    ### for every line in the file.                                                       ##
+    ######################################################################################*/
+
+    QString t = text();
+    for (int i = t.length(); i > 0; i--) {
+        while (i > 0 && i < t.length() && t.at(i) != '\n') // could also be an `if (...) continue` but this is clearer
+            i--;
+        int prev = i;
+        while (i > 0 && (t.at(i - 1) == ' ' || t.at(i - 1) == '\t'))
+            i--;
+        if (i < prev) {
+            SendScintilla(SCI_SETTARGETSTART, 0 > i ? 0 : i);
+            SendScintilla(SCI_SETTARGETEND, prev);
+            SendScintilla(SCI_REPLACETARGET, "");
+        }
+    }
 }

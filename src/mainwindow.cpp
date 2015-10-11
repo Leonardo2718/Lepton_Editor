@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 8, 2015
+Last Modified: July 26, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -42,6 +42,7 @@ Usage Agreement:
 #include <QMessageBox>
 #include <QSettings>
 #include <QVariant>
+#include <QLabel>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "leptonconfig.h"
@@ -68,6 +69,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     //setup main window
     setWindowTitle("Lepton Editor");
 
+    statusLabelTemplate = LeptonConfig::mainSettings->getValue("status_bar", "template").toString();
+    statusLabel = new QLabel();
+    ui->statusBar->addPermanentWidget(statusLabel);
+
     //setup other windows
     configsEditor.setParent(this, Qt::Dialog);
     findReplace.setParent(this, Qt::Dialog);
@@ -77,7 +82,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->editorArea->layout()->addWidget(editors);
 
     //create a new editor
-    editors->addTab();
+    //editors->addTab();
+    insertTab();
 
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
@@ -109,6 +115,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() {
     //delete projectListModel;
     delete projectTree;
+    delete statusLabel;
     delete ui;
 }
 
@@ -185,6 +192,7 @@ void MainWindow::editTabChanged() {
         setLanguageSelectorMenu();
         setSpaceTabSelector();
         editors->current()->setFocus(Qt::TabFocusReason);
+        updateStatusLabel();
     }
 }
 
@@ -288,6 +296,27 @@ void MainWindow::replaceInCurrent(const FindReplaceDialog::DialogParameters& par
     editors->current()->replace(parameters.replaceText);
 }
 
+/*
+remove trailing spaces from the current file
+*/
+void MainWindow::on_actionRemove_trailing_spaces_triggered(){
+    editors->current()->removeTrailingSpaces();
+}
+
+/*
+update the status bar label
+*/
+void MainWindow::updateStatusLabel() {
+    int line = 0;
+    int col = 0;
+    editors->current()->getCursorPosition(&line, &col);
+    QString labelText = statusLabelTemplate;
+    labelText.replace(QRegularExpression("%l"), tr("%0").arg(line + 1));
+    labelText.replace(QRegularExpression("%c"), tr("%0").arg(col));
+    labelText.replace(QRegularExpression("%C"), tr("%0").arg(col + 1));
+    statusLabel->setText(labelText);
+}
+
 
 
 //~private method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -296,7 +325,8 @@ void MainWindow::openFile(const QString& filePath) {
 /* -opens a specified file in an editor tab */
     if ( filePath.isEmpty() ) return;
     if ( (editors->count() < 1) || (! editors->current()->text().isEmpty()) ) { //if text is already presend in the current editor, create a new tab
-        qint8 i = editors->addTab();
+        //qint8 i = editors->addTab();
+        int i = insertTab();
         editors->setCurrentIndex(i);
     }
     editors->current()->loadFile(filePath);         //insert text into editor
@@ -305,26 +335,40 @@ void MainWindow::openFile(const QString& filePath) {
 void MainWindow::saveFile(int index) {
 /* -save content to open file */
     QString file = editors->getEditor(index)->getOpenFilePath();
-    if ( file.isEmpty() ) {                             //if no file is currently open, perform a 'save as' instead
+
+    if ( file.isEmpty() ) {                                     // if no file is currently open, perform a 'save as' instead
         on_actionSave_As_triggered();
         return;
     }
-    editors->getEditor(index)->writeToFile(file, true); //save changes and mark file as saved
+
+    ScintillaEditor* currentEditor = editors->getEditor(index);
+    if (ui->actionRemove_trailing_spaces_on_save->isChecked())  // remove trailing spaces if required
+        currentEditor->removeTrailingSpaces();
+    currentEditor->writeToFile(file, true);         // save changes and mark file as saved
 }
 
 void MainWindow::saveFileAs(int index) {
 /* -save content to a new file and load it */
-    QString file = QFileDialog::getSaveFileName(this, tr("Save As"), getDialogDirPath() );  //get a new file name
-    if ( file.isEmpty() ) return;                                                           //check if file name was actually specified
-    editors->getEditor(index)->writeToFile(file);
-    editors->getEditor(index)->loadFile(file);                                              //open the newly created file
+    QString file = QFileDialog::getSaveFileName(this, tr("Save As"), getDialogDirPath() );  // get a new file name
+    if ( file.isEmpty() ) return;                                                           // check if file name was actually specified
+
+    ScintillaEditor* currentEditor = editors->getEditor(index);
+    if (ui->actionRemove_trailing_spaces_on_save->isChecked())  // remove trailing spaces if required
+        currentEditor->removeTrailingSpaces();
+    currentEditor->writeToFile(file);
+    currentEditor->loadFile(file);                  // open the newly created file
 }
 
 void MainWindow::saveFileCopyAs(int index) {
 /* -save a copy of content to a new file (new file not loaded) */
+
     QString file = QFileDialog::getSaveFileName(this, tr("Save Copy As"), getDialogDirPath() );
     if ( file.isEmpty() ) return;
-    editors->getEditor(index)->writeToFile(file);
+
+    ScintillaEditor* currentEditor = editors->getEditor(index);
+    if (ui->actionRemove_trailing_spaces_on_save->isChecked())
+        currentEditor->removeTrailingSpaces();
+    currentEditor->writeToFile(file);
 }
 
 void MainWindow::setLanguageSelectorMenu() {
@@ -344,9 +388,9 @@ void MainWindow::setSpaceTabSelector() {
 void MainWindow::loadSession() {
 /* -load settings and configs from saved session */
 
-    QSettings session;  //session object
+    QSettings session;  // session object
 
-    //load layout settings
+    // load layout settings
     if ( session.value("windowMaximized").toBool() ) this->showMaximized();
     else this->resize( session.value("windowWidth").toInt(), session.value("windowHeight").toInt() );
 
@@ -358,7 +402,10 @@ void MainWindow::loadSession() {
     ui->editorTools->resize( session.value("toolsWidth").toInt(), session.value("toolsHeight").toInt() );
     ui->actionEditor_Tools->setChecked( session.value("toolsVisible", false).toBool() );
 
-    //load previously opened files
+    // load editor settings
+    ui->actionRemove_trailing_spaces_on_save->setChecked(session.value("removeTrailingSpacesOnSave",false).toBool());
+
+    // load previously opened files
     QList< QVariant > fileList = session.value("listOfOpenFiles").toList();
     for (int i = 0, c = fileList.count(); i < c; i++) {
         this->openFile( fileList.at(i).toString() );
@@ -368,9 +415,9 @@ void MainWindow::loadSession() {
 void MainWindow::saveSession() {
 /* -save settings and configs of this session */
 
-    QSettings session;  //session object
+    QSettings session;  // session object
 
-    //save layout settings
+    // save layout settings
     if ( this->isMaximized() ) session.setValue("windowMaximized", true);
     else {
         session.setValue("windowWidth", this->width() );
@@ -385,7 +432,10 @@ void MainWindow::saveSession() {
     session.setValue("toolsWidth", ui->editorTools->width() );
     session.setValue("toolsHeight", ui->editorTools->height() );
 
-    //save opened files
+    // save editor settings
+    session.setValue("removeTrailingSpacesOnSave", ui->actionRemove_trailing_spaces_on_save->isChecked());
+
+    // save opened files
     QList< QVariant > fileList;
     for (int i = 0, c = editors->count(); i < c; i++) {
         fileList.append( editors->getEditor(i)->getOpenFilePath() );
@@ -413,4 +463,14 @@ QString MainWindow::getDialogDirPath(const QString& location) {
     }
 
     return path;
+}
+
+/*
+inserts a new editor tab and returns the new editor object
+*/
+int MainWindow::insertTab() {
+    int index = editors->addTab();
+    ScintillaEditor* newEditor = dynamic_cast<ScintillaEditor*>(editors->widget(index));
+    connect(newEditor, SIGNAL(cursorPositionChanged(int,int)), this, SLOT(updateStatusLabel()));
+    return index;
 }

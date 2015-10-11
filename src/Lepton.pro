@@ -5,6 +5,15 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Lepton
 TEMPLATE = app
 
+equals(QMAKE_CXX, "g++") {
+    greaterThan(QT_GCC_MAJOR_VERSION, 4):   QMAKE_CXXFLAGS  += -std=c++14
+    lessThan(QT_GCC_MAJOR_VERSION, 5):      CONFIG          += c++14
+}
+!equals(QMAKE_CXX, "g++") {
+    CONFIG          += c++14
+}
+DEFINES     += "CXX11_REGEX"
+
 CONFIG      += qscintilla2
 
 SOURCES += main.cpp\
@@ -20,7 +29,10 @@ SOURCES += main.cpp\
     leptonproject.cpp \
     projecttreeitem.cpp \
     projecttreemodel.cpp \
-    projecttreeroot.cpp
+    projecttreeroot.cpp \
+    projecttypemodel.cpp \
+    projecttypeselector.cpp \
+    loadprojectasdialog.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -35,10 +47,15 @@ HEADERS  += mainwindow.h \
     leptonproject.h \
     projecttreeitem.h \
     projecttreemodel.h \
-    projecttreeroot.h
+    projecttreeroot.h \
+    projecttypemodel.h \
+    projecttypeselector.h \
+    loadprojectasdialog.h
 
 FORMS    += mainwindow.ui \
     settingseditor.ui \
-    findreplacedialog.ui
+    findreplacedialog.ui \
+    projecttypeselector.ui \
+    loadprojectasdialog.ui
 
 unix|win32: LIBS += -lqscintilla2

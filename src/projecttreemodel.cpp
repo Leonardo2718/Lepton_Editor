@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttreemodel.cpp
 Author: Leonardo Banderali
 Created: March 14, 2015
-Last Modified: May 8, 2015
+Last Modified: May 14, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,9 +39,11 @@ Usage Agreement:
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QSettings>
+#include <QMap>
 
 // include other Lepton headers
 #include "leptonconfig.h"
+#include "loadprojectasdialog.h"
 
 
 
@@ -174,9 +176,17 @@ void ProjectTreeModel::newProjectRequest() {
 }
 
 void ProjectTreeModel::openProjectRequest() {
-    beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());
-    projects->openProject();
-    endRemoveRows();
+    //*
+    QString specFilePath = LoadProjectAsDialog::getSpecFilePath();
+    if (specFilePath.isEmpty())
+        return;
+    //*/
+    QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
+    if (!dirName.isEmpty()) {
+        beginRemoveRows(createIndex(0, 0, (void*)0), 0, projects->childCount());
+        projects->openProject(dirName);
+        endRemoveRows();
+    }
 }
 
 
@@ -344,8 +354,9 @@ QModelIndex ProjectTreeModel::indexFor(const ProjectTreeItem* item) {
 void ProjectTreeModel::loadSession() {
     QSettings session;
     QVariantList projectList = session.value("projectPathList").toList();
-    foreach (const QVariant& projectPath, projectList) {
-        projects->openProject(projectPath.toString());
+    foreach (const QVariant& projectEntry, projectList) {
+        QVariantMap d = projectEntry.toMap();
+        projects->openProject(d.value("project_path").toString(), d.value("spec_path").toString());
     }
 }
 
@@ -358,7 +369,10 @@ void ProjectTreeModel::saveSession() {
     const int projectCount = projects->childCount();
     for (int i = 0; i < projectCount; i++) {
         LeptonProject* p = (LeptonProject*)projects->getChild(i);
-        projectList.append(p->getDataItem("path"));
+        QVariantMap d;
+        d.insert("project_path", p->getDataItem("path"));
+        d.insert("spec_path", p->getSpecFilePath());
+        projectList.append(d);
     }
     session.setValue("projectPathList", projectList);
 }

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttree.cpp
 Author: Leonardo Banderali
 Created: April 5, 2015
-Last Modified: May 8, 2015
+Last Modified: May 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -91,11 +91,11 @@ void ProjectTreeRoot::createNewProject() {
 /*
 opens dialog to open an already existing project
 */
-void ProjectTreeRoot::openProject() {
+/*void ProjectTreeRoot::openProject() {
     QString dirName = QFileDialog::getExistingDirectory(0, "Open Project", QDir::homePath(), QFileDialog::ShowDirsOnly);
     if (!dirName.isEmpty())
         addChild(dirName);
-}
+}*/
 
 /*
 opens the project specified

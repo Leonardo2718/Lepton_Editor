@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: May 8, 2015
+Last Modified: July 26, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -140,14 +140,22 @@ class MainWindow : public QMainWindow {
         void replaceInCurrent(const FindReplaceDialog::DialogParameters& parameters);
         /*  -called to perform a "replace" on the current tab file using the data in `parameters` */
 
+        void on_actionRemove_trailing_spaces_triggered();
+        /*  remove trailing spaces from the current file */
+
+        void updateStatusLabel();
+        /*  update the status bar label */
+
     private:
-        Ui::MainWindow* ui;             //a pointer to the interface used to interact with the main window
-        EditorTabBar* editors;          //pointer to editor tab bar object
+        Ui::MainWindow* ui;             // a pointer to the interface used to interact with the main window
+        EditorTabBar* editors;          // pointer to editor tab bar object
         ProjectTreeModel* projectTree;
-        QTreeView* projectList;         //view in which projects will be displayed
-        SettingsEditor configsEditor;   //a window to facilitate editing config files
-        QActionGroup* selectorSpaceTab; //group of actions to select whether to use spaces or tabs
-        FindReplaceDialog  findReplace; //a dialog used to do find/replace tasks
+        QTreeView* projectList;         // view in which projects will be displayed
+        SettingsEditor configsEditor;   // a window to facilitate editing config files
+        QActionGroup* selectorSpaceTab; // group of actions to select whether to use spaces or tabs
+        FindReplaceDialog  findReplace; // a dialog used to do find/replace tasks
+        QLabel* statusLabel;            // the message shown on the status bar
+        QString statusLabelTemplate;    // holds the template used to generate the status bar message
 
         void openFile(const QString& filePath);
         /* -opens a specified file in an editor tab */
@@ -179,6 +187,9 @@ class MainWindow : public QMainWindow {
             -returns directory of file open in current editor tab when `location = 0` and when a file is actually open
             -returns home directory (or executable's directory if `QT_DEBUG` is defined) when no file is open or `location = "home"`
         */
+
+        int insertTab();
+        /*  inserts a new editor tab and returns its index */
 };
 
 #endif // MAINWINDOW_H

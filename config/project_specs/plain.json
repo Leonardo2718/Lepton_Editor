@@ -1,5 +1,6 @@
 {
     "project_type": "Simple Project",
+    "description": "A simple plain project that knows about several different file types.",
     "working_directory": {
         "file_types": [
             {"type": "ccpp_header", "local_directory_only": false},
@@ -45,6 +46,7 @@
         },
         "cpp_source": {
             "name_filter": ".+\\.(cpp|cxx|cc)",
+            "icon": "icons/cpp.png",
             "context_menu": {
                 "use_default": true,
                 "actions": {}
@@ -52,6 +54,7 @@
         },
         "c_source": {
             "name_filter": ".+\\.c",
+            "icon": "icons/c.png",
             "context_menu": {
                 "use_default": true,
                 "actions": {}
@@ -59,6 +62,7 @@
         }, 
         "python_source": {
             "name_filter": ".+\\.(py|pyw)",
+            "icon": "icons/py.png",
             "context_menu": {
                 "use_default": true,
                 "actions": {}
@@ -81,6 +85,7 @@
         },
         "javascript_source": {
             "name_filter": ".+\\.(js|json)",
+            "icon": "icons/js.png",
             "context_menu": {
                 "use_default": true,
                 "actions": {}
@@ -109,6 +114,7 @@
         },
         "xml_file": {
             "name_filter": ".+\\.xml",
+            "icon": "icons/xml.png",
             "context_menu": {
                 "use_default": true,
                 "actions": {}
