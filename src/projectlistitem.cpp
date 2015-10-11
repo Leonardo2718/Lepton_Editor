@@ -132,7 +132,7 @@ std::unique_ptr<ProjectListItem> ProjectFile::constructChild(const QVariantList&
 }
 
 bool ProjectFile::cleanup() {
-    auto answer = QMessageBox::question(0, "Remove file from project", QString("Are you sure you want to remove the file {0}?").arg(file.fileName()),
+    auto answer = QMessageBox::question(0, "Delete file", QString("Are you sure you want to delete the file {0}?").arg(file.fileName()),
                                        QMessageBox::No, QMessageBox::Yes);
     if (answer == QMessageBox::Yes) {
         QDir dir = file.absoluteDir();
@@ -147,45 +147,124 @@ bool ProjectFile::cleanup() {
 
 //~ProjecDirectory implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjecDirectory::ProjecDirectory(const QDir& _dir) : dir{_dir} {}
+ProjectDirectory::ProjectDirectory(const QDir& _dir) : dir{_dir} {}
 
-QVariant ProjecDirectory::data(int role) const {
+QVariant ProjectDirectory::data(int role) const {
     if (role == Qt::DisplayRole)
         return QVariant{dir.dirName()};
     else
         return QVariant{};
 }
 
-std::unique_ptr<ProjectListItem> ProjecDirectory::constructChild(const QVariantList& args) {
+std::unique_ptr<ProjectListItem> ProjectDirectory::constructChild(const QVariantList& args) {
     auto command = args.at(0).toString();
     auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
 
     if (command == "load") {
-        auto filePath = args.at(1).toString();
-        auto file = QFileInfo(filePath);
-        if (file.exists())
-            newItem = std::make_unique<ProjectFile>(file);
+        auto path = args.at(1).toString();
+        QFileInfo pathInfo{path};
+        if (pathInfo.exists()) {
+            if (pathInfo.isDir())
+                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.filePath()});
+            else if (pathInfo.isFile())
+                newItem = std::make_unique<ProjectFile>(pathInfo);
+        }
     }
     else if (command == "create") {
-        auto filePath = QInputDialog::getText(0, "Create new file", "New file name: ");
-        auto file = QFileInfo(dir, filePath);
-        if (!file.exists()) {
-            // create the new file if it does not already exist
-            QFile f{file.absoluteFilePath()};
-            f.open(QIODevice::ReadOnly);
-            f.close();
+        auto type = args.at(1).toString();
+        if (type == "file") {
+            auto fileName = QInputDialog::getText(0, "Create new file", "New file name: ");
+            auto file = QFileInfo(dir, fileName);
+            if (!file.exists()) {
+                // create the new file if it does not already exist
+                QFile f{file.absoluteFilePath()};
+                f.open(QIODevice::ReadOnly);
+                f.close();
+            }
+            newItem = std::make_unique<ProjectFile>(file);
         }
-        newItem = std::make_unique<ProjectFile>(file);
+        else if (type == "dir"){
+            auto dirName = QInputDialog::getText(0, "Create new directory", "New directory name: ");
+            auto pathInfo = QFileInfo(dir, dirName);
+            if (!pathInfo.exists()) {
+                dir.mkdir(dirName);
+            }
+            newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
+        }
     }
 
     return newItem;
 }
 
-bool ProjecDirectory::cleanup() {
-    auto answer = QMessageBox::question(0, "Remove directory from project", QString("Are you sure you want to remove the directory {0}?").arg(dir.dirName()),
+bool ProjectDirectory::cleanup() {
+    auto answer = QMessageBox::question(0, "Delete directory", QString("Are you sure you want to delete the directory {0}?").arg(dir.dirName()),
                                        QMessageBox::No, QMessageBox::Yes);
     if (answer == QMessageBox::Yes) {
         return dir.removeRecursively();
+    }
+    else {
+        return false;
+    }
+}
+
+
+
+//~Project implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Project::Project(const QDir& _projectDir) : projectDir{_projectDir} {}
+
+QVariant Project::data(int role) const {
+    if (role == Qt::DisplayRole)
+        return QVariant{projectDir.dirName()};
+    else
+        return QVariant{};
+}
+
+std::unique_ptr<ProjectListItem> Project::constructChild(const QVariantList& args) {
+    auto command = args.at(0).toString();
+    auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
+
+    if (command == "load") {
+        auto path = args.at(1).toString();
+        QFileInfo pathInfo{path};
+        if (pathInfo.exists()) {
+            if (pathInfo.isDir())
+                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.filePath()});
+            else if (pathInfo.isFile())
+                newItem = std::make_unique<ProjectFile>(pathInfo);
+        }
+    }
+    else if (command == "create") {
+        auto type = args.at(1).toString();
+        if (type == "file") {
+            auto fileName = QInputDialog::getText(0, "Create new file", "New file name: ");
+            auto file = QFileInfo(projectDir, fileName);
+            if (!file.exists()) {
+                // create the new file if it does not already exist
+                QFile f{file.absoluteFilePath()};
+                f.open(QIODevice::ReadOnly);
+                f.close();
+            }
+            newItem = std::make_unique<ProjectFile>(file);
+        }
+        else if (type == "dir"){
+            auto dirName = QInputDialog::getText(0, "Create new directory", "New directory name: ");
+            auto pathInfo = QFileInfo(projectDir, dirName);
+            if (!pathInfo.exists()) {
+                projectDir.mkdir(dirName);
+            }
+            newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
+        }
+    }
+
+    return newItem;
+}
+
+bool Project::cleanup() {
+    auto answer = QMessageBox::question(0, "Delete project", QString("Are you sure you want to delete the project {0}?").arg(projectDir.dirName()),
+                                       QMessageBox::No, QMessageBox::Yes);
+    if (answer == QMessageBox::Yes) {
+        return projectDir.removeRecursively();
     }
     else {
         return false;

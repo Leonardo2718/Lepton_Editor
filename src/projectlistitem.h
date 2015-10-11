@@ -126,9 +126,9 @@ class ProjectFile: public ProjectListItem {
 /*
 A class representing a directory in a project.
 */
-class ProjecDirectory: public ProjectListItem {
+class ProjectDirectory: public ProjectListItem {
     public:
-        ProjecDirectory(const QDir& _dir);
+        ProjectDirectory(const QDir& _dir);
 
         QVariant data(int role = Qt::DisplayRole) const;
 
@@ -144,9 +144,9 @@ class ProjecDirectory: public ProjectListItem {
 /*
 A class representing a project in the list.
 */
-class ProjectListProject: public ProjectListItem {
+class Project: public ProjectListItem {
     public:
-        ProjectListProject(const QDir& _projectDir);
+        Project(const QDir& _projectDir);
 
         QVariant data(int role = Qt::DisplayRole) const;
 
