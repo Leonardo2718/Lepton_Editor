@@ -41,27 +41,28 @@ Usage Agreement:
 //~class implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectListModel::ProjectListModel() {
-    root = std::make_unique<ModelItem>(QFileInfo{});
+    //root = std::make_unique<ProjectListItem>(QFileInfo{});
 }
 
 QModelIndex ProjectListModel::index(int row, int column, const QModelIndex& parent) const noexcept {
-    auto p = static_cast<ModelItem*>(parent.internalPointer());
-    if (p != nullptr && column == 0 && row < p->children.size())
-        return createIndex(row, column, static_cast<void*>(p->children.at(row).get()));
+    auto p = static_cast<ProjectListItem*>(parent.internalPointer());
+    if (p != nullptr && column == 0 && row < p->childCount())
+        return createIndex(row, column, static_cast<void*>(p->childAt(row)));
     else
         return QModelIndex{};
 }
 
 QModelIndex ProjectListModel::parent(const QModelIndex& index) const noexcept {
-    auto item = static_cast<ModelItem*>(index.internalPointer());
-    if (item != nullptr && item->parent != nullptr) {
-        auto parent = item->parent;
+    auto item = static_cast<ProjectListItem*>(index.internalPointer());
+    if (item != nullptr && item->parent() != nullptr) {
+        auto parent = item->parent();
         int row = 0;
         if (parent != root.get()) {
-            auto grandParent = parent->parent;
-            auto ptr = std::unique_ptr<ModelItem>(parent);  // cast to unique_ptr to make comparison
+            auto grandParent = parent->parent();
+            /*auto ptr = std::unique_ptr<ProjectListItem>(parent);  // cast to unique_ptr to make comparison
             row = grandParent->children.indexOf(ptr);
-            ptr.release();                                  // release unique_ptr to avoid deleting it
+            ptr.release();*/                                  // release unique_ptr to avoid deleting it
+            row = grandParent->indexOfChild(parent);
         }
         return createIndex(row, 0, static_cast<void*>(parent));
     } else
@@ -69,8 +70,8 @@ QModelIndex ProjectListModel::parent(const QModelIndex& index) const noexcept {
 }
 
 int ProjectListModel::rowCount(const QModelIndex & parent) const noexcept {
-    auto p = static_cast<ModelItem*>(parent.internalPointer());
-    return p->children.size();
+    auto p = static_cast<ProjectListItem*>(parent.internalPointer());
+    return p->childCount();
 }
 
 int ProjectListModel::columnCount(const QModelIndex & parent) const noexcept {
@@ -78,22 +79,10 @@ int ProjectListModel::columnCount(const QModelIndex & parent) const noexcept {
 }
 
 QVariant ProjectListModel::data(const QModelIndex & index, int role) const noexcept {
-    auto item = static_cast<ModelItem*>(index.internalPointer());
+    auto item = static_cast<ProjectListItem*>(index.internalPointer());
 
     if (item == nullptr)
         return item->data(role);
     else
         return QVariant{};
 }
-
-
-
-ProjectListModel::ModelItem::ModelItem(const QFileInfo& _data) : itemData{_data} {}
-
-QVariant ProjectListModel::ModelItem::data(int role = Qt::DisplayRole) const noexcept {
-    if (role == Qt::DisplayRole)
-        return QVariant{itemData.fileName()};
-    else
-        return QVariant{};
-}
-

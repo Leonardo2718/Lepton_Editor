@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     projecttypemodel.cpp \
     projecttypeselector.cpp \
     loadprojectasdialog.cpp \
-    projectlistmodel.cpp
+    projectlistmodel.cpp \
+    projectlistitem.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -52,7 +53,8 @@ HEADERS  += mainwindow.h \
     projecttypemodel.h \
     projecttypeselector.h \
     loadprojectasdialog.h \
-    projectlistmodel.h
+    projectlistmodel.h \
+    projectlistitem.h
 
 FORMS    += mainwindow.ui \
     settingseditor.ui \

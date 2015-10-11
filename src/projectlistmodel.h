@@ -36,12 +36,15 @@ Usage Agreement:
 #ifndef PROJECTLISTMODEL_H
 #define PROJECTLISTMODEL_H
 
+// project headers
+#include "projectlistitem.h"
+
 // Qt classes
 #include <QAbstractItemModel>
-#include <QFileInfo>
 
 // c++ standard libraries
 #include <memory>
+
 
 
 /*
@@ -68,32 +71,16 @@ class ProjectListModel : public QAbstractItemModel {
 
         QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const noexcept;
 
+        bool addItem(const QModelIndex& parent = QModelIndex());
+
     signals:
 
     public slots:
 
     private:
-        class ModelItem;    // a class representing an item in the model
-
-        std::unique_ptr<ModelItem> root;    // root of the model
+        std::unique_ptr<ProjectListItem> root;    // root of the model
 };
 
-/*
-A class representing an item in the project model.
-*/
-class ProjectListModel::ModelItem {
-    public:
-        // children and the parent do not contribute invariants so keep them public for now;
-        // make them private as needed later on
-        QList<std::unique_ptr<ModelItem>> children;
-        ModelItem* parent;
 
-        ModelItem(const QFileInfo& _data);
-
-        QVariant data(int role = Qt::DisplayRole) const noexcept;
-
-    private:
-        QFileInfo itemData;
-};
 
 #endif // PROJECTLISTMODEL_H
