@@ -38,6 +38,7 @@ Usage Agreement:
 #define PROJECTLISTITEM_H
 
 // Qt classes
+#include <QString>
 #include <QVariant>
 #include <QFileInfo>
 #include <QDir>
@@ -106,13 +107,24 @@ class ProjectListItem {
 //~ProjectListItem specializations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /*
+A class representing a project item that is also a file system item
+*/
+class ProjecFileSystemItem: public ProjectListItem {
+    public:
+        virtual QString path() const noexcept = 0;
+        /*  returns file system path to the item */
+};
+
+/*
 A class representing a file in a project.
 */
-class ProjectFile: public ProjectListItem {
+class ProjectFile: public ProjecFileSystemItem {
     public:
         ProjectFile(const QFileInfo& _file);
 
         QVariant data(int role = Qt::DisplayRole) const;
+
+        QString path() const noexcept;
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
@@ -126,11 +138,13 @@ class ProjectFile: public ProjectListItem {
 /*
 A class representing a directory in a project.
 */
-class ProjectDirectory: public ProjectListItem {
+class ProjectDirectory: public ProjecFileSystemItem {
     public:
         ProjectDirectory(const QDir& _dir);
 
         QVariant data(int role = Qt::DisplayRole) const;
+
+        QString path() const noexcept;
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
@@ -144,14 +158,13 @@ class ProjectDirectory: public ProjectListItem {
 /*
 A class representing a project in the list.
 */
-class Project: public ProjectListItem {
+class Project: public ProjecFileSystemItem {
     public:
         Project(const QDir& _projectDir);
 
         QVariant data(int role = Qt::DisplayRole) const;
 
-        QString path() const;
-        /*  returns path of the project */
+        QString path() const noexcept;
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});

@@ -127,6 +127,10 @@ QVariant ProjectFile::data(int role) const {
         return QVariant{};
 }
 
+QString ProjectFile::path() const noexcept {
+    return file.absoluteFilePath();
+}
+
 std::unique_ptr<ProjectListItem> ProjectFile::constructChild(const QVariantList& args) {
     return std::unique_ptr<ProjectListItem>(nullptr);
 }
@@ -154,6 +158,10 @@ QVariant ProjectDirectory::data(int role) const {
         return QVariant{dir.dirName()};
     else
         return QVariant{};
+}
+
+QString ProjectDirectory::path() const noexcept {
+    return dir.absolutePath();
 }
 
 std::unique_ptr<ProjectListItem> ProjectDirectory::constructChild(const QVariantList& args) {
@@ -220,8 +228,7 @@ QVariant Project::data(int role) const {
         return QVariant{};
 }
 
-/*  returns path of the project */
-QString Project::path() const {
+QString Project::path() const noexcept {
     return projectDir.absolutePath();
 }
 
