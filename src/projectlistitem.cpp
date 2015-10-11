@@ -36,9 +36,11 @@ Usage Agreement:
 #include "projectlistitem.h"
 
 // Qt classes
-#include <QMessageBox>
-#include <QDir>
 #include <QString>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QFile>
 
 
 
@@ -135,6 +137,55 @@ bool ProjectFile::cleanup() {
     if (answer == QMessageBox::Yes) {
         QDir dir = file.absoluteDir();
         return dir.remove(file.fileName());
+    }
+    else {
+        return false;
+    }
+}
+
+
+
+//~ProjecDirectory implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ProjecDirectory::ProjecDirectory(const QDir& _dir) : dir{_dir} {}
+
+QVariant ProjecDirectory::data(int role) const {
+    if (role == Qt::DisplayRole)
+        return QVariant{dir.dirName()};
+    else
+        return QVariant{};
+}
+
+std::unique_ptr<ProjectListItem> ProjecDirectory::constructChild(const QVariantList& args) {
+    auto command = args.at(0).toString();
+    auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
+
+    if (command == "load") {
+        auto filePath = args.at(1).toString();
+        auto file = QFileInfo(filePath);
+        if (file.exists())
+            newItem = std::make_unique<ProjectFile>(file);
+    }
+    else if (command == "create") {
+        auto filePath = QInputDialog::getText(0, "Create new file", "New file name: ");
+        auto file = QFileInfo(dir, filePath);
+        if (!file.exists()) {
+            // create the new file if it does not already exist
+            QFile f{file.absoluteFilePath()};
+            f.open(QIODevice::ReadOnly);
+            f.close();
+        }
+        newItem = std::make_unique<ProjectFile>(file);
+    }
+
+    return newItem;
+}
+
+bool ProjecDirectory::cleanup() {
+    auto answer = QMessageBox::question(0, "Remove directory from project", QString("Are you sure you want to remove the directory {0}?").arg(dir.dirName()),
+                                       QMessageBox::No, QMessageBox::Yes);
+    if (answer == QMessageBox::Yes) {
+        return dir.removeRecursively();
     }
     else {
         return false;

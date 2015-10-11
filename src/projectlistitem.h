@@ -40,6 +40,7 @@ Usage Agreement:
 // Qt classes
 #include <QVariant>
 #include <QFileInfo>
+#include <QDir>
 
 // c++ standard libraries
 #include <memory>
@@ -127,12 +128,17 @@ A class representing a directory in a project.
 */
 class ProjecDirectory: public ProjectListItem {
     public:
-        QVariant data(int role = Qt::DisplayRole) const;
+        ProjecDirectory(const QDir& _dir);
 
-        bool cleanup();
+        QVariant data(int role = Qt::DisplayRole) const;
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
+
+        bool cleanup();
+
+    private:
+        QDir dir;
 };
 
 /*
@@ -140,12 +146,17 @@ A class representing a project in the list.
 */
 class ProjectListProject: public ProjectListItem {
     public:
-        QVariant data(int role = Qt::DisplayRole) const;
+        ProjectListProject(const QDir& _projectDir);
 
-        bool cleanup();
+        QVariant data(int role = Qt::DisplayRole) const;
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
+
+        bool cleanup();
+
+    private:
+        QDir projectDir;
 };
 
 /*
@@ -153,12 +164,14 @@ A class representing the root of a project list.
 */
 class ProjectListRoot: public ProjectListItem {
     public:
-        QVariant data(int role = Qt::DisplayRole) const;
+        ProjectListRoot();
 
-        bool cleanup();
+        QVariant data(int role = Qt::DisplayRole) const;
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
+
+        bool cleanup();
 };
 
 #endif // PROJECTLISTITEM_H
