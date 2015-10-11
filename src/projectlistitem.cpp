@@ -165,7 +165,7 @@ std::unique_ptr<ProjectListItem> ProjectDirectory::constructChild(const QVariant
         QFileInfo pathInfo{path};
         if (pathInfo.exists()) {
             if (pathInfo.isDir())
-                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.filePath()});
+                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
             else if (pathInfo.isFile())
                 newItem = std::make_unique<ProjectFile>(pathInfo);
         }
@@ -229,7 +229,7 @@ std::unique_ptr<ProjectListItem> Project::constructChild(const QVariantList& arg
         QFileInfo pathInfo{path};
         if (pathInfo.exists()) {
             if (pathInfo.isDir())
-                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.filePath()});
+                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
             else if (pathInfo.isFile())
                 newItem = std::make_unique<ProjectFile>(pathInfo);
         }
@@ -269,4 +269,40 @@ bool Project::cleanup() {
     else {
         return false;
     }
+}
+
+
+
+//~ProjectListRoot implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ProjectListRoot::ProjectListRoot() {}
+
+QVariant ProjectListRoot::data(int role) const {
+    return QVariant{};
+}
+
+std::unique_ptr<ProjectListItem> ProjectListRoot::constructChild(const QVariantList& args) {
+    auto command = args.at(0).toString();
+    auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
+
+    if (command == "load") {
+        auto path = args.at(1).toString();
+        QFileInfo pathInfo{path};
+        if (pathInfo.exists()) {
+            newItem = std::make_unique<Project>(QDir{pathInfo.absoluteFilePath()});
+        }
+    }
+    else if (command == "create") {
+        auto projectName = QFileDialog::getExistingDirectory(0, "Open project directory", QDir::homePath());
+        auto pathInfo = QFileInfo{projectName};
+        if (pathInfo.exists()) {
+            newItem = std::make_unique<Project>(QDir{pathInfo.absoluteFilePath()});
+        }
+    }
+
+    return newItem;
+}
+
+bool ProjectListRoot::cleanup() {
+    return false;
 }
