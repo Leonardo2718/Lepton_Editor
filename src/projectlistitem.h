@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.h
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 10, 2015
+Last Modified: October 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -70,10 +70,10 @@ class ProjectListItem {
         */
 
         bool removeChild(int index);
-        /*  Removes the child at `index`. Before removing the child, `cleanChild(index)` will be called to
-            perform any side-effects required and do some clean up. The child will only be removed if this call
-            returns true. So, code to cancel a removal can be implemented there. True will be returned if child
-            was removed successfully, false otherwise.
+        /*  Removes the child at `index`. Before removing the child, `cleanup()` will be called on that child to
+            perform any side-effects required and do some cleanup. The child will only be removed if this call
+            returns true. So, code to cancel a removal can be implemented there. True will be returned if the
+            child was removed successfully, false otherwise.
         */
 
         virtual QVariant data(int role = Qt::DisplayRole) const = 0;
@@ -88,16 +88,16 @@ class ProjectListItem {
             this function. All side effects of adding a child must be implemented here.
         */
 
-        virtual bool cleanUpChild(int index) = 0;
-        /*  Cleans a child item; returns true if successful, false otherwise. Sub-classes must reimplement
-            this function. All the side effects of removing a child must be implemented here. Note, this
-            function should not attempt to delete/free any memory!
+        virtual bool cleanup() = 0;
+        /*  Cleans side-effects of item; returns true if successful, false otherwise. Sub-classes must reimplement
+            this function. All the side effects of removing an item must be implemented here. Note, this
+            function should not attempt to delete/free any nodes!
         */
 
 
     private:
         std::vector<std::unique_ptr<ProjectListItem>> children;
-        ProjectListItem* parentPtr;
+        ProjectListItem* parentPtr = nullptr;
 };
 
 
@@ -116,7 +116,7 @@ class ProjectFile: public ProjectListItem {
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
 
-        bool cleanUpChild(int index);
+        bool cleanup();
 
     private:
         QFileInfo file;
@@ -129,7 +129,7 @@ class ProjecDirectory: public ProjectListItem {
     public:
         QVariant data(int role = Qt::DisplayRole) const;
 
-        bool cleanUpChild(int index);
+        bool cleanup();
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
@@ -142,7 +142,7 @@ class ProjectListProject: public ProjectListItem {
     public:
         QVariant data(int role = Qt::DisplayRole) const;
 
-        bool cleanUpChild(int index);
+        bool cleanup();
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
@@ -155,7 +155,7 @@ class ProjectListRoot: public ProjectListItem {
     public:
         QVariant data(int role = Qt::DisplayRole) const;
 
-        bool cleanUpChild(int index);
+        bool cleanup();
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 10, 2015
+Last Modified: October 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -35,6 +35,11 @@ Usage Agreement:
 // project headers
 #include "projectlistitem.h"
 
+// Qt classes
+#include <QMessageBox>
+#include <QDir>
+#include <QString>
+
 
 
 //~ProjectListItem implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,14 +55,14 @@ int ProjectListItem::childCount() const noexcept {
 }
 
 ProjectListItem* ProjectListItem::childAt(int row) noexcept {
-    return children.at(row).get();
+    return children[row].get();
 }
 
 int ProjectListItem::indexOfChild(ProjectListItem* child) const noexcept {
 
     // perform linear search to find the index of the child (see note bellow)
     for (int i = 0, count = children.size(); i < count; i++) {
-        if (children.at(i).get() == child) {
+        if (children[i].get() == child) {
             return i;
         }
     }
@@ -93,14 +98,13 @@ bool ProjectListItem::addChild(const QVariantList& args) {
 }
 
 /*
-Removes the child at `index`. Before removing the child, `cleanChild(index)` will be called to
-perform any side-effects required and do some clean up. The child will only be removed if this call
-returns true. So, code to cancel a removal can be implemented there. True will be returned if child
-was removed successfully, false otherwise.
+Removes the child at `index`. Before removing the child, `cleanup()` will be called on that child to
+perform any side-effects required and do some cleanup. The child will only be removed if this call
+returns true. So, code to cancel a removal can be implemented there. True will be returned if the
+child was removed successfully, false otherwise.
 */
 bool ProjectListItem::removeChild(int index) {
-    if (cleanUpChild(index)) {
-        children.erase(children.cbegin() + (index - 1));
+    if (children[index]->cleanup()) {
         return true;
     }
     else {
@@ -125,6 +129,14 @@ std::unique_ptr<ProjectListItem> ProjectFile::constructChild(const QVariantList&
     return std::unique_ptr<ProjectListItem>(nullptr);
 }
 
-bool ProjectFile::cleanUpChild(int index) {
-    return false;
+bool ProjectFile::cleanup() {
+    auto answer = QMessageBox::question(0, "Remove file from project", QString("Are you sure you want to remove the file {0}?").arg(file.fileName()),
+                                       QMessageBox::No, QMessageBox::Yes);
+    if (answer == QMessageBox::Yes) {
+        QDir dir = file.absoluteDir();
+        return dir.remove(file.fileName());
+    }
+    else {
+        return false;
+    }
 }
