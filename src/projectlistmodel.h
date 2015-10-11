@@ -38,9 +38,20 @@ Usage Agreement:
 
 // Qt classes
 #include <QAbstractItemModel>
+#include <QFileInfo>
+
+// c++ standard libraries
+#include <memory>
 
 
-
+/*
+The ProjectListModel is a subclass of QAbstractItemModel that represents a list of Lepton projects.
+The model stores information about a project as well as its contents. At the most basic level, a
+project is just a directory in the file system. So, the project manager acts a lot like a file
+browser. Because of this, it makes sense to both store and display projects as a tree structure.
+Note however that QFileSystemModel cannot be used here because not all projects are guarentied to
+be in the same directory.
+*/
 class ProjectListModel : public QAbstractItemModel {
     Q_OBJECT
 
@@ -55,11 +66,34 @@ class ProjectListModel : public QAbstractItemModel {
 
         int columnCount(const QModelIndex & parent = QModelIndex()) const noexcept;
 
-        QVariant QAbstractItemModel::data(const QModelIndex & index, int role = Qt::DisplayRole) const noexcept;
+        QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const noexcept;
 
     signals:
 
     public slots:
+
+    private:
+        class ModelItem;    // a class representing an item in the model
+
+        std::unique_ptr<ModelItem> root;    // root of the model
+};
+
+/*
+A class representing an item in the project model.
+*/
+class ProjectListModel::ModelItem {
+    public:
+        // children and the parent do not contribute invariants so keep them public for now;
+        // make them private as needed later on
+        QList<std::unique_ptr<ModelItem>> children;
+        ModelItem* parent;
+
+        ModelItem(const QFileInfo& _data);
+
+        QVariant data(int role = Qt::DisplayRole) const noexcept;
+
+    private:
+        QFileInfo itemData;
 };
 
 #endif // PROJECTLISTMODEL_H

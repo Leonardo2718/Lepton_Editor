@@ -36,8 +36,64 @@ Usage Agreement:
 // project headers
 #include "projectlistmodel.h"
 
-ProjectListModel::ProjectListModel()
-{
 
+
+//~class implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ProjectListModel::ProjectListModel() {
+    root = std::make_unique<ModelItem>(QFileInfo{});
+}
+
+QModelIndex ProjectListModel::index(int row, int column, const QModelIndex& parent) const noexcept {
+    auto p = static_cast<ModelItem*>(parent.internalPointer());
+    if (p != nullptr && column == 0 && row < p->children.size())
+        return createIndex(row, column, static_cast<void*>(p->children.at(row).get()));
+    else
+        return QModelIndex{};
+}
+
+QModelIndex ProjectListModel::parent(const QModelIndex& index) const noexcept {
+    auto item = static_cast<ModelItem*>(index.internalPointer());
+    if (item != nullptr && item->parent != nullptr) {
+        auto parent = item->parent;
+        int row = 0;
+        if (parent != root.get()) {
+            auto grandParent = parent->parent;
+            auto ptr = std::unique_ptr<ModelItem>(parent);  // cast to unique_ptr to make comparison
+            row = grandParent->children.indexOf(ptr);
+            ptr.release();                                  // release unique_ptr to avoid deleting it
+        }
+        return createIndex(row, 0, static_cast<void*>(parent));
+    } else
+        return QModelIndex{};
+}
+
+int ProjectListModel::rowCount(const QModelIndex & parent) const noexcept {
+    auto p = static_cast<ModelItem*>(parent.internalPointer());
+    return p->children.size();
+}
+
+int ProjectListModel::columnCount(const QModelIndex & parent) const noexcept {
+    return 1;
+}
+
+QVariant ProjectListModel::data(const QModelIndex & index, int role) const noexcept {
+    auto item = static_cast<ModelItem*>(index.internalPointer());
+
+    if (item == nullptr)
+        return item->data(role);
+    else
+        return QVariant{};
+}
+
+
+
+ProjectListModel::ModelItem::ModelItem(const QFileInfo& _data) : itemData{_data} {}
+
+QVariant ProjectListModel::ModelItem::data(int role = Qt::DisplayRole) const noexcept {
+    if (role == Qt::DisplayRole)
+        return QVariant{itemData.fileName()};
+    else
+        return QVariant{};
 }
 
