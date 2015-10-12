@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.h
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 11, 2015
+Last Modified: October 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -38,10 +38,12 @@ Usage Agreement:
 #define PROJECTLISTITEM_H
 
 // Qt classes
+#include <QObject>
 #include <QString>
 #include <QVariant>
 #include <QFileInfo>
 #include <QDir>
+#include <QAction>
 
 // c++ standard libraries
 #include <memory>
@@ -52,8 +54,12 @@ Usage Agreement:
 /*
 An abstract class represents an item in the project list.
 */
-class ProjectListItem {
+class ProjectListItem: public QObject {
+    Q_OBJECT
+
     public:
+        ProjectListItem();
+
         virtual ~ProjectListItem() noexcept;
 
         ProjectListItem* parent() noexcept;
@@ -81,6 +87,12 @@ class ProjectListItem {
         virtual QVariant data(int role = Qt::DisplayRole) const = 0;
         /*  Returns the data stored in the node that corresponds to a given `role`.
             Sub-classes must reimplement this function.
+        */
+
+        virtual QList<QAction*> contextMenuActions() const;
+        /*  Returns the actions for the context menu to be displayed when this item is right-clicked in the
+            project manager. Any action within this group must store as its data a pointer to the item it
+            belongs to.
         */
 
     protected:

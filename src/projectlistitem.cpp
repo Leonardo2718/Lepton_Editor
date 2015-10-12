@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 11, 2015
+Last Modified: October 12, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -46,6 +46,8 @@ Usage Agreement:
 
 
 //~ProjectListItem implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ProjectListItem::ProjectListItem() : QObject{0} {}
 
 ProjectListItem::~ProjectListItem() noexcept = default;
 
@@ -113,6 +115,15 @@ bool ProjectListItem::removeChild(int index) {
     else {
         return false;
     }
+}
+
+/*
+Returns the actions for the context menu to be displayed when this item is right-clicked in the
+project manager. Any action within this group must store as its data a pointer to the item it
+belongs to.
+*/
+QList<QAction*> ProjectListItem::contextMenuActions() const {
+    return QList<QAction*>{};
 }
 
 
