@@ -71,6 +71,8 @@ class ProjectListModel : public QAbstractItemModel {
 
         QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const noexcept;
 
+        QVariant headerData(int section, Qt::Orientation orientation, int role) const noexcept;
+
         bool addItem(const QModelIndex& parent = QModelIndex());
 
         void loadSession();

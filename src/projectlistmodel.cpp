@@ -95,8 +95,17 @@ QVariant ProjectListModel::data(const QModelIndex & index, int role) const noexc
         return QVariant{};
 }
 
+QVariant ProjectListModel::headerData(int section, Qt::Orientation orientation, int role) const noexcept {
+    if (orientation == Qt::Horizontal && section == 0) {
+        return root->data(role);
+    }
+    else {
+        return QVariant{};
+    }
+}
+
 /*
--load projects saved from previous session
+load projects saved from previous session
 */
 void ProjectListModel::loadSession() {
     //set session object information
@@ -118,7 +127,7 @@ void ProjectListModel::loadSession() {
 }
 
 /*
--save open projects from current session
+save open projects from current session
 */
 void ProjectListModel::saveSession() {
     //set session object information
