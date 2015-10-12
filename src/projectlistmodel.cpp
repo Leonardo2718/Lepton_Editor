@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 10, 2015
+Last Modified: October 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,13 +39,13 @@ Usage Agreement:
 
 // Qt classes
 #include <QSettings>
+#include <QFileDialog>
 
 
 
 //~class implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectListModel::ProjectListModel() : root{std::make_unique<ProjectListRoot>()} {
-    //loadSession();
 }
 
 QModelIndex ProjectListModel::index(int row, int column, const QModelIndex& parent) const noexcept {
@@ -106,7 +106,7 @@ void ProjectListModel::loadSession() {
     QSettings session;
     //beginInsertRows(createIndex(0,0, root.get()), 0, root->childCount());
     QVariantList projectList = session.value("projectPathList").toList();
-    //beginInsertRows(createIndex(0,0, (void*)nullptr), 0, projectList.size() - 1);
+    beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
     foreach (const QVariant& projectEntry, projectList) {
         QVariantMap d = projectEntry.toMap();
         QVariantList commands{};
@@ -114,7 +114,7 @@ void ProjectListModel::loadSession() {
         commands.append(d.value("project_path"));
         root->addChild(commands);
     }
-    //endInsertRows();
+    endInsertRows();
 }
 
 /*
@@ -137,4 +137,23 @@ void ProjectListModel::saveSession() {
         }
     }
     session.setValue("projectPathList", projectList);
+}
+
+/*
+opens an existing project
+*/
+bool ProjectListModel::openProject() {
+    auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
+    if (!projectPath.isEmpty()) {
+        QVariantList commands{};
+        commands.append(QString("load"));
+        commands.append(projectPath);
+        beginInsertRows(QModelIndex(), root->childCount(), root->childCount());
+        auto r = root->addChild(commands);
+        endInsertRows();
+        return r;
+    }
+    else {
+        return false;
+    }
 }

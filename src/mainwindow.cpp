@@ -201,6 +201,7 @@ void MainWindow::on_actionOpen_Project_triggered() {
 /* -called to add a new project directory to tree model */
     if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
     //projectListModel->openProjectRequest();
+    projectListModel->openProject();
 }
 
 void MainWindow::on_actionNew_Project_triggered() {
