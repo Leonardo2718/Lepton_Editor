@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: July 26, 2015
+Last Modified: October 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -87,16 +87,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
-    projectList = new QTreeView(this);
-    ui->projectManagerArea->layout()->addWidget(projectList);
-    projectTree = new ProjectTreeModel();
-    projectList->setModel(projectTree);
-    projectList->setContextMenuPolicy(Qt::CustomContextMenu);
+    projectView = new QTreeView(this);
+    ui->projectManagerArea->layout()->addWidget(projectView);
+    //projectListModel = new ProjectTreeModel();
+    projectListModel = new ProjectListModel{};
+    projectView->setModel(projectListModel);
+    projectView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     //connect signals to appropriate slots
-    connect(projectList, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(projectItemContextMenuRequested(QPoint)) );
-    connect(projectTree, SIGNAL(openFileRequest(QString)), this, SLOT(openFileRequested(QString)));
-    connect(projectList, SIGNAL(doubleClicked(QModelIndex)), projectTree, SLOT(itemDoubleClicked(QModelIndex)));
+    connect(projectView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(projectItemContextMenuRequested(QPoint)) );
+    //connect(projectListModel, SIGNAL(openFileRequest(QString)), this, SLOT(openFileRequested(QString)));
+    //connect(projectView, SIGNAL(doubleClicked(QModelIndex)), projectListModel, SLOT(itemDoubleClicked(QModelIndex)));
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
     connect(selectorSpaceTab, SIGNAL(triggered(QAction*)), this, SLOT(changeSpaceTabUse(QAction*)) );
@@ -114,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 MainWindow::~MainWindow() {
     //delete projectListModel;
-    delete projectTree;
+    delete projectListModel;
     delete statusLabel;
     delete ui;
 }
@@ -199,24 +200,24 @@ void MainWindow::editTabChanged() {
 void MainWindow::on_actionOpen_Project_triggered() {
 /* -called to add a new project directory to tree model */
     if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
-    projectTree->openProjectRequest();
+    //projectListModel->openProjectRequest();
 }
 
 void MainWindow::on_actionNew_Project_triggered() {
 /* -called to create and add a new project to tree model */
     if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
-    projectTree->newProjectRequest();
+    //projectListModel->newProjectRequest();
 }
 
 void MainWindow::projectItemContextMenuRequested(const QPoint& position) {
 /* -called when project item is right-clicked */
-    QModelIndex itemIndex = projectList->indexAt(position);             //get index of clicked item
+    /*QModelIndex itemIndex = projectView->indexAt(position);             //get index of clicked item
     if ( ! itemIndex.isValid() ) return;
-    QMenu* menu = new QMenu(projectList);                               //create menu to be displayed
-    QList< QAction* > actions = projectTree->getActionsFor(itemIndex);  //get context menu actions for item
+    QMenu* menu = new QMenu(projectView);                               //create menu to be displayed
+    QList< QAction* > actions = projectListModel->getActionsFor(itemIndex);  //get context menu actions for item
     menu->addActions(actions);
-    menu->move( projectList->viewport()->mapToGlobal(position) );       //move the menu to an appropriat location
-    menu->show();
+    menu->move( projectView->viewport()->mapToGlobal(position) );       //move the menu to an appropriat location
+    menu->show();*/
 }
 
 void MainWindow::openFileRequested(const QString& filePath) {
@@ -387,6 +388,7 @@ void MainWindow::setSpaceTabSelector() {
 
 void MainWindow::loadSession() {
 /* -load settings and configs from saved session */
+    projectListModel->loadSession();
 
     QSettings session;  // session object
 
@@ -414,6 +416,7 @@ void MainWindow::loadSession() {
 
 void MainWindow::saveSession() {
 /* -save settings and configs of this session */
+    projectListModel->saveSession();
 
     QSettings session;  // session object
 

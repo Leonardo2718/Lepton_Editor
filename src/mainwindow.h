@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: July 26, 2015
+Last Modified: October 11, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -43,6 +43,7 @@ Usage Agreement:
 #include <QString>
 
 #include "editortabbar.h"
+#include "projectlistmodel.h"
 #include "projecttreemodel.h"
 #include "settingseditor.h"
 #include "findreplacedialog.h"
@@ -149,8 +150,9 @@ class MainWindow : public QMainWindow {
     private:
         Ui::MainWindow* ui;             // a pointer to the interface used to interact with the main window
         EditorTabBar* editors;          // pointer to editor tab bar object
-        ProjectTreeModel* projectTree;
-        QTreeView* projectList;         // view in which projects will be displayed
+        //ProjectTreeModel* projectListModel;
+        ProjectListModel* projectListModel;
+        QTreeView* projectView;         // view in which projects will be displayed
         SettingsEditor configsEditor;   // a window to facilitate editing config files
         QActionGroup* selectorSpaceTab; // group of actions to select whether to use spaces or tabs
         FindReplaceDialog  findReplace; // a dialog used to do find/replace tasks

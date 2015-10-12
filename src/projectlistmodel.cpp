@@ -44,12 +44,16 @@ Usage Agreement:
 
 //~class implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectListModel::ProjectListModel() : root{std::make_unique<ProjectListRoot>()} {}
+ProjectListModel::ProjectListModel() : root{std::make_unique<ProjectListRoot>()} {
+    //loadSession();
+}
 
 QModelIndex ProjectListModel::index(int row, int column, const QModelIndex& parent) const noexcept {
     auto p = static_cast<ProjectListItem*>(parent.internalPointer());
     if (p != nullptr && column == 0 && row < p->childCount())
         return createIndex(row, column, static_cast<void*>(p->childAt(row)));
+    else if (p == nullptr && column == 0)
+        return createIndex(row, column,  static_cast<void*>(root->childAt(row)));
     else
         return QModelIndex{};
 }
@@ -64,13 +68,18 @@ QModelIndex ProjectListModel::parent(const QModelIndex& index) const noexcept {
             row = grandParent->indexOfChild(parent);
         }
         return createIndex(row, 0, static_cast<void*>(parent));
-    } else
+    }
+    else {
         return QModelIndex{};
+    }
 }
 
 int ProjectListModel::rowCount(const QModelIndex & parent) const noexcept {
     auto p = static_cast<ProjectListItem*>(parent.internalPointer());
-    return p->childCount();
+    if (p != nullptr)
+        return p->childCount();
+    else
+        return root->childCount();
 }
 
 int ProjectListModel::columnCount(const QModelIndex & parent) const noexcept {
@@ -80,7 +89,7 @@ int ProjectListModel::columnCount(const QModelIndex & parent) const noexcept {
 QVariant ProjectListModel::data(const QModelIndex & index, int role) const noexcept {
     auto item = static_cast<ProjectListItem*>(index.internalPointer());
 
-    if (item == nullptr)
+    if (item != nullptr && item != root.get())
         return item->data(role);
     else
         return QVariant{};
@@ -90,8 +99,14 @@ QVariant ProjectListModel::data(const QModelIndex & index, int role) const noexc
 -load projects saved from previous session
 */
 void ProjectListModel::loadSession() {
+    //set session object information
+    //QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
+    //QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
+
     QSettings session;
+    //beginInsertRows(createIndex(0,0, root.get()), 0, root->childCount());
     QVariantList projectList = session.value("projectPathList").toList();
+    //beginInsertRows(createIndex(0,0, (void*)nullptr), 0, projectList.size() - 1);
     foreach (const QVariant& projectEntry, projectList) {
         QVariantMap d = projectEntry.toMap();
         QVariantList commands{};
@@ -99,12 +114,17 @@ void ProjectListModel::loadSession() {
         commands.append(d.value("project_path"));
         root->addChild(commands);
     }
+    //endInsertRows();
 }
 
 /*
 -save open projects from current session
 */
 void ProjectListModel::saveSession() {
+    //set session object information
+    //QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
+    //QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
+
     QSettings session;
     QVariantList projectList;
     const int projectCount = root->childCount();

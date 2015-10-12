@@ -90,12 +90,12 @@ True will be returned if the child was constructed and added successfully, false
 bool ProjectListItem::addChild(const QVariantList& args) {
     auto newChild = this->constructChild(args);
     if (newChild) {
-        return false;
-    }
-    else {
         newChild->parentPtr = this;
         children.push_back(std::move(newChild));
         return true;
+    }
+    else {
+        return false;
     }
 }
 
@@ -172,8 +172,17 @@ std::unique_ptr<ProjectListItem> ProjectDirectory::constructChild(const QVariant
         auto path = args.at(1).toString();
         QFileInfo pathInfo{path};
         if (pathInfo.exists()) {
-            if (pathInfo.isDir())
-                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
+            if (pathInfo.isDir()) {
+                QDir d{pathInfo.absoluteFilePath()};
+                newItem = std::make_unique<ProjectDirectory>(d);
+                auto items = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+                foreach (QFileInfo itemInfo, items) {
+                    QVariantList command{};
+                    command.append(QString{"load"});
+                    command.append(QString{itemInfo.absoluteFilePath()});
+                    newItem->addChild(command);
+                }
+            }
             else if (pathInfo.isFile())
                 newItem = std::make_unique<ProjectFile>(pathInfo);
         }
@@ -240,8 +249,17 @@ std::unique_ptr<ProjectListItem> Project::constructChild(const QVariantList& arg
         auto path = args.at(1).toString();
         QFileInfo pathInfo{path};
         if (pathInfo.exists()) {
-            if (pathInfo.isDir())
-                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
+            if (pathInfo.isDir()) {
+                QDir d{pathInfo.absoluteFilePath()};
+                newItem = std::make_unique<ProjectDirectory>(d);
+                auto items = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+                foreach (QFileInfo itemInfo, items) {
+                    QVariantList command{};
+                    command.append(QString{"load"});
+                    command.append(QString{itemInfo.absoluteFilePath()});
+                    newItem->addChild(command);
+                }
+            }
             else if (pathInfo.isFile())
                 newItem = std::make_unique<ProjectFile>(pathInfo);
         }
@@ -301,7 +319,15 @@ std::unique_ptr<ProjectListItem> ProjectListRoot::constructChild(const QVariantL
         auto path = args.at(1).toString();
         QFileInfo pathInfo{path};
         if (pathInfo.exists()) {
-            newItem = std::make_unique<Project>(QDir{pathInfo.absoluteFilePath()});
+            QDir d{pathInfo.absoluteFilePath()};
+            newItem = std::make_unique<Project>(d);
+            auto items = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+            foreach (QFileInfo itemInfo, items) {
+                QVariantList command{};
+                command.append(QString{"load"});
+                command.append(QString{itemInfo.absoluteFilePath()});
+                newItem->addChild(command);
+            }
         }
     }
     else if (command == "create") {
