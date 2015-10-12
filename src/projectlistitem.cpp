@@ -41,6 +41,7 @@ Usage Agreement:
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QFile>
+#include <QFileIconProvider>
 
 
 
@@ -123,6 +124,8 @@ ProjectFile::ProjectFile(const QFileInfo& _file) : file{_file} {}
 QVariant ProjectFile::data(int role) const {
     if (role == Qt::DisplayRole)
         return QVariant{file.fileName()};
+    else if (role == Qt::DecorationRole)
+        return QVariant{QFileIconProvider{}.icon(QFileIconProvider::File)};
     else
         return QVariant{};
 }
@@ -156,6 +159,8 @@ ProjectDirectory::ProjectDirectory(const QDir& _dir) : dir{_dir} {}
 QVariant ProjectDirectory::data(int role) const {
     if (role == Qt::DisplayRole)
         return QVariant{dir.dirName()};
+    else if (role == Qt::DecorationRole)
+        return QVariant{QFileIconProvider{}.icon(QFileIconProvider::Folder)};
     else
         return QVariant{};
 }
@@ -233,6 +238,8 @@ Project::Project(const QDir& _projectDir) : projectDir{_projectDir} {}
 QVariant Project::data(int role) const {
     if (role == Qt::DisplayRole)
         return QVariant{projectDir.dirName()};
+    else if (role == Qt::DecorationRole)
+        return QVariant{QFileIconProvider{}.icon(QFileIconProvider::Folder)};
     else
         return QVariant{};
 }
@@ -308,7 +315,10 @@ bool Project::cleanup() {
 ProjectListRoot::ProjectListRoot() {}
 
 QVariant ProjectListRoot::data(int role) const {
-    return QVariant{};
+    if (role == Qt::DisplayRole)
+        return QVariant{QString{"Projects"}};
+    else
+        return QVariant{};
 }
 
 std::unique_ptr<ProjectListItem> ProjectListRoot::constructChild(const QVariantList& args) {
