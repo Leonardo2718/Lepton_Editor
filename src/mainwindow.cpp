@@ -96,8 +96,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     //connect signals to appropriate slots
     connect(projectView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(projectItemContextMenuRequested(QPoint)) );
-    //connect(projectListModel, SIGNAL(openFileRequest(QString)), this, SLOT(openFileRequested(QString)));
-    //connect(projectView, SIGNAL(doubleClicked(QModelIndex)), projectListModel, SLOT(itemDoubleClicked(QModelIndex)));
+    connect(projectListModel, SIGNAL(requestOpenFile(QFileInfo)), this, SLOT(openFileRequested(QFileInfo)));
+    connect(projectView, SIGNAL(doubleClicked(QModelIndex)), projectListModel, SLOT(itemDoubleClicked(QModelIndex)));
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(editTabChanged()) );
     connect(editors, SIGNAL(saveSignal(int)), this, SLOT(save_signal_received(int)) );
     connect(selectorSpaceTab, SIGNAL(triggered(QAction*)), this, SLOT(changeSpaceTabUse(QAction*)) );
@@ -200,7 +200,6 @@ void MainWindow::editTabChanged() {
 void MainWindow::on_actionOpen_Project_triggered() {
 /* -called to add a new project directory to tree model */
     if ( !ui->projectManagerArea->isVisible() ) ui->actionProject_Manager->trigger();
-    //projectListModel->openProjectRequest();
     projectListModel->openProject();
 }
 
@@ -221,9 +220,9 @@ void MainWindow::projectItemContextMenuRequested(const QPoint& position) {
     menu->show();*/
 }
 
-void MainWindow::openFileRequested(const QString& filePath) {
+void MainWindow::openFileRequested(const QFileInfo& file) {
 /* -called when an object (ex. project list) requests to open a file */
-    openFile(filePath);
+    openFile(file.absoluteFilePath());
 }
 
 void MainWindow::on_actionGitHub_Page_triggered() {

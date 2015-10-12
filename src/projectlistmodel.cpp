@@ -166,3 +166,17 @@ bool ProjectListModel::openProject() {
         return false;
     }
 }
+
+/*
+handle a view item double click
+*/
+void ProjectListModel::itemDoubleClicked(const QModelIndex& index) {
+    auto itemPtr = static_cast<ProjectListItem*>(index.internalPointer());
+    auto fsItemPtr = dynamic_cast<ProjecFileSystemItem*>(itemPtr);
+    if (fsItemPtr != nullptr) {
+        auto itemPath = QFileInfo(fsItemPtr->path());
+        if (itemPath.isFile()) {
+            emit requestOpenFile(itemPath);
+        }
+    }
+}

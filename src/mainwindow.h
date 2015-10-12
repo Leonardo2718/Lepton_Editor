@@ -105,7 +105,7 @@ class MainWindow : public QMainWindow {
         void projectItemContextMenuRequested(const QPoint& position);
         /* -called when project item is right-clicked */
 
-        void openFileRequested(const QString& filePath);
+        void openFileRequested(const QFileInfo& file);
         /* -called when an object (ex. project list) requests to open a file */
 
         void on_actionGitHub_Page_triggered();

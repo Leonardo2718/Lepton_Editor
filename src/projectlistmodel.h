@@ -82,8 +82,12 @@ class ProjectListModel : public QAbstractItemModel {
         /*  save open projects from current session */
 
     signals:
+        void requestOpenFile(const QFileInfo& fileInfo);
+        /*  notifies that a file needs to be open */
 
     public slots:
+        void itemDoubleClicked(const QModelIndex& index);
+        /*  handle a view item double click */
 
         bool openProject();
         /*  opens an existing project */
