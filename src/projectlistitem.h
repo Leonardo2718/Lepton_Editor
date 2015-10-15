@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.h
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 12, 2015
+Last Modified: October 14, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -171,12 +171,17 @@ class ProjectDirectory: public ProjecFileSystemItem {
 A class representing a project in the list.
 */
 class Project: public ProjecFileSystemItem {
+    Q_OBJECT
     public:
         Project(const QDir& _projectDir);
+
+        ~Project();
 
         QVariant data(int role = Qt::DisplayRole) const;
 
         QString path() const noexcept;
+
+        QList<QAction*> contextMenuActions() const;
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
@@ -184,7 +189,12 @@ class Project: public ProjecFileSystemItem {
         bool cleanup();
 
     private:
-        QDir projectDir;
+        QDir projectDir;            // directory containing the project
+        QList<QAction*> menuActions;// list of context menu actions
+
+    private slots:
+        void handleCloseProject(bool actionChecked);
+        /*  handles response to a close action from the context menu */
 };
 
 /*

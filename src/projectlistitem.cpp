@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 12, 2015
+Last Modified: October 14, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,10 +40,11 @@ Usage Agreement:
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QErrorMessage>
 #include <QFile>
 #include <QFileIconProvider>
 
-
+#include <QDebug>
 
 //~ProjectListItem implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -244,7 +245,15 @@ bool ProjectDirectory::cleanup() {
 
 //~Project implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Project::Project(const QDir& _projectDir) : projectDir{_projectDir} {}
+Project::Project(const QDir& _projectDir) : projectDir{_projectDir} {
+    QAction* closeProjectAction = new QAction("Close Project", 0);
+    connect(closeProjectAction, SIGNAL(triggered(bool)), this, SLOT(handleCloseProject(bool)));
+    menuActions.append(closeProjectAction);
+}
+
+Project::~Project() {
+    qDeleteAll(menuActions);
+}
 
 QVariant Project::data(int role) const {
     if (role == Qt::DisplayRole)
@@ -257,6 +266,10 @@ QVariant Project::data(int role) const {
 
 QString Project::path() const noexcept {
     return projectDir.absolutePath();
+}
+
+QList<QAction*> Project::contextMenuActions() const {
+    return menuActions;
 }
 
 std::unique_ptr<ProjectListItem> Project::constructChild(const QVariantList& args) {
@@ -309,7 +322,7 @@ std::unique_ptr<ProjectListItem> Project::constructChild(const QVariantList& arg
 }
 
 bool Project::cleanup() {
-    auto answer = QMessageBox::question(0, "Delete project", QString("Are you sure you want to delete the project {0}?").arg(projectDir.dirName()),
+    auto answer = QMessageBox::question(0, "Delete project", QString("Are you sure you want to delete the project `%0`?").arg(projectDir.dirName()),
                                        QMessageBox::No, QMessageBox::Yes);
     if (answer == QMessageBox::Yes) {
         return projectDir.removeRecursively();
@@ -317,6 +330,14 @@ bool Project::cleanup() {
     else {
         return false;
     }
+}
+
+/*
+handles response to a close action from the context menu
+*/
+void Project::handleCloseProject(bool actionChecked) {
+    auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
+    qDebug() << buttonPressed;
 }
 
 

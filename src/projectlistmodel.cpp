@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 11, 2015
+Last Modified: October 14, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -146,6 +146,14 @@ void ProjectListModel::saveSession() {
         }
     }
     session.setValue("projectPathList", projectList);
+}
+
+/*
+returns the context menu actions for the item at `index`
+*/
+QList<QAction*> ProjectListModel::contextActionsFor(const QModelIndex index) {
+    auto item = static_cast<ProjectListItem*>(index.internalPointer());
+    return item->contextMenuActions();
 }
 
 /*
