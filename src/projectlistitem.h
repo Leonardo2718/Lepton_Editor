@@ -170,7 +170,7 @@ class ProjectDirectory: public ProjecFileSystemItem {
 /*
 A class representing a project in the list.
 */
-class Project: public ProjecFileSystemItem {
+class Project: public ProjectDirectory {
     Q_OBJECT
     public:
         Project(const QDir& _projectDir);
@@ -184,8 +184,6 @@ class Project: public ProjecFileSystemItem {
         QList<QAction*> contextMenuActions() const;
 
     protected:
-        std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
-
         bool cleanup();
 
     private:
