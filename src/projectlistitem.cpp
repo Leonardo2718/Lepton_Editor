@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 14, 2015
+Last Modified: October 17, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -103,6 +103,11 @@ bool ProjectListItem::addChild(const QVariantList& args) {
     }
 }
 
+void ProjectListItem::addChild(std::unique_ptr<ProjectListItem> newChild) {
+    newChild->parentPtr = this;
+    children.push_back(std::move(newChild));
+}
+
 /*
 Removes the child at `index`. Before removing the child, `cleanup()` will be called on that child to
 perform any side-effects required and do some cleanup. The child will only be removed if this call
@@ -128,6 +133,49 @@ QList<QAction*> ProjectListItem::contextMenuActions() const {
 }
 
 
+/*
+list of all actions that, when triggered, will cause a new child node to be created
+*/
+QList<QAction*> ProjectListItem::newChildActions() const {
+    return QList<QAction*>{};
+}
+
+/*
+list of all actions that, when triggered, will cause the node to be removed
+*/
+QList<QAction*> ProjectListItem::removeActions() const {
+    return QList<QAction*>{};
+}
+
+/*
+list of all actions that, when triggered, will cause the data of the node to be changed
+*/
+QList<QAction*> ProjectListItem::changeDataActions() const {
+    return QList<QAction*>{};
+}
+
+/*
+handles the creation of a new child
+*/
+bool ProjectListItem::handleNewChildAction(QAction* newChildAction) {
+    return false;
+}
+
+/*
+handles the removal of this item
+*/
+bool ProjectListItem::handleRemoveAction(QAction* removeAction) {
+    return false;
+}
+
+/*
+handles changing the data of this item
+*/
+bool ProjectListItem::handleChangeDataAction(QAction* changeDataAction) {
+    return false;
+}
+
+
 
 //~ProjectFile implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -144,6 +192,10 @@ QVariant ProjectFile::data(int role) const {
 
 QString ProjectFile::path() const noexcept {
     return file.absoluteFilePath();
+}
+
+QList<ProjectListItem*> ProjectFile::loadChildren() {
+    return QList<ProjectListItem*>{};
 }
 
 std::unique_ptr<ProjectListItem> ProjectFile::constructChild(const QVariantList& args) {
@@ -181,6 +233,23 @@ QString ProjectDirectory::path() const noexcept {
     return dir.absolutePath();
 }
 
+QList<ProjectListItem*> ProjectDirectory::loadChildren() {
+    QList<ProjectListItem*> children;
+    foreach (QFileInfo itemInfo, dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
+        if (itemInfo.isDir()) {
+            std::unique_ptr<ProjectListItem> child = std::make_unique<ProjectDirectory>(QDir(itemInfo.absoluteFilePath()));
+            children.append(child.get());
+            addChild(std::move(child));
+        }
+        else if (itemInfo.isFile()) {
+            std::unique_ptr<ProjectListItem> child = std::make_unique<ProjectFile>(itemInfo);
+            children.append(child.get());
+            addChild(std::move(child));
+        }
+    }
+    return children;
+}
+
 std::unique_ptr<ProjectListItem> ProjectDirectory::constructChild(const QVariantList& args) {
     auto command = args.at(0).toString();
     auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
@@ -190,6 +259,7 @@ std::unique_ptr<ProjectListItem> ProjectDirectory::constructChild(const QVariant
         QFileInfo pathInfo{path};
         if (pathInfo.exists()) {
             if (pathInfo.isDir()) {
+                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
                 QDir d{pathInfo.absoluteFilePath()};
                 newItem = std::make_unique<ProjectDirectory>(d);
                 auto items = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
@@ -246,13 +316,15 @@ bool ProjectDirectory::cleanup() {
 //~Project implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Project::Project(const QDir& _projectDir) : ProjectDirectory{_projectDir}, projectDir{_projectDir} {
-    QAction* closeProjectAction = new QAction("Close Project", 0);
+    /*QAction* closeProjectAction = new QAction("Close Project", 0);
     connect(closeProjectAction, SIGNAL(triggered(bool)), this, SLOT(handleCloseProject(bool)));
-    menuActions.append(closeProjectAction);
+    menuActions.append(closeProjectAction);*/
+    closeAction = new QAction("Close Project", 0);
 }
 
 Project::~Project() {
-    qDeleteAll(menuActions);
+    //qDeleteAll(menuActions);
+    delete closeAction;
 }
 
 QVariant Project::data(int role) const {
@@ -269,7 +341,29 @@ QString Project::path() const noexcept {
 }
 
 QList<QAction*> Project::contextMenuActions() const {
+    QList<QAction*> menuActions;
+    menuActions.append(closeAction);
     return menuActions;
+}
+
+QList<QAction*> Project::removeActions() const {
+    QList<QAction*> menuActions;
+    menuActions.append(closeAction);
+    return menuActions;
+}
+
+bool Project::handleRemoveAction(QAction* action) {
+    bool actionHandled = false;
+
+    if (action == this->closeAction) {
+        auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
+        qDebug() << buttonPressed;
+        if (buttonPressed == QMessageBox::Yes) {
+            actionHandled = true;
+        }
+    }
+
+    return actionHandled;
 }
 
 bool Project::cleanup() {
@@ -288,7 +382,10 @@ handles response to a close action from the context menu
 */
 void Project::handleCloseProject(bool actionChecked) {
     auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
-    qDebug() << buttonPressed;
+    //qDebug() << buttonPressed;
+    if (buttonPressed == QMessageBox::Yes) {
+        // emit signal for removal of node
+    }
 }
 
 
@@ -302,6 +399,23 @@ QVariant ProjectListRoot::data(int role) const {
         return QVariant{QString{"Projects"}};
     else
         return QVariant{};
+}
+
+QList<ProjectListItem*> ProjectListRoot::loadChildren() {
+    return QList<ProjectListItem*>{};
+}
+
+QList<ProjectListItem*> ProjectListRoot::loadProjects(const QList<QString>& projectDirs) {
+    QList<ProjectListItem*> children;
+    foreach(const QString& path, projectDirs) {
+        QFileInfo pathInfo(path);
+        if (pathInfo.isDir()) {
+            std::unique_ptr<ProjectListItem> child = std::make_unique<Project>(QDir(pathInfo.absoluteFilePath()));
+            children.append(child.get());
+            addChild(std::move(child));
+        }
+    }
+    return children;
 }
 
 std::unique_ptr<ProjectListItem> ProjectListRoot::constructChild(const QVariantList& args) {

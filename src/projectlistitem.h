@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.h
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 14, 2015
+Last Modified: October 17, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -77,6 +77,8 @@ class ProjectListItem: public QObject {
             True will be returned if the child was constructed and added successfully, false otherwise.
         */
 
+        void addChild(std::unique_ptr<ProjectListItem> newChild);
+
         bool removeChild(int index);
         /*  Removes the child at `index`. Before removing the child, `cleanup()` will be called on that child to
             perform any side-effects required and do some cleanup. The child will only be removed if this call
@@ -94,6 +96,27 @@ class ProjectListItem: public QObject {
             project manager. Any action within this group must store as its data a pointer to the item it
             belongs to.
         */
+
+        virtual QList<QAction*> newChildActions() const;
+        /*  list of all actions that, when triggered, will cause a new child node to be created */
+
+        virtual QList<QAction*> removeActions() const;
+        /*  list of all actions that, when triggered, will cause the node to be removed */
+
+        virtual QList<QAction*> changeDataActions() const;
+        /*  list of all actions that, when triggered, will cause the data of the node to be changed */
+
+        virtual bool handleNewChildAction(QAction* action);
+        /*  handles the creation of a new child */
+
+        virtual bool handleRemoveAction(QAction* action);
+        /*  handles the removal of this item */
+
+        virtual bool handleChangeDataAction(QAction* action);
+        /*  handles changing the data of this item */
+
+        virtual QList<ProjectListItem*> loadChildren() = 0;
+        /*  loads all children based on what this current item is */
 
     protected:
         virtual std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{}) = 0;
@@ -138,6 +161,8 @@ class ProjectFile: public ProjecFileSystemItem {
 
         QString path() const noexcept;
 
+        QList<ProjectListItem*> loadChildren() override;
+
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
 
@@ -157,6 +182,8 @@ class ProjectDirectory: public ProjecFileSystemItem {
         QVariant data(int role = Qt::DisplayRole) const;
 
         QString path() const noexcept;
+
+        QList<ProjectListItem*> loadChildren();
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});
@@ -183,12 +210,25 @@ class Project: public ProjectDirectory {
 
         QList<QAction*> contextMenuActions() const;
 
+        //QList<QAction*> newChildActions() const;
+
+        QList<QAction*> removeActions() const;
+
+        //QList<QAction*> changeDataActions() const;
+
+        //bool handleNewChildAction(QAction* newChildAction);
+
+        bool handleRemoveAction(QAction* action);
+
+        //bool handleChangeDataAction(QAction* changeDataAction);
+
     protected:
         bool cleanup();
 
     private:
         QDir projectDir;            // directory containing the project
-        QList<QAction*> menuActions;// list of context menu actions
+        QAction* closeAction;       // action to close this project
+        //QList<QAction*> menuActions;// list of context menu actions
 
     private slots:
         void handleCloseProject(bool actionChecked);
@@ -203,6 +243,10 @@ class ProjectListRoot: public ProjectListItem {
         ProjectListRoot();
 
         QVariant data(int role = Qt::DisplayRole) const;
+
+        QList<ProjectListItem*> loadChildren() override;
+
+        QList<ProjectListItem*> loadProjects(const QList<QString>& projectDirs);
 
     protected:
         std::unique_ptr<ProjectListItem> constructChild(const QVariantList& args = QVariantList{});

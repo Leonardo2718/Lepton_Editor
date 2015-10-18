@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 14, 2015
+Last Modified: October 17, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -116,12 +116,21 @@ void ProjectListModel::loadSession() {
     //beginInsertRows(createIndex(0,0, root.get()), 0, root->childCount());
     QVariantList projectList = session.value("projectPathList").toList();
     beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
-    foreach (const QVariant& projectEntry, projectList) {
+    /*foreach (const QVariant& projectEntry, projectList) {
         QVariantMap d = projectEntry.toMap();
         QVariantList commands{};
         commands.append(QString("load"));
         commands.append(d.value("project_path"));
         root->addChild(commands);
+    }*/
+    QList<QString> projectPaths;
+    foreach(const QVariant& projectEntry, projectList) {
+        projectPaths.append(projectEntry.toMap().value("project_path").toString());
+    }
+    QList<ProjectListItem*> treeNodes = root->loadProjects(projectPaths);
+    for (int i = 0; !treeNodes.isEmpty() && i < treeNodes.size(); i++) {
+        QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
+        treeNodes.append(newNodes);
     }
     endInsertRows();
 }
