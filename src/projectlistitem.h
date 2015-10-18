@@ -51,6 +51,11 @@ Usage Agreement:
 
 
 
+// forward declarations
+class ProjectItemAction;
+
+
+
 /*
 An abstract class represents an item in the project list.
 */
@@ -91,28 +96,28 @@ class ProjectListItem: public QObject {
             Sub-classes must reimplement this function.
         */
 
-        virtual QList<QAction*> contextMenuActions() const;
+        virtual QList<ProjectItemAction*> contextMenuActions() const;
         /*  Returns the actions for the context menu to be displayed when this item is right-clicked in the
             project manager. Any action within this group must store as its data a pointer to the item it
             belongs to.
         */
 
-        virtual QList<QAction*> newChildActions() const;
+        virtual QList<ProjectItemAction*> newChildActions() const;
         /*  list of all actions that, when triggered, will cause a new child node to be created */
 
-        virtual QList<QAction*> removeActions() const;
+        virtual QList<ProjectItemAction*> removeActions() const;
         /*  list of all actions that, when triggered, will cause the node to be removed */
 
-        virtual QList<QAction*> changeDataActions() const;
+        virtual QList<ProjectItemAction*> changeDataActions() const;
         /*  list of all actions that, when triggered, will cause the data of the node to be changed */
 
-        virtual bool handleNewChildAction(QAction* action);
+        virtual bool handleNewChildAction(ProjectItemAction* action);
         /*  handles the creation of a new child */
 
-        virtual bool handleRemoveAction(QAction* action);
+        virtual bool handleRemoveAction(ProjectItemAction* action);
         /*  handles the removal of this item */
 
-        virtual bool handleChangeDataAction(QAction* action);
+        virtual bool handleChangeDataAction(ProjectItemAction* action);
         /*  handles changing the data of this item */
 
         virtual QList<ProjectListItem*> loadChildren() = 0;
@@ -121,6 +126,16 @@ class ProjectListItem: public QObject {
     private:
         std::vector<std::unique_ptr<ProjectListItem>> children;
         ProjectListItem* parentPtr = nullptr;
+};
+
+class ProjectItemAction : public QAction {
+    public:
+        ProjectItemAction(const QString& _text, ProjectListItem* _item);
+
+        ProjectListItem* item() const noexcept;
+
+    private:
+        ProjectListItem* projectItem;
 };
 
 
@@ -184,23 +199,23 @@ class Project: public ProjectDirectory {
 
         QString path() const noexcept;
 
-        QList<QAction*> contextMenuActions() const;
+        QList<ProjectItemAction*> contextMenuActions() const;
 
-        //QList<QAction*> newChildActions() const;
+        //QList<ProjectItemAction*> newChildActions() const;
 
-        QList<QAction*> removeActions() const;
+        QList<ProjectItemAction*> removeActions() const;
 
-        //QList<QAction*> changeDataActions() const;
+        //QList<ProjectItemAction*> changeDataActions() const;
 
-        //bool handleNewChildAction(QAction* newChildAction);
+        //bool handleNewChildAction(ProjectItemAction* newChildAction);
 
-        bool handleRemoveAction(QAction* action);
+        bool handleRemoveAction(ProjectItemAction* action);
 
-        //bool handleChangeDataAction(QAction* changeDataAction);
+        //bool handleChangeDataAction(ProjectItemAction* changeDataAction);
 
     private:
         QDir projectDir;            // directory containing the project
-        QAction* closeAction;       // action to close this project
+        ProjectItemAction* closeAction;       // action to close this project
 };
 
 /*
@@ -215,6 +230,8 @@ class ProjectListRoot: public ProjectListItem {
         QList<ProjectListItem*> loadChildren() override;
 
         QList<ProjectListItem*> loadProjects(const QList<QString>& projectDirs);
+
+        ProjectListItem* loadProject(const QString& projectPath);
 };
 
 #endif // PROJECTLISTITEM_H

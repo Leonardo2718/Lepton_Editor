@@ -162,27 +162,32 @@ returns the context menu actions for the item at `index`
 */
 QList<QAction*> ProjectListModel::contextActionsFor(const QModelIndex index) {
     auto item = static_cast<ProjectListItem*>(index.internalPointer());
-    return item->contextMenuActions();
+    QList<QAction*> actionList;
+    foreach (ProjectItemAction* action, item->contextMenuActions()) {
+        actionList.append(static_cast<QAction*>(action));
+    }
+    return actionList;
 }
 
 /*
 opens an existing project
 */
 bool ProjectListModel::openProject() {
-    /*auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
+    auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
     if (!projectPath.isEmpty()) {
-        QVariantList commands{};
-        commands.append(QString("load"));
-        commands.append(projectPath);
         beginInsertRows(QModelIndex(), root->childCount(), root->childCount());
-        auto r = root->addChild(commands);
+        auto item = root->loadProject(projectPath);
+        QList<ProjectListItem*> treeNodes = item->loadChildren();
+        for (int i = 0; !treeNodes.isEmpty() && i < treeNodes.size(); i++) {
+            QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
+            treeNodes.append(newNodes);
+        }
         endInsertRows();
-        return r;
+        return true;
     }
     else {
         return false;
-    }*/
-    return false;
+    }
 }
 
 /*

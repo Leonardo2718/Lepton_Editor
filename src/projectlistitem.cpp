@@ -128,51 +128,61 @@ Returns the actions for the context menu to be displayed when this item is right
 project manager. Any action within this group must store as its data a pointer to the item it
 belongs to.
 */
-QList<QAction*> ProjectListItem::contextMenuActions() const {
-    return QList<QAction*>{};
+QList<ProjectItemAction*> ProjectListItem::contextMenuActions() const {
+    return QList<ProjectItemAction*>{};
 }
 
 
 /*
 list of all actions that, when triggered, will cause a new child node to be created
 */
-QList<QAction*> ProjectListItem::newChildActions() const {
-    return QList<QAction*>{};
+QList<ProjectItemAction*> ProjectListItem::newChildActions() const {
+    return QList<ProjectItemAction*>{};
 }
 
 /*
 list of all actions that, when triggered, will cause the node to be removed
 */
-QList<QAction*> ProjectListItem::removeActions() const {
-    return QList<QAction*>{};
+QList<ProjectItemAction*> ProjectListItem::removeActions() const {
+    return QList<ProjectItemAction*>{};
 }
 
 /*
 list of all actions that, when triggered, will cause the data of the node to be changed
 */
-QList<QAction*> ProjectListItem::changeDataActions() const {
-    return QList<QAction*>{};
+QList<ProjectItemAction*> ProjectListItem::changeDataActions() const {
+    return QList<ProjectItemAction*>{};
 }
 
 /*
 handles the creation of a new child
 */
-bool ProjectListItem::handleNewChildAction(QAction* newChildAction) {
+bool ProjectListItem::handleNewChildAction(ProjectItemAction* newChildAction) {
     return false;
 }
 
 /*
 handles the removal of this item
 */
-bool ProjectListItem::handleRemoveAction(QAction* removeAction) {
+bool ProjectListItem::handleRemoveAction(ProjectItemAction* removeAction) {
     return false;
 }
 
 /*
 handles changing the data of this item
 */
-bool ProjectListItem::handleChangeDataAction(QAction* changeDataAction) {
+bool ProjectListItem::handleChangeDataAction(ProjectItemAction* changeDataAction) {
     return false;
+}
+
+
+
+//~ProjectItemAction implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ProjectItemAction::ProjectItemAction(const QString& _text, ProjectListItem* _item) : QAction{_text, 0}, projectItem{_item} {}
+
+ProjectListItem* ProjectItemAction::item() const noexcept {
+    return projectItem;
 }
 
 
@@ -242,7 +252,7 @@ Project::Project(const QDir& _projectDir) : ProjectDirectory{_projectDir}, proje
     /*QAction* closeProjectAction = new QAction("Close Project", 0);
     connect(closeProjectAction, SIGNAL(triggered(bool)), this, SLOT(handleCloseProject(bool)));
     menuActions.append(closeProjectAction);*/
-    closeAction = new QAction("Close Project", 0);
+    closeAction = new ProjectItemAction("Close Project", this);
 }
 
 Project::~Project() {
@@ -263,19 +273,19 @@ QString Project::path() const noexcept {
     return projectDir.absolutePath();
 }
 
-QList<QAction*> Project::contextMenuActions() const {
-    QList<QAction*> menuActions;
+QList<ProjectItemAction*> Project::contextMenuActions() const {
+    QList<ProjectItemAction*> menuActions;
     menuActions.append(closeAction);
     return menuActions;
 }
 
-QList<QAction*> Project::removeActions() const {
-    QList<QAction*> menuActions;
+QList<ProjectItemAction*> Project::removeActions() const {
+    QList<ProjectItemAction*> menuActions;
     menuActions.append(closeAction);
     return menuActions;
 }
 
-bool Project::handleRemoveAction(QAction* action) {
+bool Project::handleRemoveAction(ProjectItemAction* action) {
     bool actionHandled = false;
 
     if (action == this->closeAction) {
@@ -317,4 +327,15 @@ QList<ProjectListItem*> ProjectListRoot::loadProjects(const QList<QString>& proj
         }
     }
     return children;
+}
+
+ProjectListItem* ProjectListRoot::loadProject(const QString& projectPath) {
+    ProjectListItem* newProject = nullptr;
+    QFileInfo pathInfo(projectPath);
+    if (pathInfo.isDir()) {
+        std::unique_ptr<ProjectListItem> child = std::make_unique<Project>(QDir(pathInfo.absoluteFilePath()));
+        newProject = child.get();
+        addChild(std::move(child));
+    }
+    return newProject;
 }
