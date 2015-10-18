@@ -75,23 +75,11 @@ class ProjectListItem: public QObject {
 
         int indexOfChild(ProjectListItem* child) const noexcept;
 
-        //bool addChild(const QVariantList& args = QVariantList{});
-        /*  Constructs a new item/node and adds it to the child list. To construct the item, the function
-            `constructChild(args)`. If the child returned is null (nullptr), then nothing else will happen
-            and the function will return false. So, code to cancel an addition can be implemented there.
-            True will be returned if the child was constructed and added successfully, false otherwise.
-        */
-
         void addChild(std::unique_ptr<ProjectListItem> newChild);
-
-        //bool removeChild(int index);
-        /*  Removes the child at `index`. Before removing the child, `cleanup()` will be called on that child to
-            perform any side-effects required and do some cleanup. The child will only be removed if this call
-            returns true. So, code to cancel a removal can be implemented there. True will be returned if the
-            child was removed successfully, false otherwise.
-        */
+        /*  adds an existing node to the tree */
 
         std::unique_ptr<ProjectListItem> removeChild(ProjectListItem* child);
+        /*  removes a node from the tree and returns it */
 
         virtual QVariant data(int role = Qt::DisplayRole) const = 0;
         /*  Returns the data stored in the node that corresponds to a given `role`.

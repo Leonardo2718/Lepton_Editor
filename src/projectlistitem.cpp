@@ -86,43 +86,16 @@ int ProjectListItem::indexOfChild(ProjectListItem* child) const noexcept {
 }
 
 /*
-Constructs a new item/node and adds it to the child list. To construct the item, the function
-`constructChild(args)`. If the child returned is null (nullptr), then nothing else will happen
-and the function will return false. So, code to cancel an addition can be implemented there.
-True will be returned if the child was constructed and added successfully, false otherwise.
+adds an existing node to the tree
 */
-/*bool ProjectListItem::addChild(const QVariantList& args) {
-    auto newChild = this->constructChild(args);
-    if (newChild) {
-        newChild->parentPtr = this;
-        children.push_back(std::move(newChild));
-        return true;
-    }
-    else {
-        return false;
-    }
-}*/
-
 void ProjectListItem::addChild(std::unique_ptr<ProjectListItem> newChild) {
     newChild->parentPtr = this;
     children.push_back(std::move(newChild));
 }
 
 /*
-Removes the child at `index`. Before removing the child, `cleanup()` will be called on that child to
-perform any side-effects required and do some cleanup. The child will only be removed if this call
-returns true. So, code to cancel a removal can be implemented there. True will be returned if the
-child was removed successfully, false otherwise.
+removes a node from the tree and returns it
 */
-/*bool ProjectListItem::removeChild(int index) {
-    if (children[index]->cleanup()) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}*/
-
 std::unique_ptr<ProjectListItem> ProjectListItem::removeChild(ProjectListItem* child) {
     child->parentPtr = nullptr;
     auto itr = children.cbegin();

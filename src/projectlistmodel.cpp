@@ -108,21 +108,10 @@ QVariant ProjectListModel::headerData(int section, Qt::Orientation orientation, 
 load projects saved from previous session
 */
 void ProjectListModel::loadSession() {
-    //set session object information
-    //QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
-    //QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
-
     QSettings session;
     //beginInsertRows(createIndex(0,0, root.get()), 0, root->childCount());
     QVariantList projectList = session.value("projectPathList").toList();
     beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
-    /*foreach (const QVariant& projectEntry, projectList) {
-        QVariantMap d = projectEntry.toMap();
-        QVariantList commands{};
-        commands.append(QString("load"));
-        commands.append(d.value("project_path"));
-        root->addChild(commands);
-    }*/
     QList<QString> projectPaths;
     foreach(const QVariant& projectEntry, projectList) {
         projectPaths.append(projectEntry.toMap().value("project_path").toString());
@@ -142,10 +131,6 @@ void ProjectListModel::loadSession() {
 save open projects from current session
 */
 void ProjectListModel::saveSession() {
-    //set session object information
-    //QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
-    //QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
-
     QSettings session;
     QVariantList projectList;
     const int projectCount = root->childCount();
@@ -216,7 +201,7 @@ called when a remove action of an item is triggered
 void ProjectListModel::removeActionTriggered(bool) {
     ProjectItemAction* action = dynamic_cast<ProjectItemAction*>(sender());
     if (action != nullptr) {
-        QModelIndex itemIndex;// = createIndex()
+        QModelIndex itemIndex;
         ProjectListItem* item = action->item();
         int index = 0;
         if (item != nullptr && item->parent() != nullptr)
