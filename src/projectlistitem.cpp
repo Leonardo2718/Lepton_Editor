@@ -91,7 +91,7 @@ Constructs a new item/node and adds it to the child list. To construct the item,
 and the function will return false. So, code to cancel an addition can be implemented there.
 True will be returned if the child was constructed and added successfully, false otherwise.
 */
-bool ProjectListItem::addChild(const QVariantList& args) {
+/*bool ProjectListItem::addChild(const QVariantList& args) {
     auto newChild = this->constructChild(args);
     if (newChild) {
         newChild->parentPtr = this;
@@ -101,7 +101,7 @@ bool ProjectListItem::addChild(const QVariantList& args) {
     else {
         return false;
     }
-}
+}*/
 
 void ProjectListItem::addChild(std::unique_ptr<ProjectListItem> newChild) {
     newChild->parentPtr = this;
@@ -114,14 +114,14 @@ perform any side-effects required and do some cleanup. The child will only be re
 returns true. So, code to cancel a removal can be implemented there. True will be returned if the
 child was removed successfully, false otherwise.
 */
-bool ProjectListItem::removeChild(int index) {
+/*bool ProjectListItem::removeChild(int index) {
     if (children[index]->cleanup()) {
         return true;
     }
     else {
         return false;
     }
-}
+}*/
 
 /*
 Returns the actions for the context menu to be displayed when this item is right-clicked in the
@@ -198,22 +198,6 @@ QList<ProjectListItem*> ProjectFile::loadChildren() {
     return QList<ProjectListItem*>{};
 }
 
-std::unique_ptr<ProjectListItem> ProjectFile::constructChild(const QVariantList& args) {
-    return std::unique_ptr<ProjectListItem>(nullptr);
-}
-
-bool ProjectFile::cleanup() {
-    auto answer = QMessageBox::question(0, "Delete file", QString("Are you sure you want to delete the file {0}?").arg(file.fileName()),
-                                       QMessageBox::No, QMessageBox::Yes);
-    if (answer == QMessageBox::Yes) {
-        QDir dir = file.absoluteDir();
-        return dir.remove(file.fileName());
-    }
-    else {
-        return false;
-    }
-}
-
 
 
 //~ProjecDirectory implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -248,67 +232,6 @@ QList<ProjectListItem*> ProjectDirectory::loadChildren() {
         }
     }
     return children;
-}
-
-std::unique_ptr<ProjectListItem> ProjectDirectory::constructChild(const QVariantList& args) {
-    auto command = args.at(0).toString();
-    auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
-
-    if (command == "load") {
-        auto path = args.at(1).toString();
-        QFileInfo pathInfo{path};
-        if (pathInfo.exists()) {
-            if (pathInfo.isDir()) {
-                newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
-                QDir d{pathInfo.absoluteFilePath()};
-                newItem = std::make_unique<ProjectDirectory>(d);
-                auto items = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
-                foreach (QFileInfo itemInfo, items) {
-                    QVariantList command{};
-                    command.append(QString{"load"});
-                    command.append(QString{itemInfo.absoluteFilePath()});
-                    newItem->addChild(command);
-                }
-            }
-            else if (pathInfo.isFile())
-                newItem = std::make_unique<ProjectFile>(pathInfo);
-        }
-    }
-    else if (command == "create") {
-        auto type = args.at(1).toString();
-        if (type == "file") {
-            auto fileName = QInputDialog::getText(0, "Create new file", "New file name: ");
-            auto file = QFileInfo(dir, fileName);
-            if (!file.exists()) {
-                // create the new file if it does not already exist
-                QFile f{file.absoluteFilePath()};
-                f.open(QIODevice::ReadOnly);
-                f.close();
-            }
-            newItem = std::make_unique<ProjectFile>(file);
-        }
-        else if (type == "dir"){
-            auto dirName = QInputDialog::getText(0, "Create new directory", "New directory name: ");
-            auto pathInfo = QFileInfo(dir, dirName);
-            if (!pathInfo.exists()) {
-                dir.mkdir(dirName);
-            }
-            newItem = std::make_unique<ProjectDirectory>(QDir{pathInfo.absoluteFilePath()});
-        }
-    }
-
-    return newItem;
-}
-
-bool ProjectDirectory::cleanup() {
-    auto answer = QMessageBox::question(0, "Delete directory", QString("Are you sure you want to delete the directory {0}?").arg(dir.dirName()),
-                                       QMessageBox::No, QMessageBox::Yes);
-    if (answer == QMessageBox::Yes) {
-        return dir.removeRecursively();
-    }
-    else {
-        return false;
-    }
 }
 
 
@@ -366,28 +289,6 @@ bool Project::handleRemoveAction(QAction* action) {
     return actionHandled;
 }
 
-bool Project::cleanup() {
-    auto answer = QMessageBox::question(0, "Delete project", QString("Are you sure you want to delete the project `%0`?").arg(data().toString()),
-                                       QMessageBox::No, QMessageBox::Yes);
-    if (answer == QMessageBox::Yes) {
-        return projectDir.removeRecursively();
-    }
-    else {
-        return false;
-    }
-}
-
-/*
-handles response to a close action from the context menu
-*/
-void Project::handleCloseProject(bool actionChecked) {
-    auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
-    //qDebug() << buttonPressed;
-    if (buttonPressed == QMessageBox::Yes) {
-        // emit signal for removal of node
-    }
-}
-
 
 
 //~ProjectListRoot implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -416,38 +317,4 @@ QList<ProjectListItem*> ProjectListRoot::loadProjects(const QList<QString>& proj
         }
     }
     return children;
-}
-
-std::unique_ptr<ProjectListItem> ProjectListRoot::constructChild(const QVariantList& args) {
-    auto command = args.at(0).toString();
-    auto newItem = std::unique_ptr<ProjectListItem>(nullptr);
-
-    if (command == "load") {
-        auto path = args.at(1).toString();
-        QFileInfo pathInfo{path};
-        if (pathInfo.exists()) {
-            QDir d{pathInfo.absoluteFilePath()};
-            newItem = std::make_unique<Project>(d);
-            auto items = d.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
-            foreach (QFileInfo itemInfo, items) {
-                QVariantList command{};
-                command.append(QString{"load"});
-                command.append(QString{itemInfo.absoluteFilePath()});
-                newItem->addChild(command);
-            }
-        }
-    }
-    else if (command == "create") {
-        auto projectName = QFileDialog::getExistingDirectory(0, "Open project directory", QDir::homePath());
-        auto pathInfo = QFileInfo{projectName};
-        if (pathInfo.exists()) {
-            newItem = std::make_unique<Project>(QDir{pathInfo.absoluteFilePath()});
-        }
-    }
-
-    return newItem;
-}
-
-bool ProjectListRoot::cleanup() {
-    return false;
 }

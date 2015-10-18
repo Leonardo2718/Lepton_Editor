@@ -169,7 +169,7 @@ QList<QAction*> ProjectListModel::contextActionsFor(const QModelIndex index) {
 opens an existing project
 */
 bool ProjectListModel::openProject() {
-    auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
+    /*auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
     if (!projectPath.isEmpty()) {
         QVariantList commands{};
         commands.append(QString("load"));
@@ -181,7 +181,8 @@ bool ProjectListModel::openProject() {
     }
     else {
         return false;
-    }
+    }*/
+    return false;
 }
 
 /*
