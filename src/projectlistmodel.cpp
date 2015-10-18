@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 17, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -129,6 +129,9 @@ void ProjectListModel::loadSession() {
     }
     QList<ProjectListItem*> treeNodes = root->loadProjects(projectPaths);
     for (int i = 0; !treeNodes.isEmpty() && i < treeNodes.size(); i++) {
+        foreach (ProjectItemAction* action, treeNodes.at(i)->removeActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
+        }
         QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
         treeNodes.append(newNodes);
     }
@@ -176,7 +179,10 @@ bool ProjectListModel::openProject() {
     auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
     if (!projectPath.isEmpty()) {
         beginInsertRows(QModelIndex(), root->childCount(), root->childCount());
-        auto item = root->loadProject(projectPath);
+        ProjectListItem* item = root->loadProject(projectPath);
+        foreach (ProjectItemAction* action, item->removeActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
+        }
         QList<ProjectListItem*> treeNodes = item->loadChildren();
         for (int i = 0; !treeNodes.isEmpty() && i < treeNodes.size(); i++) {
             QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
@@ -201,5 +207,25 @@ void ProjectListModel::itemDoubleClicked(const QModelIndex& index) {
         if (itemPath.isFile()) {
             emit requestOpenFile(itemPath);
         }
+    }
+}
+
+/*
+called when a remove action of an item is triggered
+*/
+void ProjectListModel::removeActionTriggered(bool) {
+    ProjectItemAction* action = dynamic_cast<ProjectItemAction*>(sender());
+    if (action != nullptr) {
+        QModelIndex itemIndex;// = createIndex()
+        ProjectListItem* item = action->item();
+        int index = 0;
+        if (item != nullptr && item->parent() != nullptr)
+            index = item->parent()->indexOfChild(item);
+        else if (item != nullptr && item->parent() == nullptr)
+            index = root->indexOfChild(item);
+        itemIndex = createIndex(0, 0, static_cast<void*>(item));
+        beginRemoveRows(parent(itemIndex), index, index);
+        item->handleRemoveAction(action);
+        endRemoveRows();
     }
 }

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 17, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -122,6 +122,24 @@ child was removed successfully, false otherwise.
         return false;
     }
 }*/
+
+std::unique_ptr<ProjectListItem> ProjectListItem::removeChild(ProjectListItem* child) {
+    child->parentPtr = nullptr;
+    auto itr = children.cbegin();
+    for (; itr != children.cend(); itr++) {
+        if (itr->get() == child) {
+            break;
+        }
+    }
+    if (itr == children.cend()) {
+        auto oldChild = std::move(children[itr - children.cbegin()]);
+        children.erase(itr);
+        return oldChild;
+    }
+    else {
+        return std::unique_ptr<ProjectListItem>{nullptr};
+    }
+}
 
 /*
 Returns the actions for the context menu to be displayed when this item is right-clicked in the
@@ -286,17 +304,20 @@ QList<ProjectItemAction*> Project::removeActions() const {
 }
 
 bool Project::handleRemoveAction(ProjectItemAction* action) {
-    bool actionHandled = false;
+    //bool actionHandled = false;
 
     if (action == this->closeAction) {
         auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
         qDebug() << buttonPressed;
         if (buttonPressed == QMessageBox::Yes) {
-            actionHandled = true;
+            auto self = parent()->removeChild(this);    // causes `this` to be deleted at end of block because of scope exit!
+            //actionHandled = true;
+            return true;                                // return now to avoid UB because `this` had been deleted
         }
     }
 
-    return actionHandled;
+    //return actionHandled;
+    return false;
 }
 
 

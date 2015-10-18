@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.h
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 17, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -90,6 +90,8 @@ class ProjectListItem: public QObject {
             returns true. So, code to cancel a removal can be implemented there. True will be returned if the
             child was removed successfully, false otherwise.
         */
+
+        std::unique_ptr<ProjectListItem> removeChild(ProjectListItem* child);
 
         virtual QVariant data(int role = Qt::DisplayRole) const = 0;
         /*  Returns the data stored in the node that corresponds to a given `role`.

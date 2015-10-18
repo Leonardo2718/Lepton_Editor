@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.h
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 17, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -97,6 +97,10 @@ class ProjectListModel : public QAbstractItemModel {
 
     private:
         std::unique_ptr<ProjectListRoot> root;    // root of the model
+
+    private slots:
+        void removeActionTriggered(bool);
+        /*  called when a remove action of an item is triggered */
 };
 
 
