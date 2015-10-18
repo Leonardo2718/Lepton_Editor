@@ -223,7 +223,7 @@ void ProjectListModel::removeActionTriggered(bool) {
             index = item->parent()->indexOfChild(item);
         else if (item != nullptr && item->parent() == nullptr)
             index = root->indexOfChild(item);
-        itemIndex = createIndex(0, 0, static_cast<void*>(item));
+        itemIndex = createIndex(index, 0, static_cast<void*>(item));
         beginRemoveRows(parent(itemIndex), index, index);
         item->handleRemoveAction(action);
         endRemoveRows();

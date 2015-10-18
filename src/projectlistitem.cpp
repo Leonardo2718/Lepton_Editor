@@ -131,7 +131,7 @@ std::unique_ptr<ProjectListItem> ProjectListItem::removeChild(ProjectListItem* c
             break;
         }
     }
-    if (itr == children.cend()) {
+    if (itr != children.cend()) {
         auto oldChild = std::move(children[itr - children.cbegin()]);
         children.erase(itr);
         return oldChild;
