@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 18, 2015
+Last Modified: October 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -112,10 +112,14 @@ void ProjectListModel::loadSession() {
     QVariantList projectList = session.value("projectPathList").toList();
 
     beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
+
+    // get list of all projects that need to be opened
     QList<QString> projectPaths;
     foreach(const QVariant& projectEntry, projectList) {
         projectPaths.append(projectEntry.toMap().value("project_path").toString());
     }
+
+    // create an load all the projects
     ProjectListItem::ChildList projects = root->loadProjects(projectPaths);
     QList<ProjectListItem*> treeNodes;
     for (auto& node : projects) {
@@ -123,6 +127,7 @@ void ProjectListModel::loadSession() {
         root->addChild(std::move(node));
     }
     loadAllChildrenOf(treeNodes);
+
     endInsertRows();
 }
 
@@ -149,9 +154,11 @@ returns the context menu actions for the item at `index`
 */
 QList<QAction*> ProjectListModel::contextActionsFor(const QModelIndex index) {
     auto item = static_cast<ProjectListItem*>(index.internalPointer());
+
+    // get all the actions and convert them to `QActions*`
     QList<QAction*> actionList;
     foreach (ProjectItemAction* action, item->contextMenuActions()) {
-        actionList.append(static_cast<QAction*>(action));
+        actionList.append(action);
     }
     return actionList;
 }
@@ -162,13 +169,17 @@ opens an existing project
 bool ProjectListModel::openProject() {
     auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
     if (!projectPath.isEmpty()) {
-        beginInsertRows(QModelIndex(), root->childCount(), root->childCount());
-        std::unique_ptr<ProjectListItem> item = root->loadProject(projectPath);
+
+        std::unique_ptr<ProjectListItem> item = root->loadProject(projectPath); // construct the tree node
         QList<ProjectListItem*> treeNodes;
         treeNodes.append(item.get());
         loadAllChildrenOf(treeNodes);
+
+        // add the new node (and its children) to the tree
+        beginInsertRows(QModelIndex(), root->childCount(), root->childCount());
         root->addChild(std::move(item));
         endInsertRows();
+
         return true;
     }
     else {
@@ -195,15 +206,22 @@ loads the children (and grandchildren) of all `nodes`
 */
 void ProjectListModel::loadAllChildrenOf(QList<ProjectListItem*> nodes) {
     for (int i = 0; i < nodes.size(); i++) {
-        foreach (ProjectItemAction* action, nodes.at(i)->removeActions()) {
-            connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
-        }
-        foreach (ProjectItemAction* action, nodes.at(i)->newChildActions()) {
-            connect(action, SIGNAL(triggered(bool)), this, SLOT(newChildActionTriggered(bool)));
-        }
+        // connect change data actions
         foreach (ProjectItemAction* action, nodes.at(i)->changeDataActions()) {
             connect(action, SIGNAL(triggered(bool)), this, SLOT(changeDataActionTriggered(bool)));
         }
+
+        // connect new child actions
+        foreach (ProjectItemAction* action, nodes.at(i)->newChildActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(newChildActionTriggered(bool)));
+        }
+
+        // connect remove actions
+        foreach (ProjectItemAction* action, nodes.at(i)->removeActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
+        }
+
+        // get all children of the node (to load them on the next iterations of the loop)
         ProjectListItem::ChildList newNodes = nodes.at(i)->loadChildren();
         for (auto& node : newNodes) {
             nodes.append(node.get());
@@ -220,8 +238,11 @@ void ProjectListModel::changeDataActionTriggered(bool) {
     if (action != nullptr) {
         ProjectListItem* item = action->item();
         if (item != nullptr) {
-            bool handled = item->handleChangeDataAction(action);
+            bool handled = item->handleChangeDataAction(action);    // let the item handle the action
+
+            // if the action was handled
             if (handled) {
+                // get the model index of the item
                 int index = 0;
                 ProjectListItem* parentItem = item->parent();
                 if (parentItem != nullptr)
@@ -229,6 +250,8 @@ void ProjectListModel::changeDataActionTriggered(bool) {
                 else
                     index = root->indexOfChild(item);
                 QModelIndex itemIndex = createIndex(index, 0, static_cast<void*>(item));
+
+                // notify views of the change
                 emit dataChanged(itemIndex, itemIndex);
             }
         }
@@ -244,11 +267,16 @@ void ProjectListModel::newChildActionTriggered(bool) {
         QModelIndex itemIndex;
         ProjectListItem* item = action->item();
         if (item != nullptr) {
-            ProjectListItem::ChildPtr child = item->handleNewChildAction(action);
+            ProjectListItem::ChildPtr child = item->handleNewChildAction(action);   // let the item handle the action
+
+            // if the action was handled
             if (child.get() != nullptr) {
+                // load all children of the new item
                 QList<ProjectListItem*> children;
                 children.append(child.get());
                 loadAllChildrenOf(children);
+
+                // get the model index of the new item
                 int index = 0;
                 ProjectListItem* parentItem = item->parent();
                 if (parentItem != nullptr)
@@ -256,6 +284,8 @@ void ProjectListModel::newChildActionTriggered(bool) {
                 else
                     index = root->indexOfChild(item);
                 itemIndex = createIndex(index, 0, static_cast<void*>(item));
+
+                // notify views of the change and add the new item node to the tree
                 beginInsertRows(itemIndex, item->childCount(), item->childCount());
                 item->addChild(std::move(child));
                 endInsertRows();
@@ -273,8 +303,11 @@ void ProjectListModel::removeActionTriggered(bool) {
         QModelIndex itemIndex;
         ProjectListItem* item = action->item();
         if (item != nullptr) {
-            bool handled = item->handleRemoveAction(action);
+            bool handled = item->handleRemoveAction(action);    // let the item handle the action
+
+            // if the action was handled
             if (handled) {
+                // get the model index of the item
                 int index = 0;
                 ProjectListItem* parentItem = item->parent();
                 if (parentItem != nullptr)
@@ -282,6 +315,8 @@ void ProjectListModel::removeActionTriggered(bool) {
                 else
                     index = root->indexOfChild(item);
                 itemIndex = createIndex(index, 0, static_cast<void*>(item));
+
+                // notify views of the change and remove the item node from the tree
                 beginRemoveRows(parent(itemIndex), index, index);
                 parentItem->removeChild(index);
                 endRemoveRows();

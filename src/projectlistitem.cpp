@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistitem.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 18, 2015
+Last Modified: October 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -274,6 +274,8 @@ QString ProjectDirectory::path() const noexcept {
 
 ProjectListItem::ChildList ProjectDirectory::loadChildren() {
     ChildList children;
+
+    // create a child item for each entry in the directory
     foreach (QFileInfo itemInfo, dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
         if (itemInfo.isDir()) {
             children.push_back(std::make_unique<ProjectDirectory>(QDir(itemInfo.absoluteFilePath())));
@@ -282,6 +284,7 @@ ProjectListItem::ChildList ProjectDirectory::loadChildren() {
             children.push_back(std::make_unique<ProjectFile>(itemInfo));
         }
     }
+
     return children;
 }
 
