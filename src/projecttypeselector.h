@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projecttypeselector.h
 Author: Leonardo Banderali
 Created: May 11, 2015
-Last Modified: May 11, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,7 +41,7 @@ Usage Agreement:
 
 // include other project headers
 #include "projecttypemodel.h"
-#include "projecttreemodel.h"
+
 // define name spaces
 namespace Ui {
 class ProjectTypeSelector;

@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 11, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -44,7 +44,6 @@ Usage Agreement:
 
 #include "editortabbar.h"
 #include "projectlistmodel.h"
-#include "projecttreemodel.h"
 #include "settingseditor.h"
 #include "findreplacedialog.h"
 

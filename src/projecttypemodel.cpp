@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectypemodel.cpp
 Author: Leonardo Banderali
 Created: May 10, 2015
-Last Modified: May 29, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -56,13 +56,13 @@ ProjectTypeModel::ProjectTypeModel(QObject* _parent) : QAbstractItemModel(_paren
     }*/
     /*ents.append(new QString("Str 1"));
     ents.append(new QString("Str 2"));*/
-    m = new ProjectTreeModel(_parent);
+    //m = new ProjectTreeModel(_parent);
 }
 
 ProjectTypeModel::~ProjectTypeModel() {
     //qDeleteAll(entries);
     //qDeleteAll(ents);
-    delete m;
+    //delete m;
 }
 
 
@@ -85,7 +85,7 @@ QModelIndex ProjectTypeModel::index(int row, int column, const QModelIndex &pare
         return createIndex(row, column, (void*)ents.at(row));
     } else
         return createIndex(0, 0, (void*)0);*/
-    m->index(row, column, parent);
+    //m->index(row, column, parent);
 }
 
 QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
@@ -109,7 +109,7 @@ QModelIndex ProjectTypeModel::parent(const QModelIndex &child) const {
         return createIndex(0, 0, (void*)0);
     } else
         return createIndex(0, 0, (void*)0);*/
-    m->parent(child);
+    //m->parent(child);
 }
 
 int ProjectTypeModel::rowCount(const QModelIndex &parent) const {
@@ -123,12 +123,12 @@ int ProjectTypeModel::rowCount(const QModelIndex &parent) const {
         return ents.count();
     } else
         return 0;*/
-    m->rowCount(parent);
+    //m->rowCount(parent);
 }
 
 int ProjectTypeModel::columnCount(const QModelIndex &parent) const {
     //return 1;   // one column for the project type, and one for the description
-    m->columnCount(parent);
+    //m->columnCount(parent);
 }
 
 QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
@@ -146,7 +146,7 @@ QVariant ProjectTypeModel::data(const QModelIndex &index, int role) const {
         return QVariant(*s);
     } else
         return QVariant();*/
-    m->data(index, role);
+    //m->data(index, role);
 }
 
 

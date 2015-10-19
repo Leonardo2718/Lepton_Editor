@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectypemodel.h
 Author: Leonardo Banderali
 Created: May 10, 2015
-Last Modified: May 22, 2015
+Last Modified: October 18, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -41,7 +41,7 @@ Usage Agreement:
 #include <QFileInfo>
 #include <QIcon>
 
-#include "projecttreemodel.h"
+
 
 /*
 This class models a collection of all project types (project specs) known to Lepton.
@@ -134,7 +134,7 @@ class ProjectTypeModel : public QAbstractItemModel {
 
         //QList<ItemEntry*> entries;
         //QList<QString*> ents;
-        ProjectTreeModel* m;
+        //ProjectTreeModel* m;
 };
 
 #endif // PROJECTTYPEMODEL_H

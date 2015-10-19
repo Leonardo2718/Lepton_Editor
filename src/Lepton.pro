@@ -26,10 +26,6 @@ SOURCES += main.cpp\
     syntaxhighlightmanager.cpp \
     settingseditor.cpp \
     findreplacedialog.cpp \
-    leptonproject.cpp \
-    projecttreeitem.cpp \
-    projecttreemodel.cpp \
-    projecttreeroot.cpp \
     projecttypemodel.cpp \
     projecttypeselector.cpp \
     loadprojectasdialog.cpp \
@@ -46,10 +42,6 @@ HEADERS  += mainwindow.h \
     leptonconfig.h \
     settingseditor.h \
     findreplacedialog.h \
-    leptonproject.h \
-    projecttreeitem.h \
-    projecttreemodel.h \
-    projecttreeroot.h \
     projecttypemodel.h \
     projecttypeselector.h \
     loadprojectasdialog.h \
