@@ -63,7 +63,8 @@ class ProjectListItem: public QObject {
     Q_OBJECT
 
     public:
-        using ChildList = std::vector<std::unique_ptr<ProjectListItem>>;
+        using ChildPtr = std::unique_ptr<ProjectListItem>;
+        using ChildList = std::vector<ChildPtr>;
 
         ProjectListItem();
 
@@ -77,10 +78,10 @@ class ProjectListItem: public QObject {
 
         int indexOfChild(ProjectListItem* child) const noexcept;
 
-        void addChild(std::unique_ptr<ProjectListItem> newChild);
+        void addChild(ChildPtr newChild);
         /*  adds an existing node to the tree */
 
-        std::unique_ptr<ProjectListItem> removeChild(int index);
+        ChildPtr removeChild(int index);
         /*  removes a node from this item and returns it */
 
         virtual QVariant data(int role = Qt::DisplayRole) const = 0;
@@ -88,10 +89,14 @@ class ProjectListItem: public QObject {
             Sub-classes must reimplement this function.
         */
 
+        virtual ChildList loadChildren() = 0;
+        /*  loads all children based on what this current item is */
+
         virtual QList<ProjectItemAction*> contextMenuActions() const;
         /*  Returns the actions for the context menu to be displayed when this item is right-clicked in the
             project manager. Any action within this group must store as its data a pointer to the item it
-            belongs to.
+            belongs to. By default this returns all the actions from `changeDataActions()`, `newChildActions()`,
+            and `removeActions()`.
         */
 
         virtual QList<ProjectItemAction*> newChildActions() const;
@@ -103,7 +108,7 @@ class ProjectListItem: public QObject {
         virtual QList<ProjectItemAction*> changeDataActions() const;
         /*  list of all actions that, when triggered, will cause the data of the node to be changed */
 
-        virtual bool handleNewChildAction(ProjectItemAction* action);
+        virtual ChildPtr handleNewChildAction(ProjectItemAction* action);
         /*  handles the creation of a new child */
 
         virtual bool handleRemoveAction(ProjectItemAction* action);
@@ -112,11 +117,8 @@ class ProjectListItem: public QObject {
         virtual bool handleChangeDataAction(ProjectItemAction* action);
         /*  handles changing the data of this item */
 
-        virtual ChildList loadChildren() = 0;
-        /*  loads all children based on what this current item is */
-
     private:
-        std::vector<std::unique_ptr<ProjectListItem>> children;
+        ChildList children;
         ProjectListItem* parentPtr = nullptr;
 };
 
@@ -150,14 +152,25 @@ class ProjectFile: public ProjecFileSystemItem {
     public:
         ProjectFile(const QFileInfo& _file);
 
+        ~ProjectFile();
+
         QVariant data(int role = Qt::DisplayRole) const;
 
         QString path() const noexcept;
 
         ChildList loadChildren() override;
 
+        QList<ProjectItemAction*> removeActions() const;
+
+        //QList<ProjectItemAction*> changeDataActions() const;
+
+        bool handleRemoveAction(ProjectItemAction* action);
+
+        //bool handleChangeDataAction(ProjectItemAction* action);
+
     private:
         QFileInfo file;
+        ProjectItemAction* deleteAction;
 };
 
 /*
@@ -167,14 +180,31 @@ class ProjectDirectory: public ProjecFileSystemItem {
     public:
         ProjectDirectory(const QDir& _dir);
 
+        ~ProjectDirectory();
+
         QVariant data(int role = Qt::DisplayRole) const;
 
         QString path() const noexcept;
 
         ChildList loadChildren();
 
+        QList<ProjectItemAction*> newChildActions() const;
+
+        QList<ProjectItemAction*> removeActions() const;
+
+        //QList<ProjectItemAction*> changeDataActions() const;
+
+        ChildPtr handleNewChildAction(ProjectItemAction* action);
+
+        bool handleRemoveAction(ProjectItemAction* action);
+
+        //bool handleChangeDataAction(ProjectItemAction* action);
+
     private:
         QDir dir;
+        ProjectItemAction* newFileAction;
+        ProjectItemAction* newDirectoryAction;
+        ProjectItemAction* deleteAction;
 };
 
 /*
@@ -191,19 +221,13 @@ class Project: public ProjectDirectory {
 
         QString path() const noexcept;
 
-        QList<ProjectItemAction*> contextMenuActions() const;
-
-        //QList<ProjectItemAction*> newChildActions() const;
-
         QList<ProjectItemAction*> removeActions() const;
 
         //QList<ProjectItemAction*> changeDataActions() const;
 
-        //bool handleNewChildAction(ProjectItemAction* newChildAction);
-
         bool handleRemoveAction(ProjectItemAction* action);
 
-        //bool handleChangeDataAction(ProjectItemAction* changeDataAction);
+        //bool handleChangeDataAction(ProjectItemAction* action);
 
     private:
         QDir projectDir;            // directory containing the project
@@ -223,7 +247,7 @@ class ProjectListRoot: public ProjectListItem {
 
         ChildList loadProjects(const QList<QString>& projectDirs);
 
-        std::unique_ptr<ProjectListItem> loadProject(const QString& projectPath);
+        ChildPtr loadProject(const QString& projectPath);
 };
 
 #endif // PROJECTLISTITEM_H

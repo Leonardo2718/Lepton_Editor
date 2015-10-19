@@ -88,7 +88,7 @@ int ProjectListItem::indexOfChild(ProjectListItem* child) const noexcept {
 /*
 adds an existing node to the tree
 */
-void ProjectListItem::addChild(std::unique_ptr<ProjectListItem> newChild) {
+void ProjectListItem::addChild(ChildPtr newChild) {
     newChild->parentPtr = this;
     children.push_back(std::move(newChild));
 }
@@ -96,7 +96,7 @@ void ProjectListItem::addChild(std::unique_ptr<ProjectListItem> newChild) {
 /*
 removes a node from this item and returns it
 */
-std::unique_ptr<ProjectListItem> ProjectListItem::removeChild(int index) {
+ProjectListItem::ChildPtr ProjectListItem::removeChild(int index) {
     auto childItr = children.cbegin() + index;
     auto oldChild = std::move(children[index]);
     children.erase(childItr);
@@ -106,10 +106,15 @@ std::unique_ptr<ProjectListItem> ProjectListItem::removeChild(int index) {
 /*
 Returns the actions for the context menu to be displayed when this item is right-clicked in the
 project manager. Any action within this group must store as its data a pointer to the item it
-belongs to.
+belongs to. By default this returns all the actions from `changeDataActions()`, `newChildActions()`,
+and `removeActions()`.
 */
 QList<ProjectItemAction*> ProjectListItem::contextMenuActions() const {
-    return QList<ProjectItemAction*>{};
+    QList<ProjectItemAction*> menuActions;
+    menuActions.append(changeDataActions());
+    menuActions.append(newChildActions());
+    menuActions.append(removeActions());
+    return menuActions;
 }
 
 
@@ -137,7 +142,7 @@ QList<ProjectItemAction*> ProjectListItem::changeDataActions() const {
 /*
 handles the creation of a new child
 */
-bool ProjectListItem::handleNewChildAction(ProjectItemAction* newChildAction) {
+ProjectListItem::ChildPtr ProjectListItem::handleNewChildAction(ProjectItemAction* newChildAction) {
     return false;
 }
 
@@ -169,7 +174,13 @@ ProjectListItem* ProjectItemAction::item() const noexcept {
 
 //~ProjectFile implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectFile::ProjectFile(const QFileInfo& _file) : file{_file} {}
+ProjectFile::ProjectFile(const QFileInfo& _file) : file{_file} {
+    deleteAction = new ProjectItemAction{"Delete", this};
+}
+
+ProjectFile::~ProjectFile() {
+    delete deleteAction;
+}
 
 QVariant ProjectFile::data(int role) const {
     if (role == Qt::DisplayRole)
@@ -188,11 +199,40 @@ ProjectListItem::ChildList ProjectFile::loadChildren() {
     return ChildList{};
 }
 
+QList<ProjectItemAction*> ProjectFile::removeActions() const {
+    QList<ProjectItemAction*> actions;
+    actions.append(deleteAction);
+    return actions;
+}
+
+bool ProjectFile::handleRemoveAction(ProjectItemAction* action) {
+    bool actionHandled = false;
+
+    if (action == deleteAction) {
+        auto buttonPressed = QMessageBox::question(0, "Deleting File", QString("Are you sure you want to delete the file `%0`?").arg(data().toString()));
+        if (buttonPressed == QMessageBox::Yes) {
+            actionHandled = QFile::remove(file.absoluteFilePath());
+        }
+    }
+
+    return actionHandled;
+}
+
 
 
 //~ProjecDirectory implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ProjectDirectory::ProjectDirectory(const QDir& _dir) : dir{_dir} {}
+ProjectDirectory::ProjectDirectory(const QDir& _dir) : dir{_dir} {
+    newFileAction = new ProjectItemAction{"Add file", this};
+    newDirectoryAction = new ProjectItemAction{"Add directory", this};
+    deleteAction = new ProjectItemAction{"Delete", this};
+}
+
+ProjectDirectory::~ProjectDirectory() {
+    delete newFileAction;
+    delete newDirectoryAction;
+    delete deleteAction;
+}
 
 QVariant ProjectDirectory::data(int role) const {
     if (role == Qt::DisplayRole)
@@ -220,12 +260,62 @@ ProjectListItem::ChildList ProjectDirectory::loadChildren() {
     return children;
 }
 
+QList<ProjectItemAction*> ProjectDirectory::newChildActions() const {
+    QList<ProjectItemAction*> actions;
+    actions.append(newFileAction);
+    actions.append(newDirectoryAction);
+    return actions;
+}
+
+QList<ProjectItemAction*> ProjectDirectory::removeActions() const {
+    QList<ProjectItemAction*> actions;
+    actions.append(deleteAction);
+    return actions;
+}
+
+ProjectListItem::ChildPtr ProjectDirectory::handleNewChildAction(ProjectItemAction* action) {
+    ChildPtr child = ChildPtr{nullptr};
+
+    if (action == newFileAction) {
+        QString name = QInputDialog::getText(0, "New File", "File name: ");
+        if (!name.isEmpty()) {
+            QFileInfo file{dir.absoluteFilePath(name)};
+            if (!file.exists()) {
+                QFile f{file.absoluteFilePath()};
+                f.open(QIODevice::ReadWrite);
+                f.close();
+            }
+            child = std::make_unique<ProjectFile>(file);
+        }
+    }
+    else if (action == newDirectoryAction) {
+        auto name = QInputDialog::getText(0, "New Directory", "Directory name: ");
+        dir.mkdir(name);
+        child = std::make_unique<ProjectDirectory>(QDir{dir.absoluteFilePath(name)});
+    }
+
+    return child;
+}
+
+bool ProjectDirectory::handleRemoveAction(ProjectItemAction* action) {
+    bool actionHandled = false;
+
+    if (action == deleteAction) {
+        auto buttonPressed = QMessageBox::question(0, "Deleting Directory", QString("Are you sure you want to delete the directory `%0`?").arg(data().toString()));
+        if (buttonPressed == QMessageBox::Yes) {
+            actionHandled = dir.removeRecursively();
+        }
+    }
+
+    return actionHandled;
+}
+
 
 
 //~Project implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Project::Project(const QDir& _projectDir) : ProjectDirectory{_projectDir}, projectDir{_projectDir} {
-    closeAction = new ProjectItemAction("Close Project", this);
+    closeAction = new ProjectItemAction("Close project", this);
 }
 
 Project::~Project() {
@@ -245,12 +335,6 @@ QString Project::path() const noexcept {
     return projectDir.absolutePath();
 }
 
-QList<ProjectItemAction*> Project::contextMenuActions() const {
-    QList<ProjectItemAction*> menuActions;
-    menuActions.append(closeAction);
-    return menuActions;
-}
-
 QList<ProjectItemAction*> Project::removeActions() const {
     QList<ProjectItemAction*> menuActions;
     menuActions.append(closeAction);
@@ -260,7 +344,7 @@ QList<ProjectItemAction*> Project::removeActions() const {
 bool Project::handleRemoveAction(ProjectItemAction* action) {
     bool actionHandled = false;
 
-    if (action == this->closeAction) {
+    if (action == closeAction) {
         auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
         if (buttonPressed == QMessageBox::Yes) {
             actionHandled = true;
@@ -298,12 +382,12 @@ ProjectListItem::ChildList ProjectListRoot::loadProjects(const QList<QString>& p
     return children;
 }
 
-std::unique_ptr<ProjectListItem> ProjectListRoot::loadProject(const QString& projectPath) {
+ProjectListItem::ChildPtr ProjectListRoot::loadProject(const QString& projectPath) {
     QFileInfo pathInfo(projectPath);
     if (pathInfo.isDir()) {
         return std::make_unique<Project>(QDir(pathInfo.absoluteFilePath()));
     }
     else {
-        return std::unique_ptr<ProjectListItem>{nullptr};
+        return ChildPtr{nullptr};
     }
 }

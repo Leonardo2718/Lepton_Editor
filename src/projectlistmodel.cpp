@@ -122,16 +122,7 @@ void ProjectListModel::loadSession() {
         treeNodes.append(node.get());
         root->addChild(std::move(node));
     }
-    for (int i = 0; i < treeNodes.size(); i++) {
-        foreach (ProjectItemAction* action, treeNodes.at(i)->removeActions()) {
-            connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
-        }
-        ProjectListItem::ChildList newNodes = treeNodes.at(i)->loadChildren();
-        for (auto& node : newNodes) {
-            treeNodes.append(node.get());
-            treeNodes.at(i)->addChild(std::move(node));
-        }
-    }
+    loadAllChildrenOf(treeNodes);
     endInsertRows();
 }
 
@@ -175,17 +166,8 @@ bool ProjectListModel::openProject() {
         std::unique_ptr<ProjectListItem> item = root->loadProject(projectPath);
         QList<ProjectListItem*> treeNodes;
         treeNodes.append(item.get());
+        loadAllChildrenOf(treeNodes);
         root->addChild(std::move(item));
-        for (int i = 0; i < treeNodes.size(); i++) {
-            foreach (ProjectItemAction* action, treeNodes.at(i)->removeActions()) {
-                connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
-            }
-            ProjectListItem::ChildList newNodes = treeNodes.at(i)->loadChildren();
-            for (auto& node : newNodes) {
-                treeNodes.append(node.get());
-                treeNodes.at(i)->addChild(std::move(node));
-            }
-        }
         endInsertRows();
         return true;
     }
@@ -209,6 +191,54 @@ void ProjectListModel::itemDoubleClicked(const QModelIndex& index) {
 }
 
 /*
+loads the children (and grandchildren) of all `nodes`
+*/
+void ProjectListModel::loadAllChildrenOf(QList<ProjectListItem*> nodes) {
+    for (int i = 0; i < nodes.size(); i++) {
+        foreach (ProjectItemAction* action, nodes.at(i)->removeActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
+        }
+        foreach (ProjectItemAction* action, nodes.at(i)->newChildActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(newChildActionTriggered(bool)));
+        }
+        ProjectListItem::ChildList newNodes = nodes.at(i)->loadChildren();
+        for (auto& node : newNodes) {
+            nodes.append(node.get());
+            nodes.at(i)->addChild(std::move(node));
+        }
+    }
+}
+
+/*
+called when an add child action of an item is triggered
+*/
+void ProjectListModel::newChildActionTriggered(bool) {
+    ProjectItemAction* action = dynamic_cast<ProjectItemAction*>(sender());
+    if (action != nullptr) {
+        QModelIndex itemIndex;
+        ProjectListItem* item = action->item();
+        if (item != nullptr) {
+            ProjectListItem::ChildPtr child = item->handleNewChildAction(action);
+            if (child.get() != nullptr) {
+                QList<ProjectListItem*> children;
+                children.append(child.get());
+                loadAllChildrenOf(children);
+                int index = 0;
+                ProjectListItem* parentItem = item->parent();
+                if (parentItem != nullptr)
+                    index = item->parent()->indexOfChild(item);
+                else
+                    index = root->indexOfChild(item);
+                itemIndex = createIndex(index, 0, static_cast<void*>(item));
+                beginInsertRows(itemIndex, item->childCount(), item->childCount());
+                item->addChild(std::move(child));
+                endInsertRows();
+            }
+        }
+    }
+}
+
+/*
 called when a remove action of an item is triggered
 */
 void ProjectListModel::removeActionTriggered(bool) {
@@ -217,8 +247,8 @@ void ProjectListModel::removeActionTriggered(bool) {
         QModelIndex itemIndex;
         ProjectListItem* item = action->item();
         if (item != nullptr) {
-            bool accepted = item->handleRemoveAction(action);
-            if (accepted) {
+            bool handled = item->handleRemoveAction(action);
+            if (handled) {
                 int index = 0;
                 ProjectListItem* parentItem = item->parent();
                 if (parentItem != nullptr)

@@ -98,7 +98,13 @@ class ProjectListModel : public QAbstractItemModel {
     private:
         std::unique_ptr<ProjectListRoot> root;    // root of the model
 
+        void loadAllChildrenOf(QList<ProjectListItem*> nodes);
+        /*  loads the children (and grandchildren) of all `nodes` */
+
     private slots:
+        void newChildActionTriggered(bool);
+        /*  called when an add child action of an item is triggered */
+
         void removeActionTriggered(bool);
         /*  called when a remove action of an item is triggered */
 };
