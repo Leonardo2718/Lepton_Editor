@@ -94,27 +94,8 @@ void ProjectListItem::addChild(std::unique_ptr<ProjectListItem> newChild) {
 }
 
 /*
-removes a node from the tree and returns it
+removes a node from this item and returns it
 */
-/*std::unique_ptr<ProjectListItem> ProjectListItem::removeChild(ProjectListItem* child) {
-    child->parentPtr = nullptr;
-    auto itr = children.cbegin();
-    for (; itr != children.cend(); itr++) {
-        if (itr->get() == child) {
-            break;
-        }
-    }
-    if (itr != children.cend()) {
-        auto oldChild = std::move(children[itr - children.cbegin()]);
-        children.erase(itr);
-        return oldChild;
-    }
-    else {
-        return std::unique_ptr<ProjectListItem>{nullptr};
-    }
-}*/
-
-/*  removes a node from the tree and returns it */
 std::unique_ptr<ProjectListItem> ProjectListItem::removeChild(int index) {
     auto childItr = children.cbegin() + index;
     auto oldChild = std::move(children[index]);
@@ -204,7 +185,7 @@ QString ProjectFile::path() const noexcept {
 }
 
 ProjectListItem::ChildList ProjectFile::loadChildren() {
-    return ChildList{};//QList<ProjectListItem*>{};
+    return ChildList{};
 }
 
 
@@ -227,19 +208,12 @@ QString ProjectDirectory::path() const noexcept {
 }
 
 ProjectListItem::ChildList ProjectDirectory::loadChildren() {
-    //QList<ProjectListItem*> children;
     ChildList children;
     foreach (QFileInfo itemInfo, dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
         if (itemInfo.isDir()) {
-            //std::unique_ptr<ProjectListItem> child = std::make_unique<ProjectDirectory>(QDir(itemInfo.absoluteFilePath()));
-            //children.append(child.get());
-            //addChild(std::move(child));
             children.push_back(std::make_unique<ProjectDirectory>(QDir(itemInfo.absoluteFilePath())));
         }
         else if (itemInfo.isFile()) {
-            //std::unique_ptr<ProjectListItem> child = std::make_unique<ProjectFile>(itemInfo);
-            //children.append(child.get());
-            //addChild(std::move(child));
             children.push_back(std::make_unique<ProjectFile>(itemInfo));
         }
     }
@@ -251,14 +225,10 @@ ProjectListItem::ChildList ProjectDirectory::loadChildren() {
 //~Project implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Project::Project(const QDir& _projectDir) : ProjectDirectory{_projectDir}, projectDir{_projectDir} {
-    /*QAction* closeProjectAction = new QAction("Close Project", 0);
-    connect(closeProjectAction, SIGNAL(triggered(bool)), this, SLOT(handleCloseProject(bool)));
-    menuActions.append(closeProjectAction);*/
     closeAction = new ProjectItemAction("Close Project", this);
 }
 
 Project::~Project() {
-    //qDeleteAll(menuActions);
     delete closeAction;
 }
 
@@ -288,20 +258,16 @@ QList<ProjectItemAction*> Project::removeActions() const {
 }
 
 bool Project::handleRemoveAction(ProjectItemAction* action) {
-    //bool actionHandled = false;
+    bool actionHandled = false;
 
     if (action == this->closeAction) {
         auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
-        //qDebug() << buttonPressed;
         if (buttonPressed == QMessageBox::Yes) {
-            //auto self = parent()->removeChild(this);    // causes `this` to be deleted at end of block because of scope exit!
-            //actionHandled = true;
-            return true;                                // return now to avoid UB because `this` had been deleted
+            actionHandled = true;
         }
     }
 
-    //return actionHandled;
-    return false;
+    return actionHandled;
 }
 
 
@@ -318,18 +284,14 @@ QVariant ProjectListRoot::data(int role) const {
 }
 
 ProjectListItem::ChildList ProjectListRoot::loadChildren() {
-    return ChildList{};//QList<ProjectListItem*>{};
+    return ChildList{};
 }
 
 ProjectListItem::ChildList ProjectListRoot::loadProjects(const QList<QString>& projectDirs) {
-    //QList<ProjectListItem*> children;
     ChildList children;
     foreach(const QString& path, projectDirs) {
         QFileInfo pathInfo(path);
         if (pathInfo.isDir()) {
-            //std::unique_ptr<ProjectListItem> child = std::make_unique<Project>(QDir(pathInfo.absoluteFilePath()));
-            //children.append(child.get());
-            //addChild(std::move(child));
             children.push_back(std::make_unique<Project>(QDir(pathInfo.absoluteFilePath())));
         }
     }
@@ -337,14 +299,6 @@ ProjectListItem::ChildList ProjectListRoot::loadProjects(const QList<QString>& p
 }
 
 std::unique_ptr<ProjectListItem> ProjectListRoot::loadProject(const QString& projectPath) {
-    /*ProjectListItem* newProject = nullptr;
-    QFileInfo pathInfo(projectPath);
-    if (pathInfo.isDir()) {
-        std::unique_ptr<ProjectListItem> child = std::make_unique<Project>(QDir(pathInfo.absoluteFilePath()));
-        newProject = child.get();
-        addChild(std::move(child));
-    }
-    return newProject;*/
     QFileInfo pathInfo(projectPath);
     if (pathInfo.isDir()) {
         return std::make_unique<Project>(QDir(pathInfo.absoluteFilePath()));

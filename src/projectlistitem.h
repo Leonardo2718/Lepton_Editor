@@ -80,11 +80,8 @@ class ProjectListItem: public QObject {
         void addChild(std::unique_ptr<ProjectListItem> newChild);
         /*  adds an existing node to the tree */
 
-        //std::unique_ptr<ProjectListItem> removeChild(ProjectListItem* child);
-        /*  removes a node from the tree and returns it */
-
         std::unique_ptr<ProjectListItem> removeChild(int index);
-        /*  removes a node from the tree and returns it */
+        /*  removes a node from this item and returns it */
 
         virtual QVariant data(int role = Qt::DisplayRole) const = 0;
         /*  Returns the data stored in the node that corresponds to a given `role`.
