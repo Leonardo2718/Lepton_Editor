@@ -109,20 +109,38 @@ load projects saved from previous session
 */
 void ProjectListModel::loadSession() {
     QSettings session;
-    //beginInsertRows(createIndex(0,0, root.get()), 0, root->childCount());
     QVariantList projectList = session.value("projectPathList").toList();
+
     beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
     QList<QString> projectPaths;
     foreach(const QVariant& projectEntry, projectList) {
         projectPaths.append(projectEntry.toMap().value("project_path").toString());
     }
-    QList<ProjectListItem*> treeNodes = root->loadProjects(projectPaths);
+    /*QList<ProjectListItem*> treeNodes = root->loadProjects(projectPaths);
     for (int i = 0; !treeNodes.isEmpty() && i < treeNodes.size(); i++) {
         foreach (ProjectItemAction* action, treeNodes.at(i)->removeActions()) {
             connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
         }
         QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
         treeNodes.append(newNodes);
+    }*/
+    ProjectListItem::ChildList projects = root->loadProjects(projectPaths);
+    QList<ProjectListItem*> treeNodes;
+    for (auto& node : projects) {
+        treeNodes.append(node.get());
+        root->addChild(std::move(node));
+    }
+    for (int i = 0; i < treeNodes.size(); i++) {
+        foreach (ProjectItemAction* action, treeNodes.at(i)->removeActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
+        }
+        //QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
+        //treeNodes.append(newNodes);
+        ProjectListItem::ChildList newNodes = treeNodes.at(i)->loadChildren();
+        for (auto& node : newNodes) {
+            treeNodes.append(node.get());
+            treeNodes.at(i)->addChild(std::move(node));
+        }
     }
     endInsertRows();
 }
@@ -164,7 +182,7 @@ bool ProjectListModel::openProject() {
     auto projectPath = QFileDialog::getExistingDirectory(nullptr, "Open project");
     if (!projectPath.isEmpty()) {
         beginInsertRows(QModelIndex(), root->childCount(), root->childCount());
-        ProjectListItem* item = root->loadProject(projectPath);
+        /*ProjectListItem* item = root->loadProject(projectPath);
         foreach (ProjectItemAction* action, item->removeActions()) {
             connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
         }
@@ -172,6 +190,22 @@ bool ProjectListModel::openProject() {
         for (int i = 0; !treeNodes.isEmpty() && i < treeNodes.size(); i++) {
             QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
             treeNodes.append(newNodes);
+        }*/
+        std::unique_ptr<ProjectListItem> item = root->loadProject(projectPath);
+        QList<ProjectListItem*> treeNodes;
+        treeNodes.append(item.get());
+        root->addChild(std::move(item));
+        for (int i = 0; i < treeNodes.size(); i++) {
+            foreach (ProjectItemAction* action, treeNodes.at(i)->removeActions()) {
+                connect(action, SIGNAL(triggered(bool)), this, SLOT(removeActionTriggered(bool)));
+            }
+            //QList<ProjectListItem*> newNodes = treeNodes.at(i)->loadChildren();
+            //treeNodes.append(newNodes);
+            ProjectListItem::ChildList newNodes = treeNodes.at(i)->loadChildren();
+            for (auto& node : newNodes) {
+                treeNodes.append(node.get());
+                treeNodes.at(i)->addChild(std::move(node));
+            }
         }
         endInsertRows();
         return true;
@@ -203,7 +237,7 @@ void ProjectListModel::removeActionTriggered(bool) {
     if (action != nullptr) {
         QModelIndex itemIndex;
         ProjectListItem* item = action->item();
-        int index = 0;
+        /*int index = 0;
         if (item != nullptr && item->parent() != nullptr)
             index = item->parent()->indexOfChild(item);
         else if (item != nullptr && item->parent() == nullptr)
@@ -211,6 +245,21 @@ void ProjectListModel::removeActionTriggered(bool) {
         itemIndex = createIndex(index, 0, static_cast<void*>(item));
         beginRemoveRows(parent(itemIndex), index, index);
         item->handleRemoveAction(action);
-        endRemoveRows();
+        endRemoveRows();*/
+        if (item != nullptr) {
+            bool accepted = item->handleRemoveAction(action);
+            if (accepted) {
+                int index = 0;
+                ProjectListItem* parentItem = item->parent();
+                if (parentItem != nullptr)
+                    index = item->parent()->indexOfChild(item);
+                else
+                    index = root->indexOfChild(item);
+                itemIndex = createIndex(index, 0, static_cast<void*>(item));
+                beginRemoveRows(parent(itemIndex), index, index);
+                parentItem->removeChild(index);
+                endRemoveRows();
+            }
+        }
     }
 }

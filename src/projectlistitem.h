@@ -63,6 +63,8 @@ class ProjectListItem: public QObject {
     Q_OBJECT
 
     public:
+        using ChildList = std::vector<std::unique_ptr<ProjectListItem>>;
+
         ProjectListItem();
 
         virtual ~ProjectListItem() noexcept;
@@ -78,7 +80,10 @@ class ProjectListItem: public QObject {
         void addChild(std::unique_ptr<ProjectListItem> newChild);
         /*  adds an existing node to the tree */
 
-        std::unique_ptr<ProjectListItem> removeChild(ProjectListItem* child);
+        //std::unique_ptr<ProjectListItem> removeChild(ProjectListItem* child);
+        /*  removes a node from the tree and returns it */
+
+        std::unique_ptr<ProjectListItem> removeChild(int index);
         /*  removes a node from the tree and returns it */
 
         virtual QVariant data(int role = Qt::DisplayRole) const = 0;
@@ -110,7 +115,7 @@ class ProjectListItem: public QObject {
         virtual bool handleChangeDataAction(ProjectItemAction* action);
         /*  handles changing the data of this item */
 
-        virtual QList<ProjectListItem*> loadChildren() = 0;
+        virtual ChildList loadChildren() = 0;
         /*  loads all children based on what this current item is */
 
     private:
@@ -152,7 +157,7 @@ class ProjectFile: public ProjecFileSystemItem {
 
         QString path() const noexcept;
 
-        QList<ProjectListItem*> loadChildren() override;
+        ChildList loadChildren() override;
 
     private:
         QFileInfo file;
@@ -169,7 +174,7 @@ class ProjectDirectory: public ProjecFileSystemItem {
 
         QString path() const noexcept;
 
-        QList<ProjectListItem*> loadChildren();
+        ChildList loadChildren();
 
     private:
         QDir dir;
@@ -217,11 +222,11 @@ class ProjectListRoot: public ProjectListItem {
 
         QVariant data(int role = Qt::DisplayRole) const;
 
-        QList<ProjectListItem*> loadChildren() override;
+        ChildList loadChildren() override;
 
-        QList<ProjectListItem*> loadProjects(const QList<QString>& projectDirs);
+        ChildList loadProjects(const QList<QString>& projectDirs);
 
-        ProjectListItem* loadProject(const QString& projectPath);
+        std::unique_ptr<ProjectListItem> loadProject(const QString& projectPath);
 };
 
 #endif // PROJECTLISTITEM_H
