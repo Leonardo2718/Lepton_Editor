@@ -201,10 +201,36 @@ void ProjectListModel::loadAllChildrenOf(QList<ProjectListItem*> nodes) {
         foreach (ProjectItemAction* action, nodes.at(i)->newChildActions()) {
             connect(action, SIGNAL(triggered(bool)), this, SLOT(newChildActionTriggered(bool)));
         }
+        foreach (ProjectItemAction* action, nodes.at(i)->changeDataActions()) {
+            connect(action, SIGNAL(triggered(bool)), this, SLOT(changeDataActionTriggered(bool)));
+        }
         ProjectListItem::ChildList newNodes = nodes.at(i)->loadChildren();
         for (auto& node : newNodes) {
             nodes.append(node.get());
             nodes.at(i)->addChild(std::move(node));
+        }
+    }
+}
+
+/*
+called when a data changing action of an item is triggered
+*/
+void ProjectListModel::changeDataActionTriggered(bool) {
+    ProjectItemAction* action = dynamic_cast<ProjectItemAction*>(sender());
+    if (action != nullptr) {
+        ProjectListItem* item = action->item();
+        if (item != nullptr) {
+            bool handled = item->handleChangeDataAction(action);
+            if (handled) {
+                int index = 0;
+                ProjectListItem* parentItem = item->parent();
+                if (parentItem != nullptr)
+                    index = item->parent()->indexOfChild(item);
+                else
+                    index = root->indexOfChild(item);
+                QModelIndex itemIndex = createIndex(index, 0, static_cast<void*>(item));
+                emit dataChanged(itemIndex, itemIndex);
+            }
         }
     }
 }

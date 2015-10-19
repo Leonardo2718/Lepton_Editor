@@ -102,6 +102,9 @@ class ProjectListModel : public QAbstractItemModel {
         /*  loads the children (and grandchildren) of all `nodes` */
 
     private slots:
+        void changeDataActionTriggered(bool);
+        /*  called when a data changing action of an item is triggered */
+
         void newChildActionTriggered(bool);
         /*  called when an add child action of an item is triggered */
 

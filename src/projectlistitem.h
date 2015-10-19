@@ -162,14 +162,15 @@ class ProjectFile: public ProjecFileSystemItem {
 
         QList<ProjectItemAction*> removeActions() const;
 
-        //QList<ProjectItemAction*> changeDataActions() const;
+        QList<ProjectItemAction*> changeDataActions() const;
 
         bool handleRemoveAction(ProjectItemAction* action);
 
-        //bool handleChangeDataAction(ProjectItemAction* action);
+        bool handleChangeDataAction(ProjectItemAction* action);
 
     private:
         QFileInfo file;
+        ProjectItemAction* renameAction;
         ProjectItemAction* deleteAction;
 };
 
@@ -192,16 +193,17 @@ class ProjectDirectory: public ProjecFileSystemItem {
 
         QList<ProjectItemAction*> removeActions() const;
 
-        //QList<ProjectItemAction*> changeDataActions() const;
+        QList<ProjectItemAction*> changeDataActions() const;
 
         ChildPtr handleNewChildAction(ProjectItemAction* action);
 
         bool handleRemoveAction(ProjectItemAction* action);
 
-        //bool handleChangeDataAction(ProjectItemAction* action);
+        bool handleChangeDataAction(ProjectItemAction* action);
 
     private:
         QDir dir;
+        ProjectItemAction* renameAction;
         ProjectItemAction* newFileAction;
         ProjectItemAction* newDirectoryAction;
         ProjectItemAction* deleteAction;
@@ -223,15 +225,16 @@ class Project: public ProjectDirectory {
 
         QList<ProjectItemAction*> removeActions() const;
 
-        //QList<ProjectItemAction*> changeDataActions() const;
+        QList<ProjectItemAction*> changeDataActions() const;
 
         bool handleRemoveAction(ProjectItemAction* action);
 
-        //bool handleChangeDataAction(ProjectItemAction* action);
+        bool handleChangeDataAction(ProjectItemAction* action);
 
     private:
         QDir projectDir;            // directory containing the project
-        ProjectItemAction* closeAction;       // action to close this project
+        ProjectItemAction* renameAction;
+        ProjectItemAction* closeAction;
 };
 
 /*

@@ -175,10 +175,12 @@ ProjectListItem* ProjectItemAction::item() const noexcept {
 //~ProjectFile implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectFile::ProjectFile(const QFileInfo& _file) : file{_file} {
+    renameAction = new ProjectItemAction{"Rename", this};
     deleteAction = new ProjectItemAction{"Delete", this};
 }
 
 ProjectFile::~ProjectFile() {
+    delete renameAction;
     delete deleteAction;
 }
 
@@ -205,6 +207,12 @@ QList<ProjectItemAction*> ProjectFile::removeActions() const {
     return actions;
 }
 
+QList<ProjectItemAction*> ProjectFile::changeDataActions() const {
+    QList<ProjectItemAction*> actions;
+    actions.append(renameAction);
+    return actions;
+}
+
 bool ProjectFile::handleRemoveAction(ProjectItemAction* action) {
     bool actionHandled = false;
 
@@ -218,20 +226,37 @@ bool ProjectFile::handleRemoveAction(ProjectItemAction* action) {
     return actionHandled;
 }
 
+bool ProjectFile::handleChangeDataAction(ProjectItemAction* action) {
+    bool actionHandled = false;
+
+    if (action == renameAction) {
+        QString newName = QInputDialog::getText(0, "Rename File", "New name: ", QLineEdit::Normal, file.fileName());
+        if (!newName.isEmpty()) {
+            QString oldFile = file.absoluteFilePath();
+            file.setFile(file.absolutePath().append("/").append(newName));
+            actionHandled = QFile::rename(oldFile, file.absoluteFilePath());
+        }
+    }
+
+    return actionHandled;
+}
+
 
 
 //~ProjecDirectory implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ProjectDirectory::ProjectDirectory(const QDir& _dir) : dir{_dir} {
+    renameAction = new ProjectItemAction{"Rename", this};
     newFileAction = new ProjectItemAction{"Add file", this};
     newDirectoryAction = new ProjectItemAction{"Add directory", this};
     deleteAction = new ProjectItemAction{"Delete", this};
 }
 
 ProjectDirectory::~ProjectDirectory() {
-    delete newFileAction;
-    delete newDirectoryAction;
     delete deleteAction;
+    delete newDirectoryAction;
+    delete newFileAction;
+    delete renameAction;
 }
 
 QVariant ProjectDirectory::data(int role) const {
@@ -273,6 +298,12 @@ QList<ProjectItemAction*> ProjectDirectory::removeActions() const {
     return actions;
 }
 
+QList<ProjectItemAction*> ProjectDirectory::changeDataActions() const {
+    QList<ProjectItemAction*> actions;
+    actions.append(renameAction);
+    return actions;
+}
+
 ProjectListItem::ChildPtr ProjectDirectory::handleNewChildAction(ProjectItemAction* action) {
     ChildPtr child = ChildPtr{nullptr};
 
@@ -290,8 +321,10 @@ ProjectListItem::ChildPtr ProjectDirectory::handleNewChildAction(ProjectItemActi
     }
     else if (action == newDirectoryAction) {
         auto name = QInputDialog::getText(0, "New Directory", "Directory name: ");
-        dir.mkdir(name);
-        child = std::make_unique<ProjectDirectory>(QDir{dir.absoluteFilePath(name)});
+        if (!name.isEmpty()) {
+            dir.mkdir(name);
+            child = std::make_unique<ProjectDirectory>(QDir{dir.absoluteFilePath(name)});
+        }
     }
 
     return child;
@@ -310,16 +343,37 @@ bool ProjectDirectory::handleRemoveAction(ProjectItemAction* action) {
     return actionHandled;
 }
 
+bool ProjectDirectory::handleChangeDataAction(ProjectItemAction* action) {
+    bool actionHandled = false;
+
+    if (action == renameAction) {
+        QString newName = QInputDialog::getText(0, "Rename Directory", "New name: ", QLineEdit::Normal, dir.dirName());
+        if (!newName.isEmpty()) {
+            QString oldName = dir.dirName();
+            dir.cdUp();
+            actionHandled = dir.rename(oldName, newName);
+            if (actionHandled)
+                dir.cd(newName);
+            else
+                dir.cd(oldName);
+        }
+    }
+
+    return actionHandled;
+}
+
 
 
 //~Project implementation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Project::Project(const QDir& _projectDir) : ProjectDirectory{_projectDir}, projectDir{_projectDir} {
+    renameAction = new ProjectItemAction{"Rename", this};
     closeAction = new ProjectItemAction("Close project", this);
 }
 
 Project::~Project() {
     delete closeAction;
+    delete renameAction;
 }
 
 QVariant Project::data(int role) const {
@@ -341,6 +395,12 @@ QList<ProjectItemAction*> Project::removeActions() const {
     return menuActions;
 }
 
+QList<ProjectItemAction*> Project::changeDataActions() const {
+    QList<ProjectItemAction*> actions;
+    actions.append(renameAction);
+    return actions;
+}
+
 bool Project::handleRemoveAction(ProjectItemAction* action) {
     bool actionHandled = false;
 
@@ -348,6 +408,25 @@ bool Project::handleRemoveAction(ProjectItemAction* action) {
         auto buttonPressed = QMessageBox::question(0, "Closing Project", QString("Are you sure you want to close the project `%0`?").arg(data().toString()));
         if (buttonPressed == QMessageBox::Yes) {
             actionHandled = true;
+        }
+    }
+
+    return actionHandled;
+}
+
+bool Project::handleChangeDataAction(ProjectItemAction* action) {
+    bool actionHandled = false;
+
+    if (action == renameAction) {
+        QString newName = QInputDialog::getText(0, "Rename Directory", "New name: ", QLineEdit::Normal, projectDir.dirName());
+        if (!newName.isEmpty()) {
+            QString oldName = projectDir.dirName();
+            projectDir.cdUp();
+            actionHandled = projectDir.rename(oldName, newName);
+            if (actionHandled)
+                projectDir.cd(newName);
+            else
+                projectDir.cd(oldName);
         }
     }
 
