@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 14, 2015
+Last Modified: October 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -61,6 +61,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     selectorSpaceTab = new QActionGroup(this);
     selectorSpaceTab->addAction( ui->actionUse_Tabs );
     selectorSpaceTab->addAction( ui->actionUse_Spaces );
+
+    sessionSelector = new QActionGroup{this};
+    sessionSelector->addAction("default");
+    QMenu* sessionSelectorMenu = new QMenu{};
+    sessionSelectorMenu->addActions(sessionSelector->actions());
+    ui->actionSession->setMenu(sessionSelectorMenu);
 
     //set session object information
     QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format

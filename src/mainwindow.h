@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.h
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 18, 2015
+Last Modified: October 19, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -153,6 +153,7 @@ class MainWindow : public QMainWindow {
         ProjectListModel* projectListModel;
         QTreeView* projectView;         // view in which projects will be displayed
         SettingsEditor configsEditor;   // a window to facilitate editing config files
+        QActionGroup* sessionSelector;  // group of actions for selecting a state session
         QActionGroup* selectorSpaceTab; // group of actions to select whether to use spaces or tabs
         FindReplaceDialog  findReplace; // a dialog used to do find/replace tasks
         QLabel* statusLabel;            // the message shown on the status bar
