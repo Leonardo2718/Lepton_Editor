@@ -59,7 +59,7 @@ class SessionManager: public QObject {
         QMenu* selectionMenu();
         /*  returns the menu for selecting a user session */
 
-        QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
+        QVariant value(const QString & key, const QVariant & defaultValue = QVariant());
         /*  returns a setting value */
 
         void setValue(const QString & key, const QVariant & value);
@@ -77,6 +77,9 @@ class SessionManager: public QObject {
         QDir sessionsDir;                               // directory containing all the session config files
         std::unique_ptr<QMenu> sessionSelectionMenu;    // menu for letting the user select a session
         QActionGroup sessionActions;                    // actions for selecting a session
+
+        void loadSessionActions();
+        /*  loads the actions for selecting a session */
 
     private slots:
         void sessionChangeTriggered(QAction* sessionAction);

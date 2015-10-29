@@ -111,15 +111,21 @@ void ProjectListModel::loadSession() {
     SessionManager session;
     QVariantList projectList = session.value("projectPathList").toList();
 
-    beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
-
     // get list of all projects that need to be opened
     QList<QString> projectPaths;
     foreach(const QVariant& projectEntry, projectList) {
         projectPaths.append(projectEntry.toMap().value("project_path").toString());
     }
 
+    // remove old items
+    beginRemoveRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
+    for (int i = root->childCount() - 1; i >= 0; i--) {
+        root->removeChild(i);
+    }
+    endRemoveRows();
+
     // create an load all the projects
+    beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
     ProjectListItem::ChildList projects = root->loadProjects(projectPaths);
     QList<ProjectListItem*> treeNodes;
     for (auto& node : projects) {
@@ -127,7 +133,6 @@ void ProjectListModel::loadSession() {
         root->addChild(std::move(node));
     }
     loadAllChildrenOf(treeNodes);
-
     endInsertRows();
 }
 

@@ -35,14 +35,15 @@ Usage Agreement:
 #include "sessionmanager.h"
 #include "leptonconfig.h"
 
-
+#include <QDebug>
 
 //~public SessionManager member implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-SessionManager::SessionManager() : QObject(0), defaultSession{"/Lepton Edtior/default"},
+SessionManager::SessionManager() : QObject(0), defaultSession{"/Lepton Editor/default"},
     sessionActions{0} {
+    sessionsDir.setPath(LeptonConfig::mainSettings->getConfigDirPath("sessions/Lepton Editor"));
     sessionSelectionMenu = std::make_unique<QMenu>();
-    sessionActions.addAction("default");
+    loadSessionActions();
     sessionSelectionMenu->addActions(sessionActions.actions());
     connect(&sessionActions, SIGNAL(triggered(QAction*)), this, SLOT(sessionChangeTriggered(QAction*)));
 }
@@ -65,12 +66,13 @@ QMenu* SessionManager::selectionMenu() {
 /*
 returns a setting value
 */
-QVariant SessionManager::value(const QString & key, const QVariant & defaultValue) const {
-    auto sessionString = defaultSession.value("session", QVariant{}).toString();
+QVariant SessionManager::value(const QString & key, const QVariant & defaultValue) {
+    auto sessionString = defaultSession.value("__session").toString();
     if (sessionString.isEmpty()) {
-        return defaultSession.value(key, defaultValue);
+        auto v = defaultSession.value(key, defaultValue);
+        return v;
     } else {
-        QSettings s{sessionString};
+        QSettings s{sessionString.prepend("/Lepton Editor/")};
         return s.value(key, defaultValue);
     }
 }
@@ -79,12 +81,36 @@ QVariant SessionManager::value(const QString & key, const QVariant & defaultValu
 sets a setting value
 */
 void SessionManager::setValue(const QString & key, const QVariant & value) {
-    auto sessionString = defaultSession.value("session", QVariant{}).toString();
-    if (sessionString.isEmpty()) {
+    auto sessionFilePath = defaultSession.value("__session").toString();
+    if (sessionFilePath.isEmpty()) {
         defaultSession.setValue(key, value);
     } else {
-        QSettings s{sessionString};
+        QSettings s{sessionFilePath.prepend("/Lepton Editor/")};
         s.setValue(key, value);
+    }
+}
+
+
+
+//~private function implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
+loads the actions for selecting a session
+*/
+void SessionManager::loadSessionActions() {
+    foreach (QAction* a, sessionSelectionMenu->actions()) {
+        sessionActions.removeAction(a);
+    }
+    sessionSelectionMenu->clear();
+    QStringList nameFilters;
+    nameFilters.append(QString{"*.conf"});
+    foreach (const QFileInfo& sessionFile, sessionsDir.entryInfoList(nameFilters, QDir::AllEntries | QDir::NoDotAndDotDot)) {
+        auto action = sessionActions.addAction(sessionFile.baseName());
+        action->setCheckable(true);
+        auto session = defaultSession.value("__session").toString();
+        if ((sessionFile.baseName() == session) || (sessionFile.baseName() == "default" && session.isEmpty())) {
+            action->setChecked(true);
+        }
     }
 }
 
@@ -99,10 +125,12 @@ void SessionManager::sessionChangeTriggered(QAction* sessionAction) {
     emit this->aboutToChangeSession();
 
     if (sessionAction->text() == "default") {
-        defaultSession.value("session", QVariant{});
+        defaultSession.setValue("__session", QVariant{});
     }
     else {
-        defaultSession.value("session", QVariant{sessionAction->text()});
+        QString text = sessionAction->text();
+        defaultSession.setValue("__session", QVariant{text});
+        bool b = defaultSession.value("__Session").toString() == text;
     }
 
     emit this->changedSession();
