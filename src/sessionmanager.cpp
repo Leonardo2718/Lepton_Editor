@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: sessionmanager.cpp
 Author: Leonardo Banderali
 Created: October 20, 2015
-Last Modified: October 28, 2015
+Last Modified: October 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -39,10 +39,8 @@ Usage Agreement:
 
 //~public SessionManager member implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-SessionManager::SessionManager() : QObject(0), defaultSession{LeptonConfig::mainSettings->getConfigDirPath("sessions").append("/default.conf")},
+SessionManager::SessionManager() : QObject(0), defaultSession{"/Lepton Edtior/default"},
     sessionActions{0} {
-    currentSession.release();
-    currentSession = std::make_unique<QSettings>(LeptonConfig::mainSettings->getConfigDirPath("sessions").append("/sessions"));
     sessionSelectionMenu = std::make_unique<QMenu>();
     sessionActions.addAction("default");
     sessionSelectionMenu->addActions(sessionActions.actions());
@@ -68,20 +66,26 @@ QMenu* SessionManager::selectionMenu() {
 returns a setting value
 */
 QVariant SessionManager::value(const QString & key, const QVariant & defaultValue) const {
-    if (currentSession)
-        return currentSession->value(key, defaultValue);
-    else
+    auto sessionString = defaultSession.value("session", QVariant{}).toString();
+    if (sessionString.isEmpty()) {
         return defaultSession.value(key, defaultValue);
+    } else {
+        QSettings s{sessionString};
+        return s.value(key, defaultValue);
+    }
 }
 
 /*
 sets a setting value
 */
 void SessionManager::setValue(const QString & key, const QVariant & value) {
-    if (currentSession)
-        currentSession->setValue(key, value);
-    else
+    auto sessionString = defaultSession.value("session", QVariant{}).toString();
+    if (sessionString.isEmpty()) {
         defaultSession.setValue(key, value);
+    } else {
+        QSettings s{sessionString};
+        s.setValue(key, value);
+    }
 }
 
 
@@ -92,17 +96,12 @@ void SessionManager::setValue(const QString & key, const QVariant & value) {
 executed when a session action is triggered
 */
 void SessionManager::sessionChangeTriggered(QAction* sessionAction) {
-    //emit currentSessionChanged(new QSettings{}, new QSettings{});
     emit this->aboutToChangeSession();
 
     if (sessionAction->text() == "default") {
-        currentSession.release();
         defaultSession.value("session", QVariant{});
     }
     else {
-        QString sessionFilPath = LeptonConfig::mainSettings->getConfigDirPath("sessions").append("/sessions/").append(sessionAction->text());
-        currentSession.release();
-        currentSession = std::make_unique<QSettings>(sessionFilPath);
         defaultSession.value("session", QVariant{sessionAction->text()});
     }
 

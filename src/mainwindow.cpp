@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 19, 2015
+Last Modified: October 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,12 +40,12 @@ Usage Agreement:
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
-#include <QSettings>
 #include <QVariant>
 #include <QLabel>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "leptonconfig.h"
+#include "sessionmanager.h"
 
 #include <QDebug>
 
@@ -396,7 +396,8 @@ void MainWindow::loadSession() {
 /* -load settings and configs from saved session */
     projectListModel->loadSession();
 
-    QSettings session;  // session object
+    //QSettings session;  // session object
+    SessionManager session;
 
     // load layout settings
     if ( session.value("windowMaximized").toBool() ) this->showMaximized();
@@ -424,7 +425,8 @@ void MainWindow::saveSession() {
 /* -save settings and configs of this session */
     projectListModel->saveSession();
 
-    QSettings session;  // session object
+    //QSettings session;  // session object
+    SessionManager session;
 
     // save layout settings
     if ( this->isMaximized() ) session.setValue("windowMaximized", true);

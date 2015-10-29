@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: sessionmanager.h
 Author: Leonardo Banderali
 Created: October 20, 2015
-Last Modified: October 28, 2015
+Last Modified: October 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -73,11 +73,10 @@ class SessionManager: public QObject {
         void changedSession();          // emited when the current session has changed
 
     private:
-        QSettings defaultSession;       // holds the default session information
-        static std::unique_ptr<QSettings> currentSession;   // holds the current session information
-        QDir sessionsDir;                                   // directory containing all the session config files
-        std::unique_ptr<QMenu> sessionSelectionMenu;        // menu for letting the user select a session
-        QActionGroup sessionActions;                        // actions for selecting a session
+        QSettings defaultSession;                       // holds the default session information
+        QDir sessionsDir;                               // directory containing all the session config files
+        std::unique_ptr<QMenu> sessionSelectionMenu;    // menu for letting the user select a session
+        QActionGroup sessionActions;                    // actions for selecting a session
 
     private slots:
         void sessionChangeTriggered(QAction* sessionAction);

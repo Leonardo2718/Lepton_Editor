@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 19, 2015
+Last Modified: October 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,9 +36,9 @@ Usage Agreement:
 // project headers
 #include "projectlistmodel.h"
 #include "leptonconfig.h"
+#include "sessionmanager.h"
 
 // Qt classes
-#include <QSettings>
 #include <QFileDialog>
 
 
@@ -108,7 +108,7 @@ QVariant ProjectListModel::headerData(int section, Qt::Orientation orientation, 
 load projects saved from previous session
 */
 void ProjectListModel::loadSession() {
-    QSettings session;
+    SessionManager session;
     QVariantList projectList = session.value("projectPathList").toList();
 
     beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
@@ -135,9 +135,10 @@ void ProjectListModel::loadSession() {
 save open projects from current session
 */
 void ProjectListModel::saveSession() {
-    QSettings session;
+    SessionManager session;
     QVariantList projectList;
     const int projectCount = root->childCount();
+
     for (int i = 0; i < projectCount; i++) {
         auto project = dynamic_cast<Project*>(root->childAt(i));
         if (project != nullptr) {
@@ -146,6 +147,7 @@ void ProjectListModel::saveSession() {
             projectList.append(d);
         }
     }
+
     session.setValue("projectPathList", projectList);
 }
 
