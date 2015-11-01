@@ -338,9 +338,12 @@ void MainWindow::loadSession() {
     if ( sessionManager.value("windowMaximized").toBool() ) this->showMaximized();
     else this->resize( sessionManager.value("windowWidth").toInt(), sessionManager.value("windowHeight").toInt() );
 
+    ui->projectManagerArea->sizePolicy().setHorizontalStretch(0);
+    ui->editorArea->sizePolicy().setHorizontalStretch(0);
     ui->projectManagerArea->setVisible( sessionManager.value("managerVisible", false).toBool() );
     ui->projectManagerArea->resize( sessionManager.value("managerWidth").toInt(), sessionManager.value("managerHeight").toInt() );
     ui->actionProject_Manager->setChecked( sessionManager.value("managerVisible", false).toBool() );
+    ui->projectManagerArea->updateGeometry();
 
     ui->editorTools->setVisible( sessionManager.value("toolsVisible", false).toBool() );
     ui->editorTools->resize( sessionManager.value("toolsWidth").toInt(), sessionManager.value("toolsHeight").toInt() );
@@ -372,6 +375,7 @@ void MainWindow::saveSession() {
 
     sessionManager.setValue("managerVisible", ui->projectManagerArea->isVisible() );
     sessionManager.setValue("managerWidth", ui->projectManagerArea->width() );
+    sessionManager.setValue("managerHStrech", ui->projectManagerArea->sizePolicy().horizontalStretch());
     sessionManager.setValue("managerHeight", ui->projectManagerArea->height() );
 
     sessionManager.setValue("toolsVisible", ui->editorTools->isVisible() );

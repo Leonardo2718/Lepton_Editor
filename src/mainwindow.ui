@@ -127,7 +127,7 @@
               <widget class="QWidget" name="editorArea" native="true">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>4</horstretch>
+                 <horstretch>8</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
