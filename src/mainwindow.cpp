@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: mainwindow.cpp
 Author: Leonardo Banderali
 Created: January 31, 2014
-Last Modified: October 14, 2015
+Last Modified: October 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -40,12 +40,12 @@ Usage Agreement:
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
-#include <QSettings>
 #include <QVariant>
 #include <QLabel>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "leptonconfig.h"
+#include "sessionmanager.h"
 
 #include <QDebug>
 
@@ -62,9 +62,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     selectorSpaceTab->addAction( ui->actionUse_Tabs );
     selectorSpaceTab->addAction( ui->actionUse_Spaces );
 
+    ui->actionSession->setMenu(sessionManager.selectionMenu());
+
     //set session object information
-    QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
-    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
+    //QSettings::setDefaultFormat(QSettings::NativeFormat);   //%%% I may decide to change this later on and use my own format
+    //QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, LeptonConfig::mainSettings->getConfigDirPath("sessions"));
 
     //setup main window
     setWindowTitle("Lepton Editor");
@@ -81,15 +83,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     editors = new EditorTabBar(this);
     ui->editorArea->layout()->addWidget(editors);
 
-    //create a new editor
-    //editors->addTab();
-    insertTab();
-
     setLanguageSelectorMenu();  //set language selector from editing tab instance
 
     projectView = new QTreeView(this);
     ui->projectManagerArea->layout()->addWidget(projectView);
-    //projectListModel = new ProjectTreeModel();
     projectListModel = new ProjectListModel{};
     projectView->setModel(projectListModel);
     projectView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -104,6 +101,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(&findReplace, SIGNAL(findClicked(FindReplaceDialog::DialogParameters)), this, SLOT(findInCurrent(FindReplaceDialog::DialogParameters)) );
     connect(&findReplace, SIGNAL(findNextClicked(FindReplaceDialog::DialogParameters)), this, SLOT(findNextInCurrent()) );
     connect(&findReplace, SIGNAL(replaceClicked(FindReplaceDialog::DialogParameters)), this, SLOT(replaceInCurrent(FindReplaceDialog::DialogParameters)) );
+    connect(&sessionManager, SIGNAL(aboutToChangeSession()), this, SLOT(saveSession()));
+    connect(&sessionManager, SIGNAL(changedSession()), this, SLOT(loadSession()));
 
     QString styleSheet;
     LeptonConfig::mainSettings->getStyleSheetInto(styleSheet);
@@ -318,6 +317,75 @@ void MainWindow::updateStatusLabel() {
     statusLabel->setText(labelText);
 }
 
+/*
+-load settings and configs from saved session
+*/
+void MainWindow::loadSession() {
+    projectListModel->loadSession();
+
+    // remove currently opened files
+    editors->closeAll();
+
+    // load previously opened files
+    QList< QVariant > fileList = sessionManager.value("listOfOpenFiles").toList();
+    for (int i = 0, c = fileList.count(); i < c; i++) {
+        this->openFile( fileList.at(i).toString() );
+    }
+    //create a new editor if needed
+    if (editors->count() == 0) insertTab();
+
+    // load layout settings
+    if ( sessionManager.value("windowMaximized").toBool() ) this->showMaximized();
+    else this->resize( sessionManager.value("windowWidth").toInt(), sessionManager.value("windowHeight").toInt() );
+
+    ui->projectManagerArea->sizePolicy().setHorizontalStretch(0);
+    ui->editorArea->sizePolicy().setHorizontalStretch(0);
+    ui->projectManagerArea->setVisible( sessionManager.value("managerVisible", false).toBool() );
+    ui->projectManagerArea->resize( sessionManager.value("managerWidth").toInt(), sessionManager.value("managerHeight").toInt() );
+    ui->actionProject_Manager->setChecked( sessionManager.value("managerVisible", false).toBool() );
+    ui->projectManagerArea->updateGeometry();
+
+    ui->editorTools->setVisible( sessionManager.value("toolsVisible", false).toBool() );
+    ui->editorTools->resize( sessionManager.value("toolsWidth").toInt(), sessionManager.value("toolsHeight").toInt() );
+    ui->actionEditor_Tools->setChecked( sessionManager.value("toolsVisible", false).toBool() );
+
+    // load editor settings
+    ui->actionRemove_trailing_spaces_on_save->setChecked(sessionManager.value("removeTrailingSpacesOnSave",false).toBool());
+}
+
+/*
+-save settings and configs of this session
+*/
+void MainWindow::saveSession() {
+    projectListModel->saveSession();
+
+    // save opened files
+    QList< QVariant > fileList;
+    for (int i = 0, c = editors->count(); i < c; i++) {
+        fileList.append( editors->getEditor(i)->getOpenFilePath() );
+    }
+    sessionManager.setValue("listOfOpenFiles", fileList);
+
+    // save layout settings
+    if ( this->isMaximized() ) sessionManager.setValue("windowMaximized", true);
+    else {
+        sessionManager.setValue("windowWidth", this->width() );
+        sessionManager.setValue("windowHeight", this->height() );
+    }
+
+    sessionManager.setValue("managerVisible", ui->projectManagerArea->isVisible() );
+    sessionManager.setValue("managerWidth", ui->projectManagerArea->width() );
+    sessionManager.setValue("managerHStrech", ui->projectManagerArea->sizePolicy().horizontalStretch());
+    sessionManager.setValue("managerHeight", ui->projectManagerArea->height() );
+
+    sessionManager.setValue("toolsVisible", ui->editorTools->isVisible() );
+    sessionManager.setValue("toolsWidth", ui->editorTools->width() );
+    sessionManager.setValue("toolsHeight", ui->editorTools->height() );
+
+    // save editor settings
+    sessionManager.setValue("removeTrailingSpacesOnSave", ui->actionRemove_trailing_spaces_on_save->isChecked());
+}
+
 
 
 //~private method implementations~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -384,66 +452,6 @@ void MainWindow::setSpaceTabSelector() {
 
     if ( editors->current()->indentationsUseTabs() ) ui->actionUse_Tabs->setChecked(true);
     else ui->actionUse_Spaces->setChecked(true);
-}
-
-void MainWindow::loadSession() {
-/* -load settings and configs from saved session */
-    projectListModel->loadSession();
-
-    QSettings session;  // session object
-
-    // load layout settings
-    if ( session.value("windowMaximized").toBool() ) this->showMaximized();
-    else this->resize( session.value("windowWidth").toInt(), session.value("windowHeight").toInt() );
-
-    ui->projectManagerArea->setVisible( session.value("managerVisible", false).toBool() );
-    ui->projectManagerArea->resize( session.value("managerWidth").toInt(), session.value("managerHeight").toInt() );
-    ui->actionProject_Manager->setChecked( session.value("managerVisible", false).toBool() );
-
-    ui->editorTools->setVisible( session.value("toolsVisible", false).toBool() );
-    ui->editorTools->resize( session.value("toolsWidth").toInt(), session.value("toolsHeight").toInt() );
-    ui->actionEditor_Tools->setChecked( session.value("toolsVisible", false).toBool() );
-
-    // load editor settings
-    ui->actionRemove_trailing_spaces_on_save->setChecked(session.value("removeTrailingSpacesOnSave",false).toBool());
-
-    // load previously opened files
-    QList< QVariant > fileList = session.value("listOfOpenFiles").toList();
-    for (int i = 0, c = fileList.count(); i < c; i++) {
-        this->openFile( fileList.at(i).toString() );
-    }
-}
-
-void MainWindow::saveSession() {
-/* -save settings and configs of this session */
-    projectListModel->saveSession();
-
-    QSettings session;  // session object
-
-    // save layout settings
-    if ( this->isMaximized() ) session.setValue("windowMaximized", true);
-    else {
-        session.setValue("windowWidth", this->width() );
-        session.setValue("windowHeight", this->height() );
-    }
-
-    session.setValue("managerVisible", ui->projectManagerArea->isVisible() );
-    session.setValue("managerWidth", ui->projectManagerArea->width() );
-    session.setValue("managerHeight", ui->projectManagerArea->height() );
-
-    session.setValue("toolsVisible", ui->editorTools->isVisible() );
-    session.setValue("toolsWidth", ui->editorTools->width() );
-    session.setValue("toolsHeight", ui->editorTools->height() );
-
-    // save editor settings
-    session.setValue("removeTrailingSpacesOnSave", ui->actionRemove_trailing_spaces_on_save->isChecked());
-
-    // save opened files
-    QList< QVariant > fileList;
-    for (int i = 0, c = editors->count(); i < c; i++) {
-        fileList.append( editors->getEditor(i)->getOpenFilePath() );
-    }
-    session.setValue("listOfOpenFiles", fileList);
 }
 
 QString MainWindow::getDialogDirPath(const QString& location) {

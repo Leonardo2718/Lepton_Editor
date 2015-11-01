@@ -3,7 +3,7 @@ Project: Lepton Editor
 File: projectlistmodel.cpp
 Author: Leonardo Banderali
 Created: October 10, 2015
-Last Modified: October 19, 2015
+Last Modified: October 29, 2015
 
 Description:
     Lepton Editor is a text editor oriented towards programmers.  It's intended to be a
@@ -36,9 +36,9 @@ Usage Agreement:
 // project headers
 #include "projectlistmodel.h"
 #include "leptonconfig.h"
+#include "sessionmanager.h"
 
 // Qt classes
-#include <QSettings>
 #include <QFileDialog>
 
 
@@ -108,10 +108,8 @@ QVariant ProjectListModel::headerData(int section, Qt::Orientation orientation, 
 load projects saved from previous session
 */
 void ProjectListModel::loadSession() {
-    QSettings session;
+    SessionManager session;
     QVariantList projectList = session.value("projectPathList").toList();
-
-    beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
 
     // get list of all projects that need to be opened
     QList<QString> projectPaths;
@@ -119,7 +117,15 @@ void ProjectListModel::loadSession() {
         projectPaths.append(projectEntry.toMap().value("project_path").toString());
     }
 
+    // remove old items
+    beginRemoveRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
+    for (int i = root->childCount() - 1; i >= 0; i--) {
+        root->removeChild(i);
+    }
+    endRemoveRows();
+
     // create an load all the projects
+    beginInsertRows(createIndex(0,0, nullptr), 0, projectList.size() - 1);
     ProjectListItem::ChildList projects = root->loadProjects(projectPaths);
     QList<ProjectListItem*> treeNodes;
     for (auto& node : projects) {
@@ -127,7 +133,6 @@ void ProjectListModel::loadSession() {
         root->addChild(std::move(node));
     }
     loadAllChildrenOf(treeNodes);
-
     endInsertRows();
 }
 
@@ -135,9 +140,10 @@ void ProjectListModel::loadSession() {
 save open projects from current session
 */
 void ProjectListModel::saveSession() {
-    QSettings session;
+    SessionManager session;
     QVariantList projectList;
     const int projectCount = root->childCount();
+
     for (int i = 0; i < projectCount; i++) {
         auto project = dynamic_cast<Project*>(root->childAt(i));
         if (project != nullptr) {
@@ -146,6 +152,7 @@ void ProjectListModel::saveSession() {
             projectList.append(d);
         }
     }
+
     session.setValue("projectPathList", projectList);
 }
 

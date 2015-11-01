@@ -127,7 +127,7 @@
               <widget class="QWidget" name="editorArea" native="true">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>4</horstretch>
+                 <horstretch>8</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
@@ -272,6 +272,15 @@
      <string>Language</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuLepton">
+    <property name="title">
+     <string>Lepton</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionSession"/>
+    <addaction name="actionSession_Manager"/>
+   </widget>
+   <addaction name="menuLepton"/>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuLanguage"/>
@@ -436,6 +445,16 @@
    </property>
    <property name="text">
     <string>Remove trailing spaces on save</string>
+   </property>
+  </action>
+  <action name="actionSession">
+   <property name="text">
+    <string>Session</string>
+   </property>
+  </action>
+  <action name="actionSession_Manager">
+   <property name="text">
+    <string>Session Manager</string>
    </property>
   </action>
  </widget>

@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     projecttypeselector.cpp \
     loadprojectasdialog.cpp \
     projectlistmodel.cpp \
-    projectlistitem.cpp
+    projectlistitem.cpp \
+    sessionmanager.cpp
 
 HEADERS  += mainwindow.h \
     editortabbar.h \
@@ -46,7 +47,8 @@ HEADERS  += mainwindow.h \
     projecttypeselector.h \
     loadprojectasdialog.h \
     projectlistmodel.h \
-    projectlistitem.h
+    projectlistitem.h \
+    sessionmanager.h
 
 FORMS    += mainwindow.ui \
     settingseditor.ui \
